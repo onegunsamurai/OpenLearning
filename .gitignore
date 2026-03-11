@@ -50,3 +50,6 @@ backend/data/
 
 .ruff_cache/
 .pytest_cache/
+
+# mkdocs
+site/
