@@ -47,3 +47,6 @@ backend/data/
 *.db
 *.db-shm
 *.db-wal
+
+.ruff_cache/
+.pytest_cache/

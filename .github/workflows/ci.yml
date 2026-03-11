@@ -70,7 +70,7 @@ jobs:
 
       - name: Verify no .env files tracked
         run: |
-          tracked_env=$(git ls-files '*.env' '.env*' '**/.env' '**/.env*' || true)
+          tracked_env=$(git ls-files '*.env' '.env*' '**/.env' '**/.env*' | grep -v '\.env\.example$' || true)
           if [ -n "$tracked_env" ]; then
             echo "ERROR: .env files are tracked by git:"
             echo "$tracked_env"
