@@ -1,0 +1,649 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenLearning API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/skills": {
+      "get": {
+        "summary": "Get Skills",
+        "operationId": "get_skills_api_skills_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/parse-jd": {
+      "post": {
+        "summary": "Parse Jd",
+        "operationId": "parse_jd_api_parse_jd_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JDParseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JDParseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assess": {
+      "post": {
+        "summary": "Assess",
+        "operationId": "assess_api_assess_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gap-analysis": {
+      "post": {
+        "summary": "Gap Analysis",
+        "operationId": "gap_analysis_api_gap_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GapAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GapAnalysis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/learning-plan": {
+      "post": {
+        "summary": "Learning Plan",
+        "operationId": "learning_plan_api_learning_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LearningPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssessRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "skillNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skillnames"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages",
+          "skillNames"
+        ],
+        "title": "AssessRequest"
+      },
+      "GapAnalysis": {
+        "properties": {
+          "overallReadiness": {
+            "type": "integer",
+            "title": "Overallreadiness"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/GapItem"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overallReadiness",
+          "summary",
+          "gaps"
+        ],
+        "title": "GapAnalysis"
+      },
+      "GapAnalysisRequest": {
+        "properties": {
+          "proficiencyScores": {
+            "items": {
+              "$ref": "#/components/schemas/ProficiencyScore"
+            },
+            "type": "array",
+            "title": "Proficiencyscores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "proficiencyScores"
+        ],
+        "title": "GapAnalysisRequest"
+      },
+      "GapItem": {
+        "properties": {
+          "skillId": {
+            "type": "string",
+            "title": "Skillid"
+          },
+          "skillName": {
+            "type": "string",
+            "title": "Skillname"
+          },
+          "currentLevel": {
+            "type": "integer",
+            "title": "Currentlevel"
+          },
+          "targetLevel": {
+            "type": "integer",
+            "title": "Targetlevel"
+          },
+          "gap": {
+            "type": "integer",
+            "title": "Gap"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Priority"
+          },
+          "recommendation": {
+            "type": "string",
+            "title": "Recommendation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skillId",
+          "skillName",
+          "currentLevel",
+          "targetLevel",
+          "gap",
+          "priority",
+          "recommendation"
+        ],
+        "title": "GapItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JDParseRequest": {
+        "properties": {
+          "jobDescription": {
+            "type": "string",
+            "title": "Jobdescription"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobDescription"
+        ],
+        "title": "JDParseRequest"
+      },
+      "JDParseResponse": {
+        "properties": {
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills",
+          "summary"
+        ],
+        "title": "JDParseResponse"
+      },
+      "LearningModule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "theory",
+              "quiz",
+              "lab"
+            ],
+            "title": "Type"
+          },
+          "phase": {
+            "type": "integer",
+            "title": "Phase"
+          },
+          "skillIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skillids"
+          },
+          "durationHours": {
+            "type": "integer",
+            "title": "Durationhours"
+          },
+          "objectives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Objectives"
+          },
+          "resources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Resources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "phase",
+          "skillIds",
+          "durationHours",
+          "objectives",
+          "resources"
+        ],
+        "title": "LearningModule"
+      },
+      "LearningPlan": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "totalHours": {
+            "type": "integer",
+            "title": "Totalhours"
+          },
+          "totalWeeks": {
+            "type": "integer",
+            "title": "Totalweeks"
+          },
+          "phases": {
+            "items": {
+              "$ref": "#/components/schemas/Phase"
+            },
+            "type": "array",
+            "title": "Phases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "summary",
+          "totalHours",
+          "totalWeeks",
+          "phases"
+        ],
+        "title": "LearningPlan"
+      },
+      "LearningPlanRequest": {
+        "properties": {
+          "gapAnalysis": {
+            "$ref": "#/components/schemas/GapAnalysis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gapAnalysis"
+        ],
+        "title": "LearningPlanRequest"
+      },
+      "Message": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "Message"
+      },
+      "Phase": {
+        "properties": {
+          "phase": {
+            "type": "integer",
+            "title": "Phase"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/LearningModule"
+            },
+            "type": "array",
+            "title": "Modules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phase",
+          "name",
+          "description",
+          "modules"
+        ],
+        "title": "Phase"
+      },
+      "ProficiencyScore": {
+        "properties": {
+          "skillId": {
+            "type": "string",
+            "title": "Skillid"
+          },
+          "skillName": {
+            "type": "string",
+            "title": "Skillname"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skillId",
+          "skillName",
+          "score",
+          "confidence",
+          "reasoning"
+        ],
+        "title": "ProficiencyScore"
+      },
+      "Skill": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "subSkills": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Subskills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "icon",
+          "description",
+          "subSkills"
+        ],
+        "title": "Skill"
+      },
+      "SkillsResponse": {
+        "properties": {
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/Skill"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skills",
+          "categories"
+        ],
+        "title": "SkillsResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

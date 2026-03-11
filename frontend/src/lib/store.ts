@@ -1,0 +1,82 @@
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { Message, ProficiencyScore, GapAnalysis, LearningPlan } from "./types";
+
+interface AppState {
+  // Step tracking
+  currentStep: number;
+  setCurrentStep: (step: number) => void;
+
+  // Onboarding
+  selectedSkillIds: string[];
+  toggleSkill: (skillId: string) => void;
+  setSelectedSkillIds: (ids: string[]) => void;
+  jobDescription: string;
+  setJobDescription: (jd: string) => void;
+
+  // Assessment
+  assessmentSessionId: string | null;
+  setAssessmentSessionId: (id: string) => void;
+  messages: Message[];
+  addMessage: (message: Message) => void;
+  setMessages: (messages: Message[]) => void;
+  proficiencyScores: ProficiencyScore[];
+  setProficiencyScores: (scores: ProficiencyScore[]) => void;
+
+  // Gap Analysis
+  gapAnalysis: GapAnalysis | null;
+  setGapAnalysis: (analysis: GapAnalysis) => void;
+
+  // Learning Plan
+  learningPlan: LearningPlan | null;
+  setLearningPlan: (plan: LearningPlan) => void;
+
+  // Reset
+  reset: () => void;
+}
+
+const initialState = {
+  currentStep: 0,
+  selectedSkillIds: [],
+  jobDescription: "",
+  assessmentSessionId: null as string | null,
+  messages: [],
+  proficiencyScores: [],
+  gapAnalysis: null,
+  learningPlan: null,
+};
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      ...initialState,
+
+      setCurrentStep: (step) => set({ currentStep: step }),
+
+      toggleSkill: (skillId) =>
+        set((state) => ({
+          selectedSkillIds: state.selectedSkillIds.includes(skillId)
+            ? state.selectedSkillIds.filter((id) => id !== skillId)
+            : [...state.selectedSkillIds, skillId],
+        })),
+
+      setSelectedSkillIds: (ids) => set({ selectedSkillIds: ids }),
+      setJobDescription: (jd) => set({ jobDescription: jd }),
+
+      setAssessmentSessionId: (id) => set({ assessmentSessionId: id }),
+      addMessage: (message) =>
+        set((state) => ({ messages: [...state.messages, message] })),
+      setMessages: (messages) => set({ messages }),
+      setProficiencyScores: (scores) => set({ proficiencyScores: scores }),
+
+      setGapAnalysis: (analysis) => set({ gapAnalysis: analysis }),
+      setLearningPlan: (plan) => set({ learningPlan: plan }),
+
+      reset: () => set(initialState),
+    }),
+    {
+      name: "open-learning-store",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);

@@ -1,0 +1,276 @@
+domain: backend_engineering
+description: Backend engineering concepts from junior to staff level
+
+# Skills from taxonomy that map to this domain
+mapped_skill_ids:
+  - nodejs
+  - python
+  - java
+  - go
+  - rest-api
+  - graphql
+  - authentication
+  - microservices
+  - sql
+  - nosql
+  - orm
+  - docker
+  - kubernetes
+  - system-design
+  - testing
+  - design-patterns
+  - monitoring
+  - cicd
+
+levels:
+  junior:
+    concepts:
+      - concept: http_fundamentals
+        target_confidence: 0.7
+        bloom_target: understand
+        prerequisites: []
+      - concept: rest_api_basics
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [http_fundamentals]
+      - concept: crud_operations
+        target_confidence: 0.8
+        bloom_target: apply
+        prerequisites: [rest_api_basics]
+      - concept: sql_basics
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: []
+      - concept: database_schema_design
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [sql_basics]
+      - concept: basic_authentication
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [http_fundamentals]
+      - concept: error_handling
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: []
+      - concept: version_control
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: []
+      - concept: unit_testing
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [error_handling]
+      - concept: environment_config
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: []
+      - concept: json_serialization
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [http_fundamentals]
+      - concept: basic_debugging
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [error_handling]
+      - concept: orm_basics
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [sql_basics]
+      - concept: input_validation
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [error_handling, rest_api_basics]
+      - concept: logging_basics
+        target_confidence: 0.5
+        bloom_target: understand
+        prerequisites: [error_handling]
+
+  mid:
+    concepts:
+      - concept: api_design_patterns
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [rest_api_basics, crud_operations]
+      - concept: database_indexing
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [sql_basics, database_schema_design]
+      - concept: query_optimization
+        target_confidence: 0.6
+        bloom_target: analyze
+        prerequisites: [database_indexing]
+      - concept: jwt_oauth
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [basic_authentication, http_fundamentals]
+      - concept: middleware_patterns
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [rest_api_basics, error_handling]
+      - concept: caching_strategies
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [api_design_patterns]
+      - concept: integration_testing
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [unit_testing, api_design_patterns]
+      - concept: docker_containers
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [environment_config]
+      - concept: ci_cd_basics
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [unit_testing, docker_containers, version_control]
+      - concept: async_programming
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [error_handling]
+      - concept: database_transactions
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [sql_basics, database_schema_design]
+      - concept: nosql_data_modeling
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [database_schema_design]
+      - concept: rate_limiting
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [middleware_patterns, api_design_patterns]
+      - concept: dependency_injection
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [unit_testing]
+      - concept: monitoring_alerting
+        target_confidence: 0.5
+        bloom_target: understand
+        prerequisites: [logging_basics, docker_containers]
+
+  senior:
+    concepts:
+      - concept: distributed_systems
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [async_programming, api_design_patterns]
+      - concept: event_driven_architecture
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [async_programming, api_design_patterns]
+      - concept: message_queues
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [event_driven_architecture]
+      - concept: database_sharding
+        target_confidence: 0.6
+        bloom_target: analyze
+        prerequisites: [database_indexing, query_optimization]
+      - concept: microservices_patterns
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [api_design_patterns, docker_containers, event_driven_architecture]
+      - concept: api_gateway
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [microservices_patterns, jwt_oauth]
+      - concept: observability
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [monitoring_alerting, distributed_systems]
+      - concept: load_balancing
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [distributed_systems]
+      - concept: container_orchestration
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [docker_containers, ci_cd_basics]
+      - concept: security_architecture
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [jwt_oauth, api_gateway]
+      - concept: performance_profiling
+        target_confidence: 0.6
+        bloom_target: analyze
+        prerequisites: [query_optimization, caching_strategies]
+      - concept: data_consistency
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [database_transactions, distributed_systems]
+      - concept: graceful_degradation
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [caching_strategies, rate_limiting]
+      - concept: schema_migration_strategies
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [database_schema_design, ci_cd_basics]
+      - concept: testing_strategies
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [integration_testing, dependency_injection]
+
+  staff:
+    concepts:
+      - concept: system_design
+        target_confidence: 0.8
+        bloom_target: create
+        prerequisites: [distributed_systems, microservices_patterns, data_consistency]
+      - concept: capacity_planning
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [load_balancing, performance_profiling]
+      - concept: technical_strategy
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [system_design]
+      - concept: cross_team_architecture
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [system_design, api_gateway]
+      - concept: platform_engineering
+        target_confidence: 0.6
+        bloom_target: create
+        prerequisites: [container_orchestration, observability, ci_cd_basics]
+      - concept: data_architecture
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [database_sharding, nosql_data_modeling, event_driven_architecture]
+      - concept: reliability_engineering
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [observability, graceful_degradation, testing_strategies]
+      - concept: cost_optimization
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [capacity_planning, performance_profiling]
+      - concept: vendor_evaluation
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [technical_strategy]
+      - concept: migration_strategies
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [schema_migration_strategies, data_consistency, system_design]
+      - concept: incident_management
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [observability, graceful_degradation]
+      - concept: api_versioning_evolution
+        target_confidence: 0.6
+        bloom_target: create
+        prerequisites: [api_design_patterns, cross_team_architecture]
+      - concept: security_compliance
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [security_architecture]
+      - concept: mentorship_patterns
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: []
+      - concept: technical_documentation
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [system_design]
