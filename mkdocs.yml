@@ -1,0 +1,64 @@
+site_name: OpenLearning
+site_url: https://onegunsamurai.github.io/OpenLearning
+site_description: AI-powered learning platform documentation
+repo_url: https://github.com/onegunsamurai/OpenLearning
+repo_name: onegunsamurai/OpenLearning
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Assessment Pipeline: architecture/assessment-pipeline.md
+    - Data Models: architecture/data-models.md
+  - Guides:
+    - Knowledge Base: guides/knowledge-base.md
+    - API Reference: guides/api-reference.md
+  - Development:
+    - Setup: development/setup.md
+    - Testing: development/testing.md
+    - Code Style: development/code-style.md

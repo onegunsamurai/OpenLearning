@@ -128,6 +128,17 @@ Generate TypeScript types from the backend OpenAPI spec:
 make generate-api
 ```
 
+## Documentation
+
+Full documentation is available at **[https://onegunsamurai.github.io/OpenLearning](https://onegunsamurai.github.io/OpenLearning)**.
+
+To preview docs locally:
+
+```bash
+pip install mkdocs-material
+make docs-serve
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and how to submit pull requests.

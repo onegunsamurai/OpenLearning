@@ -58,10 +58,39 @@ jobs:
       - name: Build
         run: npm run build
 
+  docs-build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'mkdocs.yml'
+
+      - uses: actions/setup-python@v5
+        if: steps.filter.outputs.docs == 'true'
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.filter.outputs.docs == 'true'
+        run: pip install -r docs/requirements.txt
+
+      - name: Build docs (strict)
+        if: steps.filter.outputs.docs == 'true'
+        run: mkdocs build --strict
+
   security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Secret scanning
         uses: gitleaks/gitleaks-action@v2

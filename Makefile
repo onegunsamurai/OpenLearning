@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend fmt fmt-backend check
+.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend fmt fmt-backend check docs-serve docs-build
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -38,3 +38,9 @@ test-backend:
 fmt: fmt-backend
 fmt-backend:
 	cd backend && ruff format . && ruff check --fix .
+
+docs-serve:
+	mkdocs serve
+
+docs-build:
+	mkdocs build
