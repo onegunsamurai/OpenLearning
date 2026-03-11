@@ -1,6 +1,7 @@
 # OpenLearning
 
 [![CI](https://github.com/onegunsamurai/OpenLearning/actions/workflows/ci.yml/badge.svg)](https://github.com/onegunsamurai/OpenLearning/actions/workflows/ci.yml)
+[![Docs](https://github.com/onegunsamurai/OpenLearning/actions/workflows/docs.yml/badge.svg)](https://onegunsamurai.github.io/OpenLearning)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 AI-powered learning engineering platform. Identify skill gaps and generate personalized learning plans.
@@ -135,7 +136,7 @@ Full documentation is available at **[https://onegunsamurai.github.io/OpenLearni
 To preview docs locally:
 
 ```bash
-pip install mkdocs-material
+pip install -r docs/requirements.txt
 make docs-serve
 ```
 
