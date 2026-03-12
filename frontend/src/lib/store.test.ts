@@ -188,7 +188,7 @@ describe("useAppStore", () => {
       expect(parsed.state.currentStep).toBe(2);
     });
 
-    it("rehydrates from sessionStorage", () => {
+    it("rehydrates from sessionStorage", async () => {
       const payload = {
         state: {
           currentStep: 7,
@@ -208,7 +208,7 @@ describe("useAppStore", () => {
       );
 
       // Trigger rehydration
-      useAppStore.persist.rehydrate();
+      await useAppStore.persist.rehydrate();
 
       expect(useAppStore.getState().currentStep).toBe(7);
       expect(useAppStore.getState().selectedSkillIds).toEqual([
