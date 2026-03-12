@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend fmt fmt-backend check docs-serve docs-build
+.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend check docs-serve docs-build
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -31,9 +31,11 @@ lint-frontend:
 typecheck:
 	cd frontend && npx tsc --noEmit
 
-test: test-backend
+test: test-backend test-frontend
 test-backend:
 	cd backend && pytest tests/ -v
+test-frontend:
+	cd frontend && npm test
 
 fmt: fmt-backend
 fmt-backend:

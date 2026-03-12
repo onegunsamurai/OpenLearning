@@ -17,7 +17,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 client.setConfig({ baseUrl: API_URL });
 
-function unwrap<T>(result: { data?: T; error?: unknown }): T {
+export function unwrap<T>(result: { data?: T; error?: unknown }): T {
   if (result.error !== undefined) {
     const err = result.error as { detail?: string };
     throw new Error(err?.detail ?? "Request failed");
