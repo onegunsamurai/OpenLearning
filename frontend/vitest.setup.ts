@@ -29,7 +29,8 @@ vi.mock("motion/react", () => {
   ]);
 
   const handler: ProxyHandler<object> = {
-    get(_target, prop: string) {
+    get(_target, prop) {
+      if (typeof prop === "symbol") return undefined;
       // Return a component that renders the HTML element, filtering motion props
       return ({
         children,

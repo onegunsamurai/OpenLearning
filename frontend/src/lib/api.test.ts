@@ -22,7 +22,14 @@ import {
 } from "@/lib/generated/api-client";
 
 const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+
+beforeAll(() => {
+  vi.stubGlobal("fetch", mockFetch);
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
