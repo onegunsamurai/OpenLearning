@@ -15,12 +15,19 @@ interface RadarChartProps {
   gaps: GapItem[];
 }
 
-export function RadarChart({ gaps }: RadarChartProps) {
-  const data = gaps.map((g) => ({
-    skill: g.skillName.length > 12 ? g.skillName.slice(0, 12) + "..." : g.skillName,
+export function transformGapData(gaps: GapItem[]) {
+  return gaps.map((g) => ({
+    skill:
+      g.skillName.length > 12
+        ? g.skillName.slice(0, 12) + "..."
+        : g.skillName,
     current: g.currentLevel,
     target: g.targetLevel,
   }));
+}
+
+export function RadarChart({ gaps }: RadarChartProps) {
+  const data = transformGapData(gaps);
 
   return (
     <ResponsiveContainer width="100%" height={350}>
