@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend check docs-serve docs-build
+.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend check docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -46,3 +46,18 @@ docs-serve:
 
 docs-build:
 	mkdocs build
+
+docker-build:
+	docker compose build
+
+docker-dev:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-clean:
+	docker compose down -v

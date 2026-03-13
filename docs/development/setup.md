@@ -29,6 +29,10 @@ cp backend/.env.example backend/.env
 |----------|----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | — | Your Anthropic API key |
 | `CORS_ORIGINS` | No | `http://localhost:3000` | Allowed CORS origins |
+| `DATABASE_URL` | No | `sqlite+aiosqlite:///./data/openlearning.db` | SQLAlchemy async database URL |
+| `LANGSMITH_API_KEY` | No | — | LangSmith API key (for tracing) |
+| `LANGSMITH_PROJECT` | No | `open-learning` | LangSmith project name |
+| `LANGSMITH_TRACING` | No | `false` | Enable LangSmith tracing |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -71,6 +75,11 @@ make dev-frontend  # http://localhost:3000
 | `make generate-api` | `bash scripts/generate-api.sh` | Generate TypeScript types from OpenAPI spec |
 | `make docs-serve` | `mkdocs serve` | Preview docs locally (port 8000) |
 | `make docs-build` | `mkdocs build` | Build docs site |
+| `make docker-build` | `docker compose build` | Build Docker images |
+| `make docker-dev` | `docker compose ... up --build` | Start stack with hot-reload |
+| `make docker-up` | `docker compose up --build` | Start production-like stack |
+| `make docker-down` | `docker compose down` | Stop containers |
+| `make docker-clean` | `docker compose down -v` | Stop and remove volumes |
 
 ## Type Generation
 

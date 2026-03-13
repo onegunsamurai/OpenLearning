@@ -4,6 +4,24 @@ The OpenLearning API is a FastAPI application serving at `http://localhost:8000`
 
 ## Endpoints
 
+### GET `/api/health`
+
+Lightweight health check with database connectivity probe.
+
+**Response** (200):
+
+```json
+{"status": "ok"}
+```
+
+**Response** (503 — database unreachable):
+
+```json
+{"status": "degraded", "database": "unreachable"}
+```
+
+---
+
 ### GET `/api/skills`
 
 Returns the full skills taxonomy with categories.

@@ -19,6 +19,72 @@ export type AssessRequest = {
 };
 
 /**
+ * AssessmentReportResponse
+ */
+export type AssessmentReportResponse = {
+    knowledgeGraph: KnowledgeGraphOut;
+    /**
+     * Gapnodes
+     */
+    gapNodes: Array<GapNodeOut>;
+    learningPlan: LearningPlanOut;
+    /**
+     * Proficiencyscores
+     */
+    proficiencyScores: Array<ProficiencyScoreOut>;
+};
+
+/**
+ * AssessmentRespondRequest
+ */
+export type AssessmentRespondRequest = {
+    /**
+     * Response
+     */
+    response: string;
+};
+
+/**
+ * AssessmentStartRequest
+ */
+export type AssessmentStartRequest = {
+    /**
+     * Skillids
+     */
+    skillIds: Array<string>;
+    /**
+     * Targetlevel
+     */
+    targetLevel?: string;
+};
+
+/**
+ * AssessmentStartResponse
+ */
+export type AssessmentStartResponse = {
+    /**
+     * Sessionid
+     */
+    sessionId: string;
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Questiontype
+     */
+    questionType?: string;
+    /**
+     * Step
+     */
+    step?: number;
+    /**
+     * Totalsteps
+     */
+    totalSteps?: number;
+};
+
+/**
  * GapAnalysis
  */
 export type GapAnalysis = {
@@ -81,6 +147,28 @@ export type GapItem = {
 };
 
 /**
+ * GapNodeOut
+ */
+export type GapNodeOut = {
+    /**
+     * Concept
+     */
+    concept: string;
+    /**
+     * Currentconfidence
+     */
+    currentConfidence: number;
+    /**
+     * Targetbloomlevel
+     */
+    targetBloomLevel: string;
+    /**
+     * Prerequisites
+     */
+    prerequisites: Array<string>;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -112,6 +200,38 @@ export type JdParseResponse = {
      * Summary
      */
     summary: string;
+};
+
+/**
+ * KnowledgeGraphOut
+ */
+export type KnowledgeGraphOut = {
+    /**
+     * Nodes
+     */
+    nodes: Array<KnowledgeNodeOut>;
+};
+
+/**
+ * KnowledgeNodeOut
+ */
+export type KnowledgeNodeOut = {
+    /**
+     * Concept
+     */
+    concept: string;
+    /**
+     * Confidence
+     */
+    confidence: number;
+    /**
+     * Bloomlevel
+     */
+    bloomLevel: string;
+    /**
+     * Prerequisites
+     */
+    prerequisites: Array<string>;
 };
 
 /**
@@ -157,6 +277,36 @@ export type LearningModule = {
 };
 
 /**
+ * LearningPhaseOut
+ */
+export type LearningPhaseOut = {
+    /**
+     * Phasenumber
+     */
+    phaseNumber: number;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Concepts
+     */
+    concepts: Array<string>;
+    /**
+     * Rationale
+     */
+    rationale: string;
+    /**
+     * Resources
+     */
+    resources: Array<ResourceOut>;
+    /**
+     * Estimatedhours
+     */
+    estimatedHours: number;
+};
+
+/**
  * LearningPlan
  */
 export type LearningPlan = {
@@ -180,6 +330,24 @@ export type LearningPlan = {
      * Phases
      */
     phases: Array<Phase>;
+};
+
+/**
+ * LearningPlanOut
+ */
+export type LearningPlanOut = {
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Totalhours
+     */
+    totalHours: number;
+    /**
+     * Phases
+     */
+    phases: Array<LearningPhaseOut>;
 };
 
 /**
@@ -249,6 +417,50 @@ export type ProficiencyScore = {
      * Reasoning
      */
     reasoning: string;
+};
+
+/**
+ * ProficiencyScoreOut
+ */
+export type ProficiencyScoreOut = {
+    /**
+     * Skillid
+     */
+    skillId: string;
+    /**
+     * Skillname
+     */
+    skillName: string;
+    /**
+     * Score
+     */
+    score: number;
+    /**
+     * Confidence
+     */
+    confidence: number;
+    /**
+     * Reasoning
+     */
+    reasoning: string;
+};
+
+/**
+ * ResourceOut
+ */
+export type ResourceOut = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Url
+     */
+    url?: string | null;
 };
 
 /**
@@ -323,6 +535,26 @@ export type ValidationError = {
     };
 };
 
+export type HealthCheckApiHealthGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/health';
+};
+
+export type HealthCheckApiHealthGetResponses = {
+    /**
+     * Response Health Check Api Health Get
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type HealthCheckApiHealthGetResponse = HealthCheckApiHealthGetResponses[keyof HealthCheckApiHealthGetResponses];
+
 export type GetSkillsApiSkillsGetData = {
     body?: never;
     path?: never;
@@ -386,6 +618,119 @@ export type AssessApiAssessPostResponses = {
      */
     200: unknown;
 };
+
+export type AssessmentStartApiAssessmentStartPostData = {
+    body: AssessmentStartRequest;
+    path?: never;
+    query?: never;
+    url: '/api/assessment/start';
+};
+
+export type AssessmentStartApiAssessmentStartPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentStartApiAssessmentStartPostError = AssessmentStartApiAssessmentStartPostErrors[keyof AssessmentStartApiAssessmentStartPostErrors];
+
+export type AssessmentStartApiAssessmentStartPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: AssessmentStartResponse;
+};
+
+export type AssessmentStartApiAssessmentStartPostResponse = AssessmentStartApiAssessmentStartPostResponses[keyof AssessmentStartApiAssessmentStartPostResponses];
+
+export type AssessmentRespondApiAssessmentSessionIdRespondPostData = {
+    body: AssessmentRespondRequest;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/assessment/{session_id}/respond';
+};
+
+export type AssessmentRespondApiAssessmentSessionIdRespondPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentRespondApiAssessmentSessionIdRespondPostError = AssessmentRespondApiAssessmentSessionIdRespondPostErrors[keyof AssessmentRespondApiAssessmentSessionIdRespondPostErrors];
+
+export type AssessmentRespondApiAssessmentSessionIdRespondPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type AssessmentGraphApiAssessmentSessionIdGraphGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/assessment/{session_id}/graph';
+};
+
+export type AssessmentGraphApiAssessmentSessionIdGraphGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentGraphApiAssessmentSessionIdGraphGetError = AssessmentGraphApiAssessmentSessionIdGraphGetErrors[keyof AssessmentGraphApiAssessmentSessionIdGraphGetErrors];
+
+export type AssessmentGraphApiAssessmentSessionIdGraphGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: KnowledgeGraphOut;
+};
+
+export type AssessmentGraphApiAssessmentSessionIdGraphGetResponse = AssessmentGraphApiAssessmentSessionIdGraphGetResponses[keyof AssessmentGraphApiAssessmentSessionIdGraphGetResponses];
+
+export type AssessmentReportApiAssessmentSessionIdReportGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/assessment/{session_id}/report';
+};
+
+export type AssessmentReportApiAssessmentSessionIdReportGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentReportApiAssessmentSessionIdReportGetError = AssessmentReportApiAssessmentSessionIdReportGetErrors[keyof AssessmentReportApiAssessmentSessionIdReportGetErrors];
+
+export type AssessmentReportApiAssessmentSessionIdReportGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: AssessmentReportResponse;
+};
+
+export type AssessmentReportApiAssessmentSessionIdReportGetResponse = AssessmentReportApiAssessmentSessionIdReportGetResponses[keyof AssessmentReportApiAssessmentSessionIdReportGetResponses];
 
 export type GapAnalysisApiGapAnalysisPostData = {
     body: GapAnalysisRequest;
