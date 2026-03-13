@@ -20,7 +20,7 @@ install-frontend:
 generate-api:
 	bash scripts/generate-api.sh
 
-check: lint typecheck test          ## Run all checks (mirrors CI)
+check: lint typecheck test fmt          ## Run all checks (mirrors CI)
 
 lint: lint-backend lint-frontend
 lint-backend:

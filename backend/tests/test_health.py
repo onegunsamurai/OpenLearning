@@ -20,9 +20,7 @@ async def test_health_check_ok():
     mock_engine.connect = lambda: mock_conn
 
     with patch("app.routes.health._get_engine", return_value=mock_engine):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
