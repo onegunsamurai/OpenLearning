@@ -4,19 +4,14 @@ import logging
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import _get_engine
+from app.models import HealthResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-class HealthResponse(BaseModel):
-    status: str
-    database: str | None = None
 
 
 @router.get(
