@@ -53,3 +53,6 @@ backend/data/
 
 # mkdocs
 site/
+
+# claude code local settings (may contain API keys)
+.claude/settings.local.json

@@ -1,0 +1,82 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(cat */.env*)",
+      "Bash(cat *.pem)",
+      "Bash(cat *.key)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); cmd=$(echo \"$input\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('command',''))\" 2>/dev/null); branch=$(git branch --show-current 2>/dev/null); if echo \"$cmd\" | grep -qE '^git (commit|push|merge)' && echo \"$branch\" | grep -qE '^(main|master)$'; then echo \"BLOCKED: Cannot commit/push/merge directly on $branch. Create a feature branch first.\" >&2; exit 2; fi; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/crewmaty/OpenLearning/.claude/hooks/protect-files.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); file_path=$(echo \"$input\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\" 2>/dev/null); if [ -z \"$file_path\" ]; then exit 0; fi; case \"$file_path\" in *.py) cd /Users/crewmaty/OpenLearning/backend && ruff format \"$file_path\" 2>/dev/null; exit 0;; *.ts|*.tsx) cd /Users/crewmaty/OpenLearning/frontend && npx eslint --fix \"$file_path\" 2>/dev/null; exit 0;; esac; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); file_path=$(echo \"$input\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\" 2>/dev/null); if [ -z \"$file_path\" ]; then exit 0; fi; case \"$file_path\" in *.py) cd /Users/crewmaty/OpenLearning/backend && ruff check \"$file_path\" 2>&1 >&2; exit 0;; esac; exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "branch=$(git branch --show-current 2>/dev/null || echo 'unknown'); commits=$(git log --oneline -5 2>/dev/null || echo 'no commits'); echo \"GIT_BRANCH=$branch\" >> \"$CLAUDE_ENV_FILE\"; echo \"RECENT_COMMITS<<EOF\" >> \"$CLAUDE_ENV_FILE\"; echo \"$commits\" >> \"$CLAUDE_ENV_FILE\"; echo \"EOF\" >> \"$CLAUDE_ENV_FILE\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before finishing, verify: Have you linted and tested all changed files? Run `make check` if you made code changes across both stacks, or the appropriate stack-specific commands (ruff check/pytest for Python, eslint/vitest for TypeScript)."
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {},
+  "env": {
+    "PROJECT_ROOT": "/Users/crewmaty/OpenLearning",
+    "BACKEND_DIR": "/Users/crewmaty/OpenLearning/backend",
+    "FRONTEND_DIR": "/Users/crewmaty/OpenLearning/frontend"
+  }
+}
