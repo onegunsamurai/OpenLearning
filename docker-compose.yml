@@ -6,7 +6,8 @@ services:
     volumes:
       - backend-data:/app/data
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
     environment:
       CORS_ORIGINS: "http://localhost:3000"
     healthcheck:
