@@ -1171,6 +1171,30 @@ make<span class="w"> </span>install
 <td><code>http://localhost:3000</code></td>
 <td>Allowed CORS origins</td>
 </tr>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>No</td>
+<td><code>sqlite+aiosqlite:///./data/openlearning.db</code></td>
+<td>SQLAlchemy async database URL</td>
+</tr>
+<tr>
+<td><code>LANGSMITH_API_KEY</code></td>
+<td>No</td>
+<td>—</td>
+<td>LangSmith API key (for tracing)</td>
+</tr>
+<tr>
+<td><code>LANGSMITH_PROJECT</code></td>
+<td>No</td>
+<td><code>open-learning</code></td>
+<td>LangSmith project name</td>
+</tr>
+<tr>
+<td><code>LANGSMITH_TRACING</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Enable LangSmith tracing</td>
+</tr>
 </tbody>
 </table>
 <h3 id="frontend-frontendenvlocal">Frontend (<code>frontend/.env.local</code>)<a class="headerlink" href="#frontend-frontendenvlocal" title="Permanent link">&para;</a></h3>
@@ -1291,6 +1315,31 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 <td><code>make docs-build</code></td>
 <td><code>mkdocs build</code></td>
 <td>Build docs site</td>
+</tr>
+<tr>
+<td><code>make docker-build</code></td>
+<td><code>docker compose build</code></td>
+<td>Build Docker images</td>
+</tr>
+<tr>
+<td><code>make docker-dev</code></td>
+<td><code>docker compose ... up --build</code></td>
+<td>Start stack with hot-reload</td>
+</tr>
+<tr>
+<td><code>make docker-up</code></td>
+<td><code>docker compose up --build</code></td>
+<td>Start production-like stack</td>
+</tr>
+<tr>
+<td><code>make docker-down</code></td>
+<td><code>docker compose down</code></td>
+<td>Stop containers</td>
+</tr>
+<tr>
+<td><code>make docker-clean</code></td>
+<td><code>docker compose down -v</code></td>
+<td>Stop and remove volumes</td>
 </tr>
 </tbody>
 </table>

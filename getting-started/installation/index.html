@@ -483,6 +483,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#docker-setup-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Setup (Alternative)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1043,6 +1054,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#docker-setup-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Setup (Alternative)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1154,6 +1176,21 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 <li>Open <a href="http://localhost:3000">http://localhost:3000</a> — you should see the OpenLearning onboarding page</li>
 <li>Try the skills endpoint: <code>GET http://localhost:8000/api/skills</code> should return the skills taxonomy</li>
 </ol>
+<h2 id="docker-setup-alternative">Docker Setup (Alternative)<a class="headerlink" href="#docker-setup-alternative" title="Permanent link">&para;</a></h2>
+<p>If you prefer not to install Python and Node.js locally, use Docker:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure backend</span>
+cp<span class="w"> </span>backend/.env.example<span class="w"> </span>backend/.env
+<span class="c1"># Edit backend/.env and set ANTHROPIC_API_KEY</span>
+
+<span class="c1"># Production-like mode</span>
+make<span class="w"> </span>docker-up
+
+<span class="c1"># Development mode (hot-reload)</span>
+make<span class="w"> </span>docker-dev
+</code></pre></div>
+<p>This starts the full stack — backend at <a href="http://localhost:8000">http://localhost:8000</a> and frontend at <a href="http://localhost:3000">http://localhost:3000</a>.</p>
+<p>To stop containers: <code>make docker-down</code>
+To stop and remove all data: <code>make docker-clean</code></p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>If the backend fails to start, check that your <code>ANTHROPIC_API_KEY</code> is set correctly in <code>backend/.env</code>. The database (SQLite) is created automatically on first run in the <code>data/</code> directory.</p>

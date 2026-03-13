@@ -703,6 +703,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#get-apihealth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiskills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1028,6 +1039,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#get-apihealth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiskills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1176,6 +1198,15 @@
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
 <p>The OpenLearning API is a FastAPI application serving at <code>http://localhost:8000</code>. Interactive Swagger docs are available at <a href="http://localhost:8000/api/docs"><code>/api/docs</code></a>.</p>
 <h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h2>
+<h3 id="get-apihealth">GET <code>/api/health</code><a class="headerlink" href="#get-apihealth" title="Permanent link">&para;</a></h3>
+<p>Lightweight health check with database connectivity probe.</p>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;database&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (503 — database unreachable):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;degraded&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;database&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
 <h3 id="get-apiskills">GET <code>/api/skills</code><a class="headerlink" href="#get-apiskills" title="Permanent link">&para;</a></h3>
 <p>Returns the full skills taxonomy with categories.</p>
 <p><strong>Response</strong>: <code>SkillsResponse</code></p>
