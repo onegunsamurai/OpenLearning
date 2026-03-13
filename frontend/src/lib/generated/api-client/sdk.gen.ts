@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessApiAssessPostData, AssessApiAssessPostErrors, AssessApiAssessPostResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
+import type { AssessApiAssessPostData, AssessApiAssessPostErrors, AssessApiAssessPostResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -23,7 +23,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * Lightweight health check with database connectivity probe.
  */
-export const healthCheckApiHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckApiHealthGetResponses, unknown, ThrowOnError>({ url: '/api/health', ...options });
+export const healthCheckApiHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckApiHealthGetResponses, HealthCheckApiHealthGetErrors, ThrowOnError>({ url: '/api/health', ...options });
 
 /**
  * Get Skills

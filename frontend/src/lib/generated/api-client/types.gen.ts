@@ -179,6 +179,20 @@ export type HttpValidationError = {
 };
 
 /**
+ * HealthResponse
+ */
+export type HealthResponse = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Database
+     */
+    database?: string | null;
+};
+
+/**
  * JDParseRequest
  */
 export type JdParseRequest = {
@@ -542,15 +556,20 @@ export type HealthCheckApiHealthGetData = {
     url: '/api/health';
 };
 
+export type HealthCheckApiHealthGetErrors = {
+    /**
+     * Service degraded
+     */
+    503: HealthResponse;
+};
+
+export type HealthCheckApiHealthGetError = HealthCheckApiHealthGetErrors[keyof HealthCheckApiHealthGetErrors];
+
 export type HealthCheckApiHealthGetResponses = {
     /**
-     * Response Health Check Api Health Get
-     *
      * Successful Response
      */
-    200: {
-        [key: string]: string;
-    };
+    200: HealthResponse;
 };
 
 export type HealthCheckApiHealthGetResponse = HealthCheckApiHealthGetResponses[keyof HealthCheckApiHealthGetResponses];
