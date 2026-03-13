@@ -11,7 +11,7 @@ Lightweight health check with database connectivity probe.
 **Response** (200):
 
 ```json
-{"status": "ok"}
+{"status": "ok", "database": null}
 ```
 
 **Response** (503 — database unreachable):

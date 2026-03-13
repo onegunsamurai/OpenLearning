@@ -2,21 +2,15 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi import APIRouter, Response
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db import _get_engine
+from app.models.health import HealthResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-class HealthResponse(BaseModel):
-    status: str
-    database: str | None = None
 
 
 @router.get(
@@ -24,7 +18,7 @@ class HealthResponse(BaseModel):
     response_model=HealthResponse,
     responses={503: {"description": "Service degraded", "model": HealthResponse}},
 )
-async def health_check() -> HealthResponse | JSONResponse:
+async def health_check(response: Response) -> HealthResponse:
     """Lightweight health check with database connectivity probe."""
     try:
         engine = _get_engine()
@@ -32,8 +26,6 @@ async def health_check() -> HealthResponse | JSONResponse:
             await conn.execute(text("SELECT 1"))
     except SQLAlchemyError:
         logger.exception("Health check: database unreachable")
-        return JSONResponse(
-            status_code=503,
-            content={"status": "degraded", "database": "unreachable"},
-        )
+        response.status_code = 503
+        return HealthResponse(status="degraded", database="unreachable")
     return HealthResponse(status="ok")
