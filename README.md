@@ -65,6 +65,35 @@ make dev
 - Backend: [http://localhost:8000](http://localhost:8000)
 - API docs: [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
 
+### Docker Setup
+
+Run the entire stack with Docker — no local Python or Node.js required:
+
+```bash
+# Copy env file and set your API key
+cp backend/.env.example backend/.env
+# Edit backend/.env and set ANTHROPIC_API_KEY
+
+# Production-like mode
+make docker-up
+
+# Development mode (hot-reload)
+make docker-dev
+```
+
+| Variable | File | Description |
+|----------|------|-------------|
+| `ANTHROPIC_API_KEY` | `backend/.env` | Anthropic API key (required) |
+| `CORS_ORIGINS` | `backend/.env` | Allowed CORS origins (default: `http://localhost:3000`) |
+| `DATABASE_URL` | `backend/.env` | SQLAlchemy database URL (default: SQLite in `data/`) |
+| `LANGSMITH_API_KEY` | `backend/.env` | LangSmith API key (optional, for tracing) |
+| `LANGSMITH_PROJECT` | `backend/.env` | LangSmith project name (default: `open-learning`) |
+| `LANGSMITH_TRACING` | `backend/.env` | Enable LangSmith tracing (default: `false`) |
+| `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | Backend URL for the frontend (default: `http://localhost:8000`) |
+
+To stop containers: `make docker-down`
+To stop and remove all data: `make docker-clean`
+
 ## Tech Stack
 
 - **Backend**: Python FastAPI + LangGraph + LangChain + Anthropic Claude
@@ -93,6 +122,8 @@ OpenLearning/
 │   │   ├── data/                # Skills taxonomy
 │   │   └── prompts/             # System prompts for Claude
 │   ├── tests/
+│   ├── Dockerfile               # Backend container image
+│   ├── .dockerignore            # Docker build exclusions
 │   ├── requirements.txt
 │   └── pyproject.toml
 ├── frontend/
@@ -101,9 +132,13 @@ OpenLearning/
 │   │   ├── components/          # UI components
 │   │   ├── hooks/               # Custom hooks
 │   │   └── lib/                 # Types, store, API client
+│   ├── Dockerfile               # Frontend container image
+│   ├── .dockerignore            # Docker build exclusions
 │   └── package.json
 ├── scripts/
 │   └── generate-api.sh          # OpenAPI → TypeScript types
+├── docker-compose.yml           # Production-like Docker Compose config
+├── docker-compose.dev.yml       # Development Docker Compose overrides
 └── Makefile
 ```
 
@@ -111,6 +146,7 @@ OpenLearning/
 
 | Method | Path                              | Description                        |
 |--------|-----------------------------------|------------------------------------|
+| GET    | /api/health                       | Health check with DB probe         |
 | GET    | /api/skills                       | List all skills and categories     |
 | POST   | /api/parse-jd                     | Extract skills from job desc       |
 | POST   | /api/assessment/start             | Start assessment session           |

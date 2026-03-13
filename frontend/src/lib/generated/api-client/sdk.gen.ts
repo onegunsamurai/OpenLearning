@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessApiAssessPostData, AssessApiAssessPostErrors, AssessApiAssessPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
+import type { AssessApiAssessPostData, AssessApiAssessPostErrors, AssessApiAssessPostResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -17,6 +17,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Health Check
+ *
+ * Lightweight health check with database connectivity probe.
+ */
+export const healthCheckApiHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthCheckApiHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthCheckApiHealthGetResponses, HealthCheckApiHealthGetErrors, ThrowOnError>({ url: '/api/health', ...options });
 
 /**
  * Get Skills
@@ -46,6 +53,40 @@ export const assessApiAssessPost = <ThrowOnError extends boolean = false>(option
         ...options.headers
     }
 });
+
+/**
+ * Assessment Start
+ */
+export const assessmentStartApiAssessmentStartPost = <ThrowOnError extends boolean = false>(options: Options<AssessmentStartApiAssessmentStartPostData, ThrowOnError>) => (options.client ?? client).post<AssessmentStartApiAssessmentStartPostResponses, AssessmentStartApiAssessmentStartPostErrors, ThrowOnError>({
+    url: '/api/assessment/start',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Assessment Respond
+ */
+export const assessmentRespondApiAssessmentSessionIdRespondPost = <ThrowOnError extends boolean = false>(options: Options<AssessmentRespondApiAssessmentSessionIdRespondPostData, ThrowOnError>) => (options.client ?? client).post<AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, ThrowOnError>({
+    url: '/api/assessment/{session_id}/respond',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Assessment Graph
+ */
+export const assessmentGraphApiAssessmentSessionIdGraphGet = <ThrowOnError extends boolean = false>(options: Options<AssessmentGraphApiAssessmentSessionIdGraphGetData, ThrowOnError>) => (options.client ?? client).get<AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, ThrowOnError>({ url: '/api/assessment/{session_id}/graph', ...options });
+
+/**
+ * Assessment Report
+ */
+export const assessmentReportApiAssessmentSessionIdReportGet = <ThrowOnError extends boolean = false>(options: Options<AssessmentReportApiAssessmentSessionIdReportGetData, ThrowOnError>) => (options.client ?? client).get<AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentReportApiAssessmentSessionIdReportGetErrors, ThrowOnError>({ url: '/api/assessment/{session_id}/report', ...options });
 
 /**
  * Gap Analysis

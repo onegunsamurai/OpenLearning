@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend check docs-serve docs-build
+.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -20,7 +20,7 @@ install-frontend:
 generate-api:
 	bash scripts/generate-api.sh
 
-check: lint typecheck test          ## Run all checks (mirrors CI)
+check: lint typecheck test fmt-check build-frontend     ## Run all checks (mirrors CI)
 
 lint: lint-backend lint-frontend
 lint-backend:
@@ -41,8 +41,30 @@ fmt: fmt-backend
 fmt-backend:
 	cd backend && ruff format . && ruff check --fix .
 
+fmt-check: fmt-check-backend
+fmt-check-backend:
+	cd backend && ruff format --check .
+
+build-frontend:
+	cd frontend && npm run build
+
 docs-serve:
 	mkdocs serve
 
 docs-build:
 	mkdocs build
+
+docker-build:
+	docker compose build
+
+docker-dev:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-clean:
+	docker compose down -v

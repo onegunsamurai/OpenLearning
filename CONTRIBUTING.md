@@ -40,6 +40,15 @@ make dev-backend   # http://localhost:8000
 make dev-frontend  # http://localhost:3000
 ```
 
+### Running with Docker
+
+Alternatively, use Docker to run the full stack without local Python/Node.js:
+
+```bash
+make docker-dev    # Development mode with hot-reload
+make docker-up     # Production-like mode
+```
+
 ### Running Tests
 
 ```bash

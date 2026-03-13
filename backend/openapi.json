@@ -5,6 +5,35 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Lightweight health check with database connectivity probe.",
+        "operationId": "health_check_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service degraded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/skills": {
       "get": {
         "summary": "Get Skills",
@@ -81,6 +110,169 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/start": {
+      "post": {
+        "summary": "Assessment Start",
+        "operationId": "assessment_start_api_assessment_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/{session_id}/respond": {
+      "post": {
+        "summary": "Assessment Respond",
+        "operationId": "assessment_respond_api_assessment__session_id__respond_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentRespondRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/{session_id}/graph": {
+      "get": {
+        "summary": "Assessment Graph",
+        "operationId": "assessment_graph_api_assessment__session_id__graph_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeGraphOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/{session_id}/report": {
+      "get": {
+        "summary": "Assessment Report",
+        "operationId": "assessment_report_api_assessment__session_id__report_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentReportResponse"
+                }
               }
             }
           },
@@ -200,6 +392,105 @@
         ],
         "title": "AssessRequest"
       },
+      "AssessmentReportResponse": {
+        "properties": {
+          "knowledgeGraph": {
+            "$ref": "#/components/schemas/KnowledgeGraphOut"
+          },
+          "gapNodes": {
+            "items": {
+              "$ref": "#/components/schemas/GapNodeOut"
+            },
+            "type": "array",
+            "title": "Gapnodes"
+          },
+          "learningPlan": {
+            "$ref": "#/components/schemas/LearningPlanOut"
+          },
+          "proficiencyScores": {
+            "items": {
+              "$ref": "#/components/schemas/ProficiencyScoreOut"
+            },
+            "type": "array",
+            "title": "Proficiencyscores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "knowledgeGraph",
+          "gapNodes",
+          "learningPlan",
+          "proficiencyScores"
+        ],
+        "title": "AssessmentReportResponse"
+      },
+      "AssessmentRespondRequest": {
+        "properties": {
+          "response": {
+            "type": "string",
+            "title": "Response"
+          }
+        },
+        "type": "object",
+        "required": [
+          "response"
+        ],
+        "title": "AssessmentRespondRequest"
+      },
+      "AssessmentStartRequest": {
+        "properties": {
+          "skillIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skillids"
+          },
+          "targetLevel": {
+            "type": "string",
+            "title": "Targetlevel",
+            "default": "mid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skillIds"
+        ],
+        "title": "AssessmentStartRequest"
+      },
+      "AssessmentStartResponse": {
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "questionType": {
+            "type": "string",
+            "title": "Questiontype",
+            "default": "calibration"
+          },
+          "step": {
+            "type": "integer",
+            "title": "Step",
+            "default": 1
+          },
+          "totalSteps": {
+            "type": "integer",
+            "title": "Totalsteps",
+            "default": 3
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessionId",
+          "question"
+        ],
+        "title": "AssessmentStartResponse"
+      },
       "GapAnalysis": {
         "properties": {
           "overallReadiness": {
@@ -291,6 +582,37 @@
         ],
         "title": "GapItem"
       },
+      "GapNodeOut": {
+        "properties": {
+          "concept": {
+            "type": "string",
+            "title": "Concept"
+          },
+          "currentConfidence": {
+            "type": "number",
+            "title": "Currentconfidence"
+          },
+          "targetBloomLevel": {
+            "type": "string",
+            "title": "Targetbloomlevel"
+          },
+          "prerequisites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prerequisites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept",
+          "currentConfidence",
+          "targetBloomLevel",
+          "prerequisites"
+        ],
+        "title": "GapNodeOut"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -303,6 +625,30 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "database": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
       },
       "JDParseRequest": {
         "properties": {
@@ -337,6 +683,53 @@
           "summary"
         ],
         "title": "JDParseResponse"
+      },
+      "KnowledgeGraphOut": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeNodeOut"
+            },
+            "type": "array",
+            "title": "Nodes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes"
+        ],
+        "title": "KnowledgeGraphOut"
+      },
+      "KnowledgeNodeOut": {
+        "properties": {
+          "concept": {
+            "type": "string",
+            "title": "Concept"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "bloomLevel": {
+            "type": "string",
+            "title": "Bloomlevel"
+          },
+          "prerequisites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prerequisites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept",
+          "confidence",
+          "bloomLevel",
+          "prerequisites"
+        ],
+        "title": "KnowledgeNodeOut"
       },
       "LearningModule": {
         "properties": {
@@ -405,6 +798,50 @@
         ],
         "title": "LearningModule"
       },
+      "LearningPhaseOut": {
+        "properties": {
+          "phaseNumber": {
+            "type": "integer",
+            "title": "Phasenumber"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "concepts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Concepts"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceOut"
+            },
+            "type": "array",
+            "title": "Resources"
+          },
+          "estimatedHours": {
+            "type": "number",
+            "title": "Estimatedhours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phaseNumber",
+          "title",
+          "concepts",
+          "rationale",
+          "resources",
+          "estimatedHours"
+        ],
+        "title": "LearningPhaseOut"
+      },
       "LearningPlan": {
         "properties": {
           "title": {
@@ -440,6 +877,32 @@
           "phases"
         ],
         "title": "LearningPlan"
+      },
+      "LearningPlanOut": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "totalHours": {
+            "type": "number",
+            "title": "Totalhours"
+          },
+          "phases": {
+            "items": {
+              "$ref": "#/components/schemas/LearningPhaseOut"
+            },
+            "type": "array",
+            "title": "Phases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "totalHours",
+          "phases"
+        ],
+        "title": "LearningPlanOut"
       },
       "LearningPlanRequest": {
         "properties": {
@@ -538,6 +1001,68 @@
           "reasoning"
         ],
         "title": "ProficiencyScore"
+      },
+      "ProficiencyScoreOut": {
+        "properties": {
+          "skillId": {
+            "type": "string",
+            "title": "Skillid"
+          },
+          "skillName": {
+            "type": "string",
+            "title": "Skillname"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skillId",
+          "skillName",
+          "score",
+          "confidence",
+          "reasoning"
+        ],
+        "title": "ProficiencyScoreOut"
+      },
+      "ResourceOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "title"
+        ],
+        "title": "ResourceOut"
       },
       "Skill": {
         "properties": {
