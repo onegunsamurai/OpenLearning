@@ -109,3 +109,34 @@ jobs:
             exit 1
           fi
           echo "No .env files tracked — OK"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docker:
+              - 'backend/Dockerfile'
+              - 'backend/requirements.txt'
+              - 'frontend/Dockerfile'
+              - 'frontend/package.json'
+              - 'frontend/package-lock.json'
+              - 'docker-compose.yml'
+              - 'docker-compose.dev.yml'
+
+      - name: Set up Docker Buildx
+        if: steps.filter.outputs.docker == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images
+        if: steps.filter.outputs.docker == 'true'
+        uses: docker/bake-action@v6
+        with:
+          files: docker-compose.yml
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
