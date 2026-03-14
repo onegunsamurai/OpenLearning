@@ -146,8 +146,14 @@ class KnowledgeBaseSchema(BaseModel):
     levels: dict[str, LevelSchema]
 
     @field_validator("levels")
-    def must_have_all_levels(cls, v):
+    @classmethod
+    def must_have_all_levels(cls, v: dict) -> dict:
         """Validates that all four levels (junior, mid, senior, staff) are present."""
+        required = set(LEVEL_ORDER)
+        missing = required - v.keys()
+        if missing:
+            raise ValueError(f"Missing levels: {missing}")
+        return v
 ```
 
 **Source**: `backend/app/knowledge_base/schema.py`
@@ -283,12 +289,12 @@ class KnowledgeNode(CamelModel):
     concept: str
     confidence: float       # 0.0-1.0
     bloom_level: BloomLevel
-    prerequisites: list[str]
-    evidence: list[str]
+    prerequisites: list[str] = []
+    evidence: list[str] = []
 
 class KnowledgeGraph(CamelModel):
-    nodes: list[KnowledgeNode]
-    edges: list[tuple[str, str]]  # (prerequisite, dependent)
+    nodes: list[KnowledgeNode] = []
+    edges: list[tuple[str, str]] = []  # (prerequisite, dependent)
 ```
 
 ### Graph Operations

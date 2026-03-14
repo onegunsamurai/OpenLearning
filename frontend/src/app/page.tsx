@@ -22,13 +22,14 @@ export default function OnboardingPage() {
     setCurrentStep,
     selectedRoleId,
     setSelectedRoleId,
+    roleSkillIds,
+    setRoleSkillIds,
     targetLevel,
     setTargetLevel,
   } = useAppStore();
 
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [roleSkillIds, setRoleSkillIds] = useState<string[]>([]);
 
   useEffect(() => {
     api.getSkills().then((data) => {
@@ -43,7 +44,7 @@ export default function OnboardingPage() {
       setSelectedSkillIds(skillIds);
       setRoleSkillIds(skillIds);
     },
-    [setSelectedRoleId, setSelectedSkillIds]
+    [setSelectedRoleId, setSelectedSkillIds, setRoleSkillIds]
   );
 
   const handleSkillsExtracted = (skillIds: string[]) => {

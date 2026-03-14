@@ -15,6 +15,8 @@ interface AppState {
   setJobDescription: (jd: string) => void;
   selectedRoleId: string | null;
   setSelectedRoleId: (roleId: string | null) => void;
+  roleSkillIds: string[];
+  setRoleSkillIds: (ids: string[]) => void;
   targetLevel: string;
   setTargetLevel: (level: string) => void;
 
@@ -41,6 +43,7 @@ const initialState = {
   selectedSkillIds: [],
   jobDescription: "",
   selectedRoleId: null as string | null,
+  roleSkillIds: [] as string[],
   targetLevel: "mid",
   assessmentSessionId: null as string | null,
   proficiencyScores: [],
@@ -65,6 +68,7 @@ export const useAppStore = create<AppState>()(
       setSelectedSkillIds: (ids) => set({ selectedSkillIds: ids }),
       setJobDescription: (jd) => set({ jobDescription: jd }),
       setSelectedRoleId: (roleId) => set({ selectedRoleId: roleId }),
+      setRoleSkillIds: (ids) => set({ roleSkillIds: ids }),
       setTargetLevel: (level) => set({ targetLevel: level }),
 
       setAssessmentSessionId: (id) => set({ assessmentSessionId: id }),

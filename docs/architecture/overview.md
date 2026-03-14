@@ -109,7 +109,7 @@ OpenLearning/
 │   │   ├── config.py            # Settings (API key, CORS origins)
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
-│   │   ├── routes/              # API endpoints (health, skills, assess, assessment, gap, plan, roles)
+│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, parse_jd, roles)
 │   │   ├── services/            # AI service layer (LLM client, JSON parsing)
 │   │   ├── agents/              # LLM agents (calibrator, evaluator, question gen, etc.)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic

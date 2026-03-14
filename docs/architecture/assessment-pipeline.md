@@ -52,8 +52,9 @@ Three calibration questions at increasing difficulty determine the candidate's s
 The evaluator receives all three Q&A pairs and returns:
 
 - **`calibrated_level`** — One of `junior`, `mid`, `senior`, `staff`
-- **`initial_concepts`** — Seed nodes for the knowledge graph (concept, confidence, bloom_level)
-- **`first_topic`** — The first topic to assess in the main loop
+- **`knowledge_graph`** — Seed knowledge graph with initial concept nodes (concept, confidence, bloom_level)
+- **`current_topic`** — The first topic to assess in the main loop
+- **`current_bloom_level`** — The starting Bloom level for the main assessment loop, determined by the calibrated level (see Level → Starting Bloom Mapping below)
 
 Each calibration node uses LangGraph's `interrupt()` to pause execution and wait for the user's answer. When the user responds via the API, the graph resumes from the checkpoint.
 

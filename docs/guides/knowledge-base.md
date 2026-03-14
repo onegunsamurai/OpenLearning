@@ -232,7 +232,7 @@ YAML knowledge bases are validated at two levels:
 
 **Pydantic schema validation** — On load, every YAML file is parsed into a `KnowledgeBaseSchema` model (defined in `backend/app/knowledge_base/schema.py`). This validates that all required fields (`domain`, `display_name`, `description`, `mapped_skill_ids`) are present, and that all four career levels (`junior`, `mid`, `senior`, `staff`) exist.
 
-**Automated tests** — `pytest tests/test_roles.py` loads every YAML file in the knowledge base directory and validates it against the schema. This catches missing fields, invalid levels, and structural issues automatically in CI.
+**Automated tests** — `cd backend && pytest tests/test_roles.py` loads every YAML file in the knowledge base directory and validates it against the schema. This catches missing fields, invalid levels, and structural issues automatically in CI.
 
 Before submitting a PR:
 
@@ -240,7 +240,7 @@ Before submitting a PR:
 2. Check that all prerequisite references point to concepts defined in the same file
 3. Verify no circular dependencies exist
 4. Confirm concept names are unique within the file
-5. Run `pytest tests/test_roles.py -v` to validate against the Pydantic schema
+5. Run `cd backend && pytest tests/test_roles.py -v` to validate against the Pydantic schema
 6. Run the full test suite: `make test`
 
 ## Submitting Your Contribution
