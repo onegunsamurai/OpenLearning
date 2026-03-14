@@ -76,7 +76,7 @@ make dev-frontend  # http://localhost:3000
 | `make fmt` | `cd backend && ruff format . && ruff check --fix .` | Format Python code |
 | `make fmt-backend` | `cd backend && ruff format . && ruff check --fix .` | Format Python code (backend only) |
 | `make fmt-check` | `make fmt-check-backend` | Check Python formatting (no changes) |
-| `make fmt-check-backend` | `ruff format --check .` | Verify Python code is formatted |
+| `make fmt-check-backend` | `cd backend && ruff format --check .` | Verify Python code is formatted |
 | `make build-frontend` | `npm run build` | Build frontend for production |
 | `make install-hooks` | `pip install pre-commit && pre-commit install` | Install pre-commit git hooks |
 | `make pre-commit` | `pre-commit run --all-files` | Run all pre-commit checks manually (runs Ruff, `forbid-env-files.sh`, and `lint-frontend-staged.sh`) |
