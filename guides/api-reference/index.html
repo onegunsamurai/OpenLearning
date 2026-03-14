@@ -1247,7 +1247,15 @@
 <span class="w">  </span><span class="nt">&quot;targetLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mid&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p><strong>Response</strong> (SSE stream): The first calibration question as a JSON event.</p>
+<p><strong>Response</strong>: <code>AssessmentStartResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you explain what HTTP status codes are and give some examples?&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;questionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calibration&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;totalSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="p">}</span>
+</code></pre></div>
 <hr />
 <h3 id="post-apiassessmentsession_idrespond">POST <code>/api/assessment/{session_id}/respond</code><a class="headerlink" href="#post-apiassessmentsession_idrespond" title="Permanent link">&para;</a></h3>
 <p>Submit an answer and receive the next question (or completion).</p>
@@ -1282,18 +1290,16 @@
 <hr />
 <h3 id="get-apiassessmentsession_idgraph">GET <code>/api/assessment/{session_id}/graph</code><a class="headerlink" href="#get-apiassessmentsession_idgraph" title="Permanent link">&para;</a></h3>
 <p>Get the current knowledge graph for an assessment session.</p>
-<p><strong>Response</strong>: Knowledge graph with nodes and edges.</p>
+<p><strong>Response</strong>: <code>KnowledgeGraphOut</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;concept&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;bloomLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;apply&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;prerequisites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">      </span><span class="nt">&quot;evidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Demonstrated understanding of HTTP methods&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">&quot;prerequisites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;edges&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;rest_api_basics&quot;</span><span class="p">]]</span>
+<span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 <hr />
@@ -1384,7 +1390,7 @@
     Client-&gt;&gt;API: POST /assessment/start
     API-&gt;&gt;LangGraph: Initialize pipeline
     LangGraph--&gt;&gt;API: Calibration Q1 (interrupt)
-    API--&gt;&gt;Client: SSE: calibration question
+    API--&gt;&gt;Client: JSON: AssessmentStartResponse
 
     Client-&gt;&gt;API: POST /assessment/{id}/respond
     API-&gt;&gt;LangGraph: Resume with answer
@@ -1408,7 +1414,7 @@
     Client-&gt;&gt;API: GET /assessment/{id}/report
     API--&gt;&gt;Client: Full report (graph, gaps, plan)</code></pre>
 <h2 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h2>
-<p>The <code>/assessment/start</code> and <code>/assessment/{id}/respond</code> endpoints use Server-Sent Events (SSE) for streaming responses. The frontend receives events as they're generated, enabling real-time display of questions and progress updates.</p>
+<p>The <code>/assessment/{id}/respond</code> endpoint uses Server-Sent Events (SSE) for streaming responses. The frontend receives events as they're generated, enabling real-time display of questions and progress updates. Note that <code>/assessment/start</code> returns a regular JSON response, not SSE.</p>
 <h2 id="swagger-documentation">Swagger Documentation<a class="headerlink" href="#swagger-documentation" title="Permanent link">&para;</a></h2>
 <p>For the full interactive API documentation with request/response schemas, run the backend and visit:</p>
 <p><strong><a href="http://localhost:8000/api/docs">http://localhost:8000/api/docs</a></strong></p>

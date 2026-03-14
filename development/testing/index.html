@@ -891,6 +891,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#frontend-typescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend (TypeScript)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend (TypeScript)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-file-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test File Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-frontend-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Frontend Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ci-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1105,6 +1166,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#frontend-typescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend (TypeScript)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend (TypeScript)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-file-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test File Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writing-frontend-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Frontend Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ci-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1187,7 +1309,7 @@
 
 <h1 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
 <h2 id="running-tests">Running Tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run all backend tests</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run all tests (backend + frontend)</span>
 make<span class="w"> </span><span class="nb">test</span>
 
 <span class="c1"># Run with verbose output</span>
@@ -1269,6 +1391,57 @@ make<span class="w"> </span>check
     <span class="n">state</span><span class="p">[</span><span class="s2">&quot;latest_evaluation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_evaluation</span>
     <span class="c1"># ... assertions</span>
 </code></pre></div>
+<h2 id="frontend-typescript">Frontend (TypeScript)<a class="headerlink" href="#frontend-typescript" title="Permanent link">&para;</a></h2>
+<h3 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h3>
+<p>Frontend tests use <strong>Vitest</strong> with jsdom environment and React Testing Library. Configuration is in <code>frontend/vitest.config.ts</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run frontend tests (single run)</span>
+<span class="nb">cd</span><span class="w"> </span>frontend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span><span class="nb">test</span>
+
+<span class="c1"># Run in watch mode</span>
+<span class="nb">cd</span><span class="w"> </span>frontend<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npx<span class="w"> </span>vitest
+
+<span class="c1"># Or via Makefile</span>
+make<span class="w"> </span>test-frontend
+</code></pre></div>
+<h3 id="test-file-conventions">Test File Conventions<a class="headerlink" href="#test-file-conventions" title="Permanent link">&para;</a></h3>
+<p>Test files are co-located next to their source files with a <code>.test.ts</code> or <code>.test.tsx</code> extension:</p>
+<div class="highlight"><pre><span></span><code>frontend/src/
+├── components/
+│   ├── assessment/
+│   │   └── ChatMessage.test.tsx
+│   ├── gap-analysis/
+│   │   └── RadarChart.test.tsx
+│   └── onboarding/
+│       └── SkillBrowser.test.tsx
+├── hooks/
+│   └── useAssessmentChat.test.ts
+└── lib/
+    ├── api.test.ts
+    └── store.test.ts
+</code></pre></div>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Environment:</strong> jsdom</li>
+<li><strong>Globals:</strong> Enabled — no need to import <code>describe</code>, <code>it</code>, <code>expect</code></li>
+<li><strong>Path alias:</strong> <code>@/</code> maps to <code>./src/*</code> (same as Next.js config)</li>
+<li><strong>Setup file:</strong> <code>frontend/vitest.setup.ts</code></li>
+</ul>
+<h3 id="writing-frontend-tests">Writing Frontend Tests<a class="headerlink" href="#writing-frontend-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">render</span><span class="p">,</span><span class="w"> </span><span class="nx">screen</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@testing-library/react&quot;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ChatMessage</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;./ChatMessage&quot;</span><span class="p">;</span>
+
+<span class="nx">describe</span><span class="p">(</span><span class="s2">&quot;ChatMessage&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">it</span><span class="p">(</span><span class="s2">&quot;renders user message&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">ChatMessage</span><span class="w"> </span><span class="nx">role</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="w"> </span><span class="nx">content</span><span class="o">=</span><span class="s2">&quot;Hello&quot;</span><span class="w"> </span><span class="o">/&gt;</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">expect</span><span class="p">(</span><span class="nx">screen</span><span class="p">.</span><span class="nx">getByText</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">)).</span><span class="nx">toBeInTheDocument</span><span class="p">();</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+<ul>
+<li>Use <code>vi.mock()</code> for module mocking (must appear before imports of the mocked module)</li>
+<li>Query components by role/text, not test IDs</li>
+<li>Clean up <code>sessionStorage</code> and Zustand store state between tests</li>
+</ul>
 <h2 id="ci-pipeline">CI Pipeline<a class="headerlink" href="#ci-pipeline" title="Permanent link">&para;</a></h2>
 <p>Tests run automatically on every push and PR via GitHub Actions.</p>
 <p><strong>Workflow</strong>: <code>.github/workflows/ci.yml</code></p>

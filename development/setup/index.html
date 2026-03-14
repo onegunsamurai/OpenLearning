@@ -1253,8 +1253,8 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make install</code></td>
-<td><code>make install-backend install-frontend</code></td>
-<td>Install all dependencies</td>
+<td><code>make install-backend install-frontend install-hooks</code></td>
+<td>Install all dependencies and pre-commit hooks</td>
 </tr>
 <tr>
 <td><code>make install-backend</code></td>
@@ -1268,7 +1268,7 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make check</code></td>
-<td><code>make lint typecheck test</code></td>
+<td><code>make lint typecheck test fmt-check build-frontend</code></td>
 <td>Run all checks (mirrors CI)</td>
 </tr>
 <tr>
@@ -1293,13 +1293,48 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make test</code></td>
+<td><code>make test-backend test-frontend</code></td>
+<td>Run all tests (backend + frontend)</td>
+</tr>
+<tr>
+<td><code>make test-backend</code></td>
 <td><code>pytest tests/ -v</code></td>
 <td>Run backend tests</td>
+</tr>
+<tr>
+<td><code>make test-frontend</code></td>
+<td><code>npm test</code></td>
+<td>Run frontend tests (Vitest)</td>
 </tr>
 <tr>
 <td><code>make fmt</code></td>
 <td><code>ruff format . &amp;&amp; ruff check --fix .</code></td>
 <td>Format Python code</td>
+</tr>
+<tr>
+<td><code>make fmt-check</code></td>
+<td><code>make fmt-check-backend</code></td>
+<td>Check Python formatting (no changes)</td>
+</tr>
+<tr>
+<td><code>make fmt-check-backend</code></td>
+<td><code>ruff format --check .</code></td>
+<td>Verify Python code is formatted</td>
+</tr>
+<tr>
+<td><code>make build-frontend</code></td>
+<td><code>npm run build</code></td>
+<td>Build frontend for production</td>
+</tr>
+<tr>
+<td><code>make install-hooks</code></td>
+<td><code>pip install pre-commit &amp;&amp; pre-commit install</code></td>
+<td>Install pre-commit git hooks</td>
+</tr>
+<tr>
+<td><code>make pre-commit</code></td>
+<td><code>pre-commit run --all-files</code></td>
+<td>Run all pre-commit checks manually</td>
 </tr>
 <tr>
 <td><code>make generate-api</code></td>
