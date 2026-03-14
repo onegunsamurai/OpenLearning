@@ -1,7 +1,6 @@
 export type {
   Skill,
   SkillsResponse,
-  Message,
   ProficiencyScore,
   GapItem,
   GapAnalysis,

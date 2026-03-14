@@ -14,7 +14,6 @@ describe("useAppStore", () => {
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
       expect(state.assessmentSessionId).toBeNull();
-      expect(state.messages).toEqual([]);
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
@@ -71,33 +70,6 @@ describe("useAppStore", () => {
     });
   });
 
-  describe("addMessage", () => {
-    it("appends a message", () => {
-      const msg = { role: "user" as const, content: "hello" };
-      useAppStore.getState().addMessage(msg);
-      expect(useAppStore.getState().messages).toEqual([msg]);
-    });
-
-    it("preserves order with multiple appends", () => {
-      const m1 = { role: "user" as const, content: "first" };
-      const m2 = { role: "assistant" as const, content: "second" };
-      const m3 = { role: "user" as const, content: "third" };
-      useAppStore.getState().addMessage(m1);
-      useAppStore.getState().addMessage(m2);
-      useAppStore.getState().addMessage(m3);
-      expect(useAppStore.getState().messages).toEqual([m1, m2, m3]);
-    });
-  });
-
-  describe("setMessages", () => {
-    it("replaces messages", () => {
-      useAppStore.getState().addMessage({ role: "user", content: "old" });
-      const newMsgs = [{ role: "assistant" as const, content: "new" }];
-      useAppStore.getState().setMessages(newMsgs);
-      expect(useAppStore.getState().messages).toEqual(newMsgs);
-    });
-  });
-
   describe("setProficiencyScores", () => {
     it("sets scores", () => {
       const scores = [
@@ -146,9 +118,6 @@ describe("useAppStore", () => {
       useAppStore.getState().setJobDescription("JD");
       useAppStore.getState().setSelectedSkillIds(["x"]);
       useAppStore.getState().setAssessmentSessionId("sess-1");
-      useAppStore
-        .getState()
-        .addMessage({ role: "user", content: "hi" });
       useAppStore.getState().setProficiencyScores([
         {
           skillId: "s1",
@@ -171,7 +140,6 @@ describe("useAppStore", () => {
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
       expect(state.assessmentSessionId).toBeNull();
-      expect(state.messages).toEqual([]);
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
@@ -195,7 +163,6 @@ describe("useAppStore", () => {
           selectedSkillIds: ["rehydrated"],
           jobDescription: "test",
           assessmentSessionId: null,
-          messages: [],
           proficiencyScores: [],
           gapAnalysis: null,
           learningPlan: null,

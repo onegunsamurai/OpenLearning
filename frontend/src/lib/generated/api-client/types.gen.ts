@@ -5,20 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * AssessRequest
- */
-export type AssessRequest = {
-    /**
-     * Messages
-     */
-    messages: Array<Message>;
-    /**
-     * Skillnames
-     */
-    skillNames: Array<string>;
-};
-
-/**
  * AssessmentReportResponse
  */
 export type AssessmentReportResponse = {
@@ -372,20 +358,6 @@ export type LearningPlanRequest = {
 };
 
 /**
- * Message
- */
-export type Message = {
-    /**
-     * Role
-     */
-    role: 'user' | 'assistant';
-    /**
-     * Content
-     */
-    content: string;
-};
-
-/**
  * Phase
  */
 export type Phase = {
@@ -614,29 +586,6 @@ export type ParseJdApiParseJdPostResponses = {
 };
 
 export type ParseJdApiParseJdPostResponse = ParseJdApiParseJdPostResponses[keyof ParseJdApiParseJdPostResponses];
-
-export type AssessApiAssessPostData = {
-    body: AssessRequest;
-    path?: never;
-    query?: never;
-    url: '/api/assess';
-};
-
-export type AssessApiAssessPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type AssessApiAssessPostError = AssessApiAssessPostErrors[keyof AssessApiAssessPostErrors];
-
-export type AssessApiAssessPostResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
 
 export type AssessmentStartApiAssessmentStartPostData = {
     body: AssessmentStartRequest;

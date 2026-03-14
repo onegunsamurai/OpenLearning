@@ -1,4 +1,4 @@
-from .assessment import AssessRequest, Message, ProficiencyScore
+from .assessment import ProficiencyScore
 from .base import CamelModel
 from .gap_analysis import GapAnalysis, GapAnalysisRequest, GapItem
 from .health import HealthResponse
@@ -7,7 +7,6 @@ from .learning_plan import LearningModule, LearningPlan, LearningPlanRequest, Ph
 from .skills import Skill, SkillsResponse
 
 __all__ = [
-    "AssessRequest",
     "CamelModel",
     "GapAnalysis",
     "GapAnalysisRequest",
@@ -18,7 +17,6 @@ __all__ = [
     "LearningModule",
     "LearningPlan",
     "LearningPlanRequest",
-    "Message",
     "Phase",
     "ProficiencyScore",
     "Skill",

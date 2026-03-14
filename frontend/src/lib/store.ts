@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Message, ProficiencyScore, GapAnalysis, LearningPlan } from "./types";
+import { ProficiencyScore, GapAnalysis, LearningPlan } from "./types";
 
 interface AppState {
   // Step tracking
@@ -17,9 +17,6 @@ interface AppState {
   // Assessment
   assessmentSessionId: string | null;
   setAssessmentSessionId: (id: string) => void;
-  messages: Message[];
-  addMessage: (message: Message) => void;
-  setMessages: (messages: Message[]) => void;
   proficiencyScores: ProficiencyScore[];
   setProficiencyScores: (scores: ProficiencyScore[]) => void;
 
@@ -40,7 +37,6 @@ const initialState = {
   selectedSkillIds: [],
   jobDescription: "",
   assessmentSessionId: null as string | null,
-  messages: [],
   proficiencyScores: [],
   gapAnalysis: null,
   learningPlan: null,
@@ -64,9 +60,6 @@ export const useAppStore = create<AppState>()(
       setJobDescription: (jd) => set({ jobDescription: jd }),
 
       setAssessmentSessionId: (id) => set({ assessmentSessionId: id }),
-      addMessage: (message) =>
-        set((state) => ({ messages: [...state.messages, message] })),
-      setMessages: (messages) => set({ messages }),
       setProficiencyScores: (scores) => set({ proficiencyScores: scores }),
 
       setGapAnalysis: (analysis) => set({ gapAnalysis: analysis }),

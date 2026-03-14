@@ -27,20 +27,12 @@ class SkillsResponse(CamelModel):
 ### Assessment
 
 ```python
-class Message(CamelModel):
-    role: Literal["user", "assistant"]
-    content: str
-
 class ProficiencyScore(CamelModel):
     skill_id: str
     skill_name: str
     score: int          # 0-100
     confidence: float   # 0.0-1.0
     reasoning: str
-
-class AssessRequest(CamelModel):
-    messages: list[Message]
-    skill_names: list[str]
 ```
 
 ### Gap Analysis
