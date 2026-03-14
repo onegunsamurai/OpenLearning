@@ -55,8 +55,14 @@ make docker-up     # Production-like mode
 # All checks (lint + typecheck + test)
 make check
 
-# Backend tests only
+# All tests (backend + frontend)
 make test
+
+# Backend tests only
+make test-backend
+
+# Frontend tests only
+make test-frontend
 
 # Format code
 make fmt
