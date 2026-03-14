@@ -62,16 +62,23 @@ make dev-frontend  # http://localhost:3000
 | `make dev` | `make -j2 dev-backend dev-frontend` | Start both servers concurrently |
 | `make dev-backend` | `uvicorn app.main:app --reload --port 8000` | Start backend with hot reload |
 | `make dev-frontend` | `npm run dev` | Start frontend dev server |
-| `make install` | `make install-backend install-frontend` | Install all dependencies |
+| `make install` | `make install-backend install-frontend install-hooks` | Install all dependencies and pre-commit hooks |
 | `make install-backend` | `pip install -r requirements.txt` | Install Python dependencies |
 | `make install-frontend` | `npm install` | Install Node dependencies |
-| `make check` | `make lint typecheck test` | Run all checks (mirrors CI) |
+| `make check` | `make lint typecheck test fmt-check build-frontend` | Run all checks (mirrors CI) |
 | `make lint` | `make lint-backend lint-frontend` | Lint both codebases |
 | `make lint-backend` | `ruff check .` | Lint Python code |
 | `make lint-frontend` | `npx eslint .` | Lint TypeScript code |
 | `make typecheck` | `npx tsc --noEmit` | TypeScript type checking |
-| `make test` | `pytest tests/ -v` | Run backend tests |
+| `make test` | `make test-backend test-frontend` | Run all tests (backend + frontend) |
+| `make test-backend` | `pytest tests/ -v` | Run backend tests |
+| `make test-frontend` | `npm test` | Run frontend tests (Vitest) |
 | `make fmt` | `ruff format . && ruff check --fix .` | Format Python code |
+| `make fmt-check` | `make fmt-check-backend` | Check Python formatting (no changes) |
+| `make fmt-check-backend` | `ruff format --check .` | Verify Python code is formatted |
+| `make build-frontend` | `npm run build` | Build frontend for production |
+| `make install-hooks` | `pre-commit install` | Install pre-commit git hooks |
+| `make pre-commit` | `pre-commit run --all-files` | Run all pre-commit checks manually |
 | `make generate-api` | `bash scripts/generate-api.sh` | Generate TypeScript types from OpenAPI spec |
 | `make docs-serve` | `mkdocs serve` | Preview docs locally (port 8000) |
 | `make docs-build` | `mkdocs build` | Build docs site |

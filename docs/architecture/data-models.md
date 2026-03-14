@@ -28,7 +28,7 @@ class SkillsResponse(CamelModel):
 
 ```python
 class Message(CamelModel):
-    role: str       # "user" or "assistant"
+    role: Literal["user", "assistant"]
     content: str
 
 class ProficiencyScore(CamelModel):
@@ -52,7 +52,7 @@ class GapItem(CamelModel):
     current_level: int
     target_level: int
     gap: int
-    priority: str       # "critical", "high", "medium", "low"
+    priority: Literal["critical", "high", "medium", "low"]
     recommendation: str
 
 class GapAnalysis(CamelModel):
@@ -71,10 +71,10 @@ class LearningModule(CamelModel):
     id: str
     title: str
     description: str
-    type: str             # "theory", "quiz", "lab"
+    type: Literal["theory", "quiz", "lab"]
     phase: int
     skill_ids: list[str]
-    duration_hours: float
+    duration_hours: int
     objectives: list[str]
     resources: list[str]
 
@@ -87,7 +87,7 @@ class Phase(CamelModel):
 class LearningPlan(CamelModel):
     title: str
     summary: str
-    total_hours: float
+    total_hours: int
     total_weeks: int
     phases: list[Phase]
 
@@ -105,6 +105,16 @@ class JDParseResponse(CamelModel):
     skills: list[str]
     summary: str
 ```
+
+### Health
+
+```python
+class HealthResponse(BaseModel):  # Note: extends BaseModel, not CamelModel
+    status: str
+    database: str | None = None
+```
+
+**Source**: `backend/app/models/health.py`
 
 ## LangGraph State
 
@@ -141,11 +151,37 @@ class AssessmentState(TypedDict, total=False):
     knowledge_graph: KnowledgeGraph
     target_graph: KnowledgeGraph
     gap_nodes: list[KnowledgeNode]
-    learning_plan: LearningPlan
+    learning_plan: LearningPlan   # state.py LearningPlan (see below)
 
     # Human-in-the-loop
     pending_question: Question | None
 ```
+
+!!! note "Pipeline vs API `LearningPlan`"
+    The `learning_plan` field in `AssessmentState` uses the **pipeline** `LearningPlan` defined in `graph/state.py`, which has different fields from the API model in `models/learning_plan.py`:
+
+    ```python
+    # graph/state.py — used inside the pipeline
+    class LearningPlan(CamelModel):
+        phases: list[LearningPhase]
+        total_hours: float
+        summary: str
+
+    class LearningPhase(CamelModel):
+        phase_number: int
+        title: str
+        concepts: list[str]
+        rationale: str
+        resources: list[Resource]
+        estimated_hours: float
+
+    class Resource(CamelModel):
+        type: str   # "video", "article", "project", "exercise"
+        title: str
+        url: str | None = None
+    ```
+
+    The API `LearningPlan` (in `models/learning_plan.py`) has `title`, `total_weeks`, `total_hours: int`, and `phases: list[Phase]`. The pipeline version omits `title`/`total_weeks`, uses `float` for hours, and structures phases differently.
 
 ### State Data Types
 
