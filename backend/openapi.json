@@ -90,42 +90,6 @@
         }
       }
     },
-    "/api/assess": {
-      "post": {
-        "summary": "Assess",
-        "operationId": "assess_api_assess_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssessRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/assessment/start": {
       "post": {
         "summary": "Assessment Start",
@@ -368,30 +332,6 @@
   },
   "components": {
     "schemas": {
-      "AssessRequest": {
-        "properties": {
-          "messages": {
-            "items": {
-              "$ref": "#/components/schemas/Message"
-            },
-            "type": "array",
-            "title": "Messages"
-          },
-          "skillNames": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Skillnames"
-          }
-        },
-        "type": "object",
-        "required": [
-          "messages",
-          "skillNames"
-        ],
-        "title": "AssessRequest"
-      },
       "AssessmentReportResponse": {
         "properties": {
           "knowledgeGraph": {
@@ -915,28 +855,6 @@
           "gapAnalysis"
         ],
         "title": "LearningPlanRequest"
-      },
-      "Message": {
-        "properties": {
-          "role": {
-            "type": "string",
-            "enum": [
-              "user",
-              "assistant"
-            ],
-            "title": "Role"
-          },
-          "content": {
-            "type": "string",
-            "title": "Content"
-          }
-        },
-        "type": "object",
-        "required": [
-          "role",
-          "content"
-        ],
-        "title": "Message"
       },
       "Phase": {
         "properties": {

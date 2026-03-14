@@ -88,16 +88,6 @@ export const api = {
       })
     ),
 
-  assessStream: (
-    messages: { role: string; content: string }[],
-    skillNames: string[]
-  ) =>
-    fetch(`${API_URL}/api/assess`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, skillNames }),
-    }),
-
   assessmentStart: async (
     skillIds: string[],
     targetLevel?: string

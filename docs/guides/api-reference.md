@@ -104,7 +104,7 @@ Submit an answer and receive the next question (or completion).
 
 ```json
 {
-  "answer": "HTTP is a stateless protocol that uses request-response pairs..."
+  "response": "HTTP is a stateless protocol that uses request-response pairs..."
 }
 ```
 

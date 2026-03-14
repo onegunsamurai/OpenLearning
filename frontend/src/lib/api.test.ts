@@ -139,25 +139,6 @@ describe("api.assessmentRespond", () => {
   });
 });
 
-describe("api.assessStream", () => {
-  it("calls correct URL with messages and skillNames", async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true });
-
-    const messages = [{ role: "user", content: "hello" }];
-    const skillNames = ["React", "TypeScript"];
-    await api.assessStream(messages, skillNames);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/assess"),
-      expect.objectContaining({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages, skillNames }),
-      })
-    );
-  });
-});
-
 describe("api.assessmentReport", () => {
   it("returns parsed report on success", async () => {
     const report = { proficiencyScores: [], knowledgeGraph: { nodes: [] }, gapNodes: [], learningPlan: { summary: "", totalHours: 0, phases: [] } };
