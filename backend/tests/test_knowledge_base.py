@@ -34,6 +34,21 @@ class TestLoadKnowledgeBase:
         with pytest.raises(FileNotFoundError):
             load_knowledge_base("nonexistent_domain")
 
+    @pytest.mark.parametrize(
+        "malicious_domain",
+        [
+            "../../etc/passwd",
+            "../knowledge_base/backend_engineering",
+            "/etc/passwd",
+            ".",
+            "..",
+            "",
+        ],
+    )
+    def test_rejects_path_traversal(self, malicious_domain: str):
+        with pytest.raises(FileNotFoundError):
+            load_knowledge_base(malicious_domain)
+
     def test_has_mapped_skill_ids(self):
         kb = load_knowledge_base("backend_engineering")
         assert "nodejs" in kb.mapped_skill_ids

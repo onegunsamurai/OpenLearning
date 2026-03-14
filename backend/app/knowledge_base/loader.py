@@ -15,9 +15,9 @@ _domain_list_cache: list[str] | None = None
 def load_knowledge_base(domain: str) -> KnowledgeBaseSchema:
     if domain in _cache:
         return _cache[domain]
-    path = _KB_DIR / f"{domain}.yaml"
-    if not path.exists():
+    if domain not in list_domains():
         raise FileNotFoundError(f"Knowledge base not found: {domain}")
+    path = _KB_DIR / f"{domain}.yaml"
     with open(path) as f:
         data = yaml.safe_load(f)
     kb = KnowledgeBaseSchema(**data)

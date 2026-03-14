@@ -174,3 +174,13 @@ class TestGetRoleDetailEndpoint:
     async def test_404_for_unknown(self, client: AsyncClient):
         resp = await client.get("/api/roles/nonexistent_role")
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_rejects_path_traversal(self, client: AsyncClient):
+        resp = await client.get("/api/roles/../../etc/passwd")
+        assert resp.status_code in (404, 422)
+
+    @pytest.mark.asyncio
+    async def test_rejects_dot_dot(self, client: AsyncClient):
+        resp = await client.get("/api/roles/..")
+        assert resp.status_code in (404, 422)
