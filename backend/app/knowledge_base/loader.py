@@ -9,16 +9,25 @@ from app.knowledge_base.schema import LEVEL_ORDER, KnowledgeBaseSchema
 
 _KB_DIR = Path(__file__).parent
 _cache: dict[str, KnowledgeBaseSchema] = {}
-_domain_list_cache: list[str] | None = None
+_domain_path_cache: dict[str, Path] | None = None
+
+
+def _get_domain_paths() -> dict[str, Path]:
+    """Return a cached mapping of domain name → resolved Path from filesystem enumeration."""
+    global _domain_path_cache
+    if _domain_path_cache is not None:
+        return _domain_path_cache
+    _domain_path_cache = {p.stem: p for p in _KB_DIR.glob("*.yaml")}
+    return _domain_path_cache
 
 
 def load_knowledge_base(domain: str) -> KnowledgeBaseSchema:
     if domain in _cache:
         return _cache[domain]
-    if domain not in list_domains():
+    domain_paths = _get_domain_paths()
+    if domain not in domain_paths:
         raise FileNotFoundError(f"Knowledge base not found: {domain}")
-    path = _KB_DIR / f"{domain}.yaml"
-    with open(path) as f:
+    with open(domain_paths[domain]) as f:
         data = yaml.safe_load(f)
     kb = KnowledgeBaseSchema(**data)
     _cache[domain] = kb
@@ -27,19 +36,14 @@ def load_knowledge_base(domain: str) -> KnowledgeBaseSchema:
 
 def list_domains() -> list[str]:
     """Return sorted list of all available knowledge base domain names."""
-    global _domain_list_cache
-    if _domain_list_cache is not None:
-        return _domain_list_cache
-    domains = sorted(p.stem for p in _KB_DIR.glob("*.yaml"))
-    _domain_list_cache = domains
-    return domains
+    return sorted(_get_domain_paths().keys())
 
 
 def clear_cache() -> None:
     """Clear all caches. Useful for tests."""
-    global _domain_list_cache
+    global _domain_path_cache
     _cache.clear()
-    _domain_list_cache = None
+    _domain_path_cache = None
 
 
 def get_target_graph(domain: str, level: str) -> KnowledgeGraph:

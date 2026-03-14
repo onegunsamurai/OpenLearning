@@ -5,13 +5,14 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from langgraph.types import Command
+from pydantic import field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from app.db import AssessmentResult, AssessmentSession, get_db
 from app.graph.state import make_initial_state
-from app.knowledge_base.loader import get_target_graph, map_skills_to_domain
+from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
 
 router = APIRouter()
@@ -21,6 +22,13 @@ class AssessmentStartRequest(CamelModel):
     skill_ids: list[str]
     target_level: str = "mid"
     role_id: str | None = None
+
+    @field_validator("role_id")
+    @classmethod
+    def validate_role_id(cls, v: str | None) -> str | None:
+        if v is not None and v not in list_domains():
+            raise ValueError(f"Unknown role: {v}")
+        return v
 
 
 class AssessmentStartResponse(CamelModel):
