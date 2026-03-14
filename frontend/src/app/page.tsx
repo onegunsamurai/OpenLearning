@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { JDPasteInput } from "@/components/onboarding/JDPasteInput";
 import { SkillBrowser } from "@/components/onboarding/SkillBrowser";
+import { RoleSelector } from "@/components/onboarding/role-selector";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { Skill } from "@/lib/types";
@@ -14,8 +15,18 @@ import { motion } from "motion/react";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { selectedSkillIds, toggleSkill, setSelectedSkillIds, setCurrentStep } =
-    useAppStore();
+  const {
+    selectedSkillIds,
+    toggleSkill,
+    setSelectedSkillIds,
+    setCurrentStep,
+    selectedRoleId,
+    setSelectedRoleId,
+    roleSkillIds,
+    setRoleSkillIds,
+    targetLevel,
+    setTargetLevel,
+  } = useAppStore();
 
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -27,9 +38,20 @@ export default function OnboardingPage() {
     });
   }, []);
 
+  const handleRoleSelected = useCallback(
+    (roleId: string, skillIds: string[]) => {
+      setSelectedRoleId(roleId);
+      setSelectedSkillIds(skillIds);
+      setRoleSkillIds(skillIds);
+    },
+    [setSelectedRoleId, setSelectedSkillIds, setRoleSkillIds]
+  );
+
   const handleSkillsExtracted = (skillIds: string[]) => {
     const merged = [...new Set([...selectedSkillIds, ...skillIds])];
     setSelectedSkillIds(merged);
+    setSelectedRoleId(null);
+    setRoleSkillIds([]);
   };
 
   const handleStart = () => {
@@ -40,6 +62,11 @@ export default function OnboardingPage() {
   const selectedNames = selectedSkillIds
     .map((id) => skills.find((s) => s.id === id)?.name)
     .filter(Boolean);
+
+  const isModified =
+    selectedRoleId !== null &&
+    (selectedSkillIds.length !== roleSkillIds.length ||
+      !selectedSkillIds.every((id) => roleSkillIds.includes(id)));
 
   return (
     <PageShell currentStep={0}>
@@ -56,16 +83,16 @@ export default function OnboardingPage() {
             <span className="text-gradient">skill gaps</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-            Paste a job description or select skills manually. Our AI will
-            assess your proficiency, identify gaps, and generate a personalized
-            learning plan.
+            Select a role, paste a job description, or choose skills manually.
+            Our AI will assess your proficiency, identify gaps, and generate a
+            personalized learning plan.
           </p>
           <div className="mt-6 space-y-2">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-muted text-xs font-mono text-cyan">
                 1
               </span>
-              Select your target skills
+              Select a role or choose skills
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-muted text-xs font-mono text-cyan">
@@ -91,7 +118,27 @@ export default function OnboardingPage() {
         >
           <div className="rounded-xl border border-border bg-card p-6 glow-cyan">
             <h3 className="mb-4 font-heading text-lg font-semibold">
-              Option 1: Paste a Job Description
+              Select a Role
+            </h3>
+            <RoleSelector
+              selectedRoleId={selectedRoleId}
+              onSelectRole={handleRoleSelected}
+              targetLevel={targetLevel}
+              onTargetLevelChange={setTargetLevel}
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-mono text-muted-foreground uppercase">
+              or paste a JD
+            </span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h3 className="mb-4 font-heading text-lg font-semibold">
+              Paste a Job Description
             </h3>
             <JDPasteInput
               skills={skills}
@@ -111,7 +158,7 @@ export default function OnboardingPage() {
 
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="mb-4 font-heading text-lg font-semibold">
-              Option 2: Select Skills
+              Select Skills
             </h3>
             <SkillBrowser
               skills={skills}
@@ -140,6 +187,9 @@ export default function OnboardingPage() {
                   {selectedSkillIds.length}
                 </span>{" "}
                 skill{selectedSkillIds.length !== 1 && "s"} selected
+                {isModified && (
+                  <span className="ml-1 text-yellow-500">(modified)</span>
+                )}
                 {selectedNames.length > 0 && (
                   <span className="hidden sm:inline">
                     {" "}

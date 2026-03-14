@@ -98,6 +98,66 @@ class JDParseResponse(CamelModel):
     summary: str
 ```
 
+### Roles
+
+```python
+class RoleLevelSummary(CamelModel):
+    name: str
+    concept_count: int
+
+class RoleSummary(CamelModel):
+    id: str
+    name: str
+    description: str
+    skill_count: int
+    levels: list[str]
+
+class RoleDetail(CamelModel):
+    id: str
+    name: str
+    description: str
+    mapped_skill_ids: list[str]
+    levels: list[RoleLevelSummary]
+```
+
+**Source**: `backend/app/models/roles.py`
+
+### Knowledge Base Schema
+
+These models validate YAML knowledge base files on load. They use `BaseModel` (not `CamelModel`) because they are internal, not API-facing.
+
+```python
+LEVEL_ORDER: list[str] = ["junior", "mid", "senior", "staff"]
+
+class ConceptSchema(BaseModel):
+    concept: str
+    target_confidence: float
+    bloom_target: str
+    prerequisites: list[str] = []
+
+class LevelSchema(BaseModel):
+    concepts: list[ConceptSchema]
+
+class KnowledgeBaseSchema(BaseModel):
+    domain: str
+    display_name: str
+    description: str
+    mapped_skill_ids: list[str]
+    levels: dict[str, LevelSchema]
+
+    @field_validator("levels")
+    @classmethod
+    def must_have_all_levels(cls, v: dict) -> dict:
+        """Validates that all four levels (junior, mid, senior, staff) are present."""
+        required = set(LEVEL_ORDER)
+        missing = required - v.keys()
+        if missing:
+            raise ValueError(f"Missing levels: {missing}")
+        return v
+```
+
+**Source**: `backend/app/knowledge_base/schema.py`
+
 ### Health
 
 ```python
@@ -229,12 +289,12 @@ class KnowledgeNode(CamelModel):
     concept: str
     confidence: float       # 0.0-1.0
     bloom_level: BloomLevel
-    prerequisites: list[str]
-    evidence: list[str]
+    prerequisites: list[str] = []
+    evidence: list[str] = []
 
 class KnowledgeGraph(CamelModel):
-    nodes: list[KnowledgeNode]
-    edges: list[tuple[str, str]]  # (prerequisite, dependent)
+    nodes: list[KnowledgeNode] = []
+    edges: list[tuple[str, str]] = []  # (prerequisite, dependent)
 ```
 
 ### Graph Operations

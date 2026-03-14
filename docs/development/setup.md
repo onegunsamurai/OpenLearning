@@ -73,12 +73,13 @@ make dev-frontend  # http://localhost:3000
 | `make test` | `make test-backend test-frontend` | Run all tests (backend + frontend) |
 | `make test-backend` | `pytest tests/ -v` | Run backend tests |
 | `make test-frontend` | `npm test` | Run frontend tests (Vitest) |
-| `make fmt` | `ruff format . && ruff check --fix .` | Format Python code |
+| `make fmt` | `cd backend && ruff format . && ruff check --fix .` | Format Python code |
+| `make fmt-backend` | `cd backend && ruff format . && ruff check --fix .` | Format Python code (backend only) |
 | `make fmt-check` | `make fmt-check-backend` | Check Python formatting (no changes) |
-| `make fmt-check-backend` | `ruff format --check .` | Verify Python code is formatted |
+| `make fmt-check-backend` | `cd backend && ruff format --check .` | Verify Python code is formatted |
 | `make build-frontend` | `npm run build` | Build frontend for production |
 | `make install-hooks` | `pip install pre-commit && pre-commit install` | Install pre-commit git hooks |
-| `make pre-commit` | `pre-commit run --all-files` | Run all pre-commit checks manually |
+| `make pre-commit` | `pre-commit run --all-files` | Run all pre-commit checks manually (runs Ruff, `forbid-env-files.sh`, and `lint-frontend-staged.sh`) |
 | `make generate-api` | `bash scripts/generate-api.sh` | Generate TypeScript types from OpenAPI spec |
 | `make docs-serve` | `mkdocs serve` | Preview docs locally (port 8000) |
 | `make docs-build` | `mkdocs build` | Build docs site |
@@ -87,6 +88,16 @@ make dev-frontend  # http://localhost:3000
 | `make docker-up` | `docker compose up --build` | Start production-like stack |
 | `make docker-down` | `docker compose down` | Stop containers |
 | `make docker-clean` | `docker compose down -v` | Stop and remove volumes |
+
+### Pre-commit Hooks
+
+`make install` sets up pre-commit hooks automatically. The hooks run on every commit and include:
+
+- **Ruff** — Python lint and format checks
+- **`scripts/forbid-env-files.sh`** — Blocks committing `.env` files with secrets
+- **`scripts/lint-frontend-staged.sh`** — Lints staged frontend files with ESLint
+
+Configuration lives in `.pre-commit-config.yaml`. Run `make pre-commit` to execute all hooks manually.
 
 ## Type Generation
 

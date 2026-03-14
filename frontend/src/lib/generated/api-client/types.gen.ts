@@ -42,6 +42,10 @@ export type AssessmentStartRequest = {
      * Targetlevel
      */
     targetLevel?: string;
+    /**
+     * Roleid
+     */
+    roleId?: string | null;
 };
 
 /**
@@ -450,6 +454,72 @@ export type ResourceOut = {
 };
 
 /**
+ * RoleDetail
+ */
+export type RoleDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Mappedskillids
+     */
+    mappedSkillIds: Array<string>;
+    /**
+     * Levels
+     */
+    levels: Array<RoleLevelSummary>;
+};
+
+/**
+ * RoleLevelSummary
+ */
+export type RoleLevelSummary = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Conceptcount
+     */
+    conceptCount: number;
+};
+
+/**
+ * RoleSummary
+ */
+export type RoleSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Skillcount
+     */
+    skillCount: number;
+    /**
+     * Levels
+     */
+    levels: Array<string>;
+};
+
+/**
  * Skill
  */
 export type Skill = {
@@ -699,6 +769,54 @@ export type AssessmentReportApiAssessmentSessionIdReportGetResponses = {
 };
 
 export type AssessmentReportApiAssessmentSessionIdReportGetResponse = AssessmentReportApiAssessmentSessionIdReportGetResponses[keyof AssessmentReportApiAssessmentSessionIdReportGetResponses];
+
+export type GetRolesApiRolesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/roles';
+};
+
+export type GetRolesApiRolesGetResponses = {
+    /**
+     * Response Get Roles Api Roles Get
+     *
+     * Successful Response
+     */
+    200: Array<RoleSummary>;
+};
+
+export type GetRolesApiRolesGetResponse = GetRolesApiRolesGetResponses[keyof GetRolesApiRolesGetResponses];
+
+export type GetRoleApiRolesRoleIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/roles/{role_id}';
+};
+
+export type GetRoleApiRolesRoleIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRoleApiRolesRoleIdGetError = GetRoleApiRolesRoleIdGetErrors[keyof GetRoleApiRolesRoleIdGetErrors];
+
+export type GetRoleApiRolesRoleIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: RoleDetail;
+};
+
+export type GetRoleApiRolesRoleIdGetResponse = GetRoleApiRolesRoleIdGetResponses[keyof GetRoleApiRolesRoleIdGetResponses];
 
 export type GapAnalysisApiGapAnalysisPostData = {
     body: GapAnalysisRequest;

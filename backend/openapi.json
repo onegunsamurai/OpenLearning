@@ -253,6 +253,67 @@
         }
       }
     },
+    "/api/roles": {
+      "get": {
+        "summary": "Get Roles",
+        "operationId": "get_roles_api_roles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleSummary"
+                  },
+                  "type": "array",
+                  "title": "Response Get Roles Api Roles Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/{role_id}": {
+      "get": {
+        "summary": "Get Role",
+        "operationId": "get_role_api_roles__role_id__get",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Role Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/gap-analysis": {
       "post": {
         "summary": "Gap Analysis",
@@ -390,6 +451,17 @@
             "type": "string",
             "title": "Targetlevel",
             "default": "mid"
+          },
+          "roleId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roleid"
           }
         },
         "type": "object",
@@ -981,6 +1053,99 @@
           "title"
         ],
         "title": "ResourceOut"
+      },
+      "RoleDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "mappedSkillIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mappedskillids"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/RoleLevelSummary"
+            },
+            "type": "array",
+            "title": "Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "mappedSkillIds",
+          "levels"
+        ],
+        "title": "RoleDetail"
+      },
+      "RoleLevelSummary": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "conceptCount": {
+            "type": "integer",
+            "title": "Conceptcount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "conceptCount"
+        ],
+        "title": "RoleLevelSummary"
+      },
+      "RoleSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "skillCount": {
+            "type": "integer",
+            "title": "Skillcount"
+          },
+          "levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "skillCount",
+          "levels"
+        ],
+        "title": "RoleSummary"
       },
       "Skill": {
         "properties": {

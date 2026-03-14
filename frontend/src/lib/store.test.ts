@@ -13,6 +13,9 @@ describe("useAppStore", () => {
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
+      expect(state.selectedRoleId).toBeNull();
+      expect(state.roleSkillIds).toEqual([]);
+      expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
@@ -60,6 +63,41 @@ describe("useAppStore", () => {
       useAppStore.getState().toggleSkill("b");
       useAppStore.getState().toggleSkill("a");
       expect(useAppStore.getState().selectedSkillIds).toEqual(["b"]);
+    });
+  });
+
+  describe("setSelectedRoleId", () => {
+    it("updates selected role ID", () => {
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      expect(useAppStore.getState().selectedRoleId).toBe(
+        "backend_engineering"
+      );
+    });
+
+    it("clears selected role ID", () => {
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      useAppStore.getState().setSelectedRoleId(null);
+      expect(useAppStore.getState().selectedRoleId).toBeNull();
+    });
+  });
+
+  describe("setRoleSkillIds", () => {
+    it("sets role skill IDs", () => {
+      useAppStore.getState().setRoleSkillIds(["nodejs", "python"]);
+      expect(useAppStore.getState().roleSkillIds).toEqual(["nodejs", "python"]);
+    });
+
+    it("replaces existing role skill IDs", () => {
+      useAppStore.getState().setRoleSkillIds(["a", "b"]);
+      useAppStore.getState().setRoleSkillIds(["c"]);
+      expect(useAppStore.getState().roleSkillIds).toEqual(["c"]);
+    });
+  });
+
+  describe("setTargetLevel", () => {
+    it("updates target level", () => {
+      useAppStore.getState().setTargetLevel("senior");
+      expect(useAppStore.getState().targetLevel).toBe("senior");
     });
   });
 
@@ -117,6 +155,9 @@ describe("useAppStore", () => {
       useAppStore.getState().setCurrentStep(5);
       useAppStore.getState().setJobDescription("JD");
       useAppStore.getState().setSelectedSkillIds(["x"]);
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      useAppStore.getState().setRoleSkillIds(["nodejs"]);
+      useAppStore.getState().setTargetLevel("senior");
       useAppStore.getState().setAssessmentSessionId("sess-1");
       useAppStore.getState().setProficiencyScores([
         {
@@ -139,6 +180,9 @@ describe("useAppStore", () => {
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
+      expect(state.selectedRoleId).toBeNull();
+      expect(state.roleSkillIds).toEqual([]);
+      expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
@@ -161,6 +205,7 @@ describe("useAppStore", () => {
         state: {
           currentStep: 7,
           selectedSkillIds: ["rehydrated"],
+          roleSkillIds: ["rehydrated"],
           jobDescription: "test",
           assessmentSessionId: null,
           proficiencyScores: [],
@@ -181,6 +226,7 @@ describe("useAppStore", () => {
       expect(useAppStore.getState().selectedSkillIds).toEqual([
         "rehydrated",
       ]);
+      expect(useAppStore.getState().roleSkillIds).toEqual(["rehydrated"]);
     });
   });
 });

@@ -7,4 +7,7 @@ export type {
   LearningModule,
   LearningPlan,
   Phase,
+  RoleSummary,
+  RoleDetail,
+  RoleLevelSummary,
 } from "@/lib/generated/api-client";

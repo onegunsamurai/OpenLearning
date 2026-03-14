@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
+import type { AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ParseJdApiParseJdPostData, ParseJdApiParseJdPostErrors, ParseJdApiParseJdPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -75,6 +75,16 @@ export const assessmentGraphApiAssessmentSessionIdGraphGet = <ThrowOnError exten
  * Assessment Report
  */
 export const assessmentReportApiAssessmentSessionIdReportGet = <ThrowOnError extends boolean = false>(options: Options<AssessmentReportApiAssessmentSessionIdReportGetData, ThrowOnError>) => (options.client ?? client).get<AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentReportApiAssessmentSessionIdReportGetErrors, ThrowOnError>({ url: '/api/assessment/{session_id}/report', ...options });
+
+/**
+ * Get Roles
+ */
+export const getRolesApiRolesGet = <ThrowOnError extends boolean = false>(options?: Options<GetRolesApiRolesGetData, ThrowOnError>) => (options?.client ?? client).get<GetRolesApiRolesGetResponses, unknown, ThrowOnError>({ url: '/api/roles', ...options });
+
+/**
+ * Get Role
+ */
+export const getRoleApiRolesRoleIdGet = <ThrowOnError extends boolean = false>(options: Options<GetRoleApiRolesRoleIdGetData, ThrowOnError>) => (options.client ?? client).get<GetRoleApiRolesRoleIdGetResponses, GetRoleApiRolesRoleIdGetErrors, ThrowOnError>({ url: '/api/roles/{role_id}', ...options });
 
 /**
  * Gap Analysis

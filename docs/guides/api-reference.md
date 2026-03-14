@@ -69,6 +69,64 @@ Extract skills from a job description using AI.
 
 ---
 
+### GET `/api/roles`
+
+Returns a list of all available roles (knowledge base domains).
+
+**Response**: `list[RoleSummary]`
+
+```json
+[
+  {
+    "id": "backend_engineering",
+    "name": "Backend Engineer",
+    "description": "Backend engineering concepts from junior to staff level",
+    "skillCount": 18,
+    "levels": ["junior", "mid", "senior", "staff"]
+  },
+  {
+    "id": "frontend_engineering",
+    "name": "Frontend Engineer",
+    "description": "Frontend engineering concepts from junior to staff level",
+    "skillCount": 12,
+    "levels": ["junior", "mid", "senior", "staff"]
+  }
+]
+```
+
+---
+
+### GET `/api/roles/{role_id}`
+
+Returns detailed information for a single role, including mapped skill IDs and per-level concept counts.
+
+**Path parameter**: `role_id` — the domain identifier (e.g., `backend_engineering`)
+
+**Response** (200): `RoleDetail`
+
+```json
+{
+  "id": "backend_engineering",
+  "name": "Backend Engineer",
+  "description": "Backend engineering concepts from junior to staff level",
+  "mappedSkillIds": ["nodejs", "python", "java", "go", "rest-api", "graphql", "..."],
+  "levels": [
+    { "name": "junior", "conceptCount": 13 },
+    { "name": "mid", "conceptCount": 15 },
+    { "name": "senior", "conceptCount": 17 },
+    { "name": "staff", "conceptCount": 15 }
+  ]
+}
+```
+
+**Response** (404 — unknown role):
+
+```json
+{ "detail": "Role not found: unknown_role" }
+```
+
+---
+
 ### POST `/api/assessment/start`
 
 Start a new assessment session. Returns the first calibration question.
@@ -78,9 +136,16 @@ Start a new assessment session. Returns the first calibration question.
 ```json
 {
   "skillIds": ["nodejs", "rest-api", "sql"],
-  "targetLevel": "mid"
+  "targetLevel": "mid",
+  "roleId": "backend_engineering"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `skillIds` | list[string] | Yes | Skill IDs to assess |
+| `targetLevel` | string | No (default: `"mid"`) | Target career level |
+| `roleId` | string | No | Role/domain ID — when provided, bypasses skill-to-domain mapping and uses the role's knowledge base directly |
 
 **Response**: `AssessmentStartResponse`
 

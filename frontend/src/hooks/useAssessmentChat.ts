@@ -23,11 +23,15 @@ type ChatStatus = "ready" | "submitted" | "streaming" | "error";
 
 interface UseAssessmentChatOptions {
   skillIds: string[];
+  targetLevel?: string;
+  roleId?: string | null;
   onAssessmentComplete?: (scores: ProficiencyScore[]) => void;
 }
 
 export function useAssessmentChat({
   skillIds,
+  targetLevel,
+  roleId,
   onAssessmentComplete,
 }: UseAssessmentChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -45,7 +49,7 @@ export function useAssessmentChat({
     setError(null);
 
     try {
-      const result = await api.assessmentStart(skillIds);
+      const result = await api.assessmentStart(skillIds, targetLevel, roleId);
       sessionIdRef.current = result.sessionId;
       setProgress({ type: "calibration", step: 1, totalSteps: 3 });
 
@@ -60,7 +64,7 @@ export function useAssessmentChat({
         err instanceof Error ? err : new Error("Failed to start assessment")
       );
     }
-  }, [skillIds]);
+  }, [skillIds, targetLevel, roleId]);
 
   const sendMessage = useCallback(
     async (text: string) => {

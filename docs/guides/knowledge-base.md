@@ -24,6 +24,8 @@ During assessment, the pipeline:
 
 ```yaml
 domain: your_domain_name          # Unique domain identifier (snake_case)
+display_name: "Your Domain Name"  # Human-readable name shown in the UI
+description: Your domain description  # Brief description of the domain
 mapped_skill_ids:                 # Skills from the taxonomy this domain covers
   - skill-id-1
   - skill-id-2
@@ -58,6 +60,8 @@ levels:
 | Field | Type | Description |
 |-------|------|-------------|
 | `domain` | string | Unique domain name in snake_case |
+| `display_name` | string | Human-readable name shown in the UI (e.g., "Backend Engineer") |
+| `description` | string | Brief description of the domain |
 | `mapped_skill_ids` | list[string] | Skill IDs from `backend/app/data/skills_taxonomy.py` |
 | `levels` | object | Four career levels, each with a `concepts` list |
 | `concept` | string | Unique concept name in snake_case |
@@ -86,13 +90,21 @@ Create `backend/app/knowledge_base/frontend_engineering.yaml`:
 
 ```yaml
 domain: frontend_engineering
+display_name: "Frontend Engineer"
+description: Frontend engineering concepts from junior to staff level
 mapped_skill_ids:
-  - react
+  - javascript
   - typescript
-  - css
-  - html
+  - react
   - nextjs
+  - css
+  - html-accessibility
   - state-management
+  - testing
+  - design-patterns
+  - git
+  - nodejs
+  - rest-api
 ```
 
 ### 2. Define junior concepts
@@ -210,9 +222,17 @@ The `map_skills_to_domain()` function counts how many of the user's selected ski
 
 | Domain | File | Mapped Skills | Concepts |
 |--------|------|---------------|----------|
-| Backend Engineering | `backend_engineering.yaml` | nodejs, python, java, go, rest-api, graphql, authentication, microservices, sql, nosql, orm, docker, kubernetes, system-design, testing, design-patterns, monitoring, cicd | 58 concepts across 4 levels |
+| Backend Engineering | `backend_engineering.yaml` | nodejs, python, java, go, rest-api, graphql, authentication, microservices, sql, nosql, orm, docker, kubernetes, system-design, testing, design-patterns, monitoring, cicd | 60 concepts across 4 levels |
+| Frontend Engineering | `frontend_engineering.yaml` | javascript, typescript, react, nextjs, css, html-accessibility, state-management, testing, design-patterns, git, nodejs, rest-api | 52 concepts across 4 levels |
+| DevOps / Platform Engineering | `devops_engineering.yaml` | docker, kubernetes, cicd, aws, monitoring, python, go, system-design, testing, git | 52 concepts across 4 levels |
 
 ## Validation
+
+YAML knowledge bases are validated at two levels:
+
+**Pydantic schema validation** — On load, every YAML file is parsed into a `KnowledgeBaseSchema` model (defined in `backend/app/knowledge_base/schema.py`). This validates that all required fields (`domain`, `display_name`, `description`, `mapped_skill_ids`) are present, and that all four career levels (`junior`, `mid`, `senior`, `staff`) exist.
+
+**Automated tests** — `cd backend && pytest tests/test_roles.py` loads every YAML file in the knowledge base directory and validates it against the schema. This catches missing fields, invalid levels, and structural issues automatically in CI.
 
 Before submitting a PR:
 
@@ -220,7 +240,8 @@ Before submitting a PR:
 2. Check that all prerequisite references point to concepts defined in the same file
 3. Verify no circular dependencies exist
 4. Confirm concept names are unique within the file
-5. Run the test suite: `make test`
+5. Run `cd backend && pytest tests/test_roles.py -v` to validate against the Pydantic schema
+6. Run the full test suite: `make test`
 
 ## Submitting Your Contribution
 

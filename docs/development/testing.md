@@ -22,10 +22,15 @@ Tests live in `backend/tests/` and use pytest with pytest-asyncio for async test
 
 ```
 backend/tests/
-├── conftest.py          # Shared fixtures
-├── test_router.py       # Router logic tests
-├── test_knowledge.py    # Knowledge mapper tests
-└── ...
+├── conftest.py            # Shared fixtures
+├── test_agents.py         # LLM agent tests
+├── test_db.py             # Database tests
+├── test_health.py         # Health endpoint tests
+├── test_knowledge_base.py # Knowledge base loader and mapper tests
+├── test_pipeline.py       # LangGraph pipeline tests
+├── test_roles.py          # Roles endpoint and YAML validation tests
+├── test_router.py         # Router logic tests
+└── test_state.py          # Assessment state tests
 ```
 
 ## Fixtures
@@ -107,7 +112,8 @@ frontend/src/
 │   ├── gap-analysis/
 │   │   └── RadarChart.test.tsx
 │   └── onboarding/
-│       └── SkillBrowser.test.tsx
+│       ├── SkillBrowser.test.tsx
+│       └── role-selector.test.tsx
 ├── hooks/
 │   └── useAssessmentChat.test.ts
 └── lib/
