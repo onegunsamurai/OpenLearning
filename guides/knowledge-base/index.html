@@ -1349,6 +1349,8 @@
 </ul>
 <h2 id="yaml-schema-reference">YAML Schema Reference<a class="headerlink" href="#yaml-schema-reference" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your_domain_name</span><span class="w">          </span><span class="c1"># Unique domain identifier (snake_case)</span>
+<span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Your</span><span class="nv"> </span><span class="s">Domain</span><span class="nv"> </span><span class="s">Name&quot;</span><span class="w">  </span><span class="c1"># Human-readable name shown in the UI</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Your domain description</span><span class="w">  </span><span class="c1"># Brief description of the domain</span>
 <span class="nt">mapped_skill_ids</span><span class="p">:</span><span class="w">                 </span><span class="c1"># Skills from the taxonomy this domain covers</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skill-id-1</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skill-id-2</span>
@@ -1391,6 +1393,16 @@
 <td><code>domain</code></td>
 <td>string</td>
 <td>Unique domain name in snake_case</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>string</td>
+<td>Human-readable name shown in the UI (e.g., "Backend Engineer")</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>Brief description of the domain</td>
 </tr>
 <tr>
 <td><code>mapped_skill_ids</code></td>
@@ -1471,13 +1483,21 @@
 <h3 id="1-create-the-yaml-file">1. Create the YAML file<a class="headerlink" href="#1-create-the-yaml-file" title="Permanent link">&para;</a></h3>
 <p>Create <code>backend/app/knowledge_base/frontend_engineering.yaml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontend_engineering</span>
+<span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Frontend</span><span class="nv"> </span><span class="s">Engineer&quot;</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Frontend engineering concepts from junior to staff level</span>
 <span class="nt">mapped_skill_ids</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">react</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">javascript</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">typescript</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">css</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">html</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">react</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nextjs</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">css</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">html-accessibility</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state-management</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testing</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">design-patterns</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodejs</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rest-api</span>
 </code></pre></div>
 <h3 id="2-define-junior-concepts">2. Define junior concepts<a class="headerlink" href="#2-define-junior-concepts" title="Permanent link">&para;</a></h3>
 <p>Start with foundational concepts. Junior engineers should <em>understand</em> core concepts:</p>
@@ -1594,18 +1614,34 @@
 <td>Backend Engineering</td>
 <td><code>backend_engineering.yaml</code></td>
 <td>nodejs, python, java, go, rest-api, graphql, authentication, microservices, sql, nosql, orm, docker, kubernetes, system-design, testing, design-patterns, monitoring, cicd</td>
-<td>58 concepts across 4 levels</td>
+<td>60 concepts across 4 levels</td>
+</tr>
+<tr>
+<td>Frontend Engineering</td>
+<td><code>frontend_engineering.yaml</code></td>
+<td>javascript, typescript, react, nextjs, css, html-accessibility, state-management, testing, design-patterns, git, nodejs, rest-api</td>
+<td>52 concepts across 4 levels</td>
+</tr>
+<tr>
+<td>DevOps / Platform Engineering</td>
+<td><code>devops_engineering.yaml</code></td>
+<td>docker, kubernetes, cicd, aws, monitoring, python, go, system-design, testing, git</td>
+<td>52 concepts across 4 levels</td>
 </tr>
 </tbody>
 </table>
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
+<p>YAML knowledge bases are validated at two levels:</p>
+<p><strong>Pydantic schema validation</strong> — On load, every YAML file is parsed into a <code>KnowledgeBaseSchema</code> model (defined in <code>backend/app/knowledge_base/schema.py</code>). This validates that all required fields (<code>domain</code>, <code>display_name</code>, <code>description</code>, <code>mapped_skill_ids</code>) are present, and that all four career levels (<code>junior</code>, <code>mid</code>, <code>senior</code>, <code>staff</code>) exist.</p>
+<p><strong>Automated tests</strong> — <code>cd backend &amp;&amp; pytest tests/test_roles.py</code> loads every YAML file in the knowledge base directory and validates it against the schema. This catches missing fields, invalid levels, and structural issues automatically in CI.</p>
 <p>Before submitting a PR:</p>
 <ol>
 <li>Ensure your YAML is valid — use a YAML linter or <code>python -c "import yaml; yaml.safe_load(open('your_file.yaml'))"</code></li>
 <li>Check that all prerequisite references point to concepts defined in the same file</li>
 <li>Verify no circular dependencies exist</li>
 <li>Confirm concept names are unique within the file</li>
-<li>Run the test suite: <code>make test</code></li>
+<li>Run <code>cd backend &amp;&amp; pytest tests/test_roles.py -v</code> to validate against the Pydantic schema</li>
+<li>Run the full test suite: <code>make test</code></li>
 </ol>
 <h2 id="submitting-your-contribution">Submitting Your Contribution<a class="headerlink" href="#submitting-your-contribution" title="Permanent link">&para;</a></h2>
 <ol>

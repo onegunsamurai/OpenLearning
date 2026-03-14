@@ -860,6 +860,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Makefile Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1062,6 +1079,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Makefile Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1308,8 +1342,13 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make fmt</code></td>
-<td><code>ruff format . &amp;&amp; ruff check --fix .</code></td>
+<td><code>cd backend &amp;&amp; ruff format . &amp;&amp; ruff check --fix .</code></td>
 <td>Format Python code</td>
+</tr>
+<tr>
+<td><code>make fmt-backend</code></td>
+<td><code>cd backend &amp;&amp; ruff format . &amp;&amp; ruff check --fix .</code></td>
+<td>Format Python code (backend only)</td>
 </tr>
 <tr>
 <td><code>make fmt-check</code></td>
@@ -1318,7 +1357,7 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make fmt-check-backend</code></td>
-<td><code>ruff format --check .</code></td>
+<td><code>cd backend &amp;&amp; ruff format --check .</code></td>
 <td>Verify Python code is formatted</td>
 </tr>
 <tr>
@@ -1334,7 +1373,7 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 <tr>
 <td><code>make pre-commit</code></td>
 <td><code>pre-commit run --all-files</code></td>
-<td>Run all pre-commit checks manually</td>
+<td>Run all pre-commit checks manually (runs Ruff, <code>forbid-env-files.sh</code>, and <code>lint-frontend-staged.sh</code>)</td>
 </tr>
 <tr>
 <td><code>make generate-api</code></td>
@@ -1378,6 +1417,14 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 </tbody>
 </table>
+<h3 id="pre-commit-hooks">Pre-commit Hooks<a class="headerlink" href="#pre-commit-hooks" title="Permanent link">&para;</a></h3>
+<p><code>make install</code> sets up pre-commit hooks automatically. The hooks run on every commit and include:</p>
+<ul>
+<li><strong>Ruff</strong> — Python lint and format checks</li>
+<li><strong><code>scripts/forbid-env-files.sh</code></strong> — Blocks committing <code>.env</code> files with secrets</li>
+<li><strong><code>scripts/lint-frontend-staged.sh</code></strong> — Lints staged frontend files with ESLint</li>
+</ul>
+<p>Configuration lives in <code>.pre-commit-config.yaml</code>. Run <code>make pre-commit</code> to execute all hooks manually.</p>
 <h2 id="type-generation">Type Generation<a class="headerlink" href="#type-generation" title="Permanent link">&para;</a></h2>
 <p>TypeScript types are auto-generated from the backend's OpenAPI spec:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># With backend running</span>

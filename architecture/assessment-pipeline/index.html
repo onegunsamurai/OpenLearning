@@ -1451,8 +1451,9 @@
 <p>The evaluator receives all three Q&amp;A pairs and returns:</p>
 <ul>
 <li><strong><code>calibrated_level</code></strong> — One of <code>junior</code>, <code>mid</code>, <code>senior</code>, <code>staff</code></li>
-<li><strong><code>initial_concepts</code></strong> — Seed nodes for the knowledge graph (concept, confidence, bloom_level)</li>
-<li><strong><code>first_topic</code></strong> — The first topic to assess in the main loop</li>
+<li><strong><code>knowledge_graph</code></strong> — Seed knowledge graph with initial concept nodes (concept, confidence, bloom_level)</li>
+<li><strong><code>current_topic</code></strong> — The first topic to assess in the main loop</li>
+<li><strong><code>current_bloom_level</code></strong> — The starting Bloom level for the main assessment loop, determined by the calibrated level (see Level → Starting Bloom Mapping below)</li>
 </ul>
 <p>Each calibration node uses LangGraph's <code>interrupt()</code> to pause execution and wait for the user's answer. When the user responds via the API, the graph resumes from the checkpoint.</p>
 <h3 id="level-starting-bloom-mapping">Level → Starting Bloom Mapping<a class="headerlink" href="#level-starting-bloom-mapping" title="Permanent link">&para;</a></h3>

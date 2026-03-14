@@ -1324,10 +1324,15 @@ make<span class="w"> </span>check
 <h2 id="test-structure">Test Structure<a class="headerlink" href="#test-structure" title="Permanent link">&para;</a></h2>
 <p>Tests live in <code>backend/tests/</code> and use pytest with pytest-asyncio for async test support.</p>
 <div class="highlight"><pre><span></span><code>backend/tests/
-├── conftest.py          # Shared fixtures
-├── test_router.py       # Router logic tests
-├── test_knowledge.py    # Knowledge mapper tests
-└── ...
+├── conftest.py            # Shared fixtures
+├── test_agents.py         # LLM agent tests
+├── test_db.py             # Database tests
+├── test_health.py         # Health endpoint tests
+├── test_knowledge_base.py # Knowledge base loader and mapper tests
+├── test_pipeline.py       # LangGraph pipeline tests
+├── test_roles.py          # Roles endpoint and YAML validation tests
+├── test_router.py         # Router logic tests
+└── test_state.py          # Assessment state tests
 </code></pre></div>
 <h2 id="fixtures">Fixtures<a class="headerlink" href="#fixtures" title="Permanent link">&para;</a></h2>
 <p>Shared fixtures are defined in <code>backend/tests/conftest.py</code>:</p>
@@ -1412,7 +1417,8 @@ make<span class="w"> </span>test-frontend
 │   ├── gap-analysis/
 │   │   └── RadarChart.test.tsx
 │   └── onboarding/
-│       └── SkillBrowser.test.tsx
+│       ├── SkillBrowser.test.tsx
+│       └── role-selector.test.tsx
 ├── hooks/
 │   └── useAssessmentChat.test.ts
 └── lib/

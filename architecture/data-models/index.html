@@ -641,6 +641,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#knowledge-base-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge Base Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#health" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1206,6 +1228,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#knowledge-base-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge Base Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#health" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1499,6 +1543,57 @@
     <span class="n">skills</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
+<h3 id="roles">Roles<a class="headerlink" href="#roles" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RoleLevelSummary</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">concept_count</span><span class="p">:</span> <span class="nb">int</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RoleSummary</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">skill_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">levels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RoleDetail</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">mapped_skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">levels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">RoleLevelSummary</span><span class="p">]</span>
+</code></pre></div>
+<p><strong>Source</strong>: <code>backend/app/models/roles.py</code></p>
+<h3 id="knowledge-base-schema">Knowledge Base Schema<a class="headerlink" href="#knowledge-base-schema" title="Permanent link">&para;</a></h3>
+<p>These models validate YAML knowledge base files on load. They use <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal, not API-facing.</p>
+<div class="highlight"><pre><span></span><code><span class="n">LEVEL_ORDER</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;junior&quot;</span><span class="p">,</span> <span class="s2">&quot;mid&quot;</span><span class="p">,</span> <span class="s2">&quot;senior&quot;</span><span class="p">,</span> <span class="s2">&quot;staff&quot;</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ConceptSchema</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">target_confidence</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">bloom_target</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LevelSchema</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConceptSchema</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeBaseSchema</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">mapped_skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">levels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LevelSchema</span><span class="p">]</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;levels&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">must_have_all_levels</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validates that all four levels (junior, mid, senior, staff) are present.&quot;&quot;&quot;</span>
+        <span class="n">required</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">LEVEL_ORDER</span><span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="n">required</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing levels: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span>
+</code></pre></div>
+<p><strong>Source</strong>: <code>backend/app/knowledge_base/schema.py</code></p>
 <h3 id="health">Health<a class="headerlink" href="#health" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HealthResponse</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>  <span class="c1"># Note: extends BaseModel, not CamelModel</span>
     <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>
@@ -1602,12 +1697,12 @@
     <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>       <span class="c1"># 0.0-1.0</span>
     <span class="n">bloom_level</span><span class="p">:</span> <span class="n">BloomLevel</span>
-    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeGraph</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KnowledgeNode</span><span class="p">]</span>
-    <span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>  <span class="c1"># (prerequisite, dependent)</span>
+    <span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KnowledgeNode</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (prerequisite, dependent)</span>
 </code></pre></div>
 <h3 id="graph-operations">Graph Operations<a class="headerlink" href="#graph-operations" title="Permanent link">&para;</a></h3>
 <table>
