@@ -179,6 +179,7 @@ Each knowledge base maps to skills from the taxonomy and defines what concepts a
 
 ```yaml
 domain: your_domain_name
+display_name: "Some Name"
 mapped_skill_ids:
   - skill-id-1
   - skill-id-2
