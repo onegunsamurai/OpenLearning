@@ -40,7 +40,7 @@ async def gap_analysis(request: GapAnalysisRequest) -> GapAnalysis:
 
         parsed = parse_json_response(text)
 
-        if not isinstance(parsed.get("overallReadiness"), (int, float)) or not isinstance(
+        if not isinstance(parsed.get("overallReadiness"), int | float) or not isinstance(
             parsed.get("gaps"), list
         ):
             raise ValueError("Invalid response format")

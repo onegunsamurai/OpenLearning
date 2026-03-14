@@ -82,7 +82,17 @@ Start a new assessment session. Returns the first calibration question.
 }
 ```
 
-**Response** (SSE stream): The first calibration question as a JSON event.
+**Response**: `AssessmentStartResponse`
+
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "question": "Can you explain what HTTP status codes are and give some examples?",
+  "questionType": "calibration",
+  "step": 1,
+  "totalSteps": 3
+}
+```
 
 ---
 
@@ -112,7 +122,7 @@ Submit an answer and receive the next question (or completion).
 
 Get the current knowledge graph for an assessment session.
 
-**Response**: Knowledge graph with nodes and edges.
+**Response**: `KnowledgeGraphOut`
 
 ```json
 {
@@ -121,11 +131,9 @@ Get the current knowledge graph for an assessment session.
       "concept": "http_fundamentals",
       "confidence": 0.85,
       "bloomLevel": "apply",
-      "prerequisites": [],
-      "evidence": ["Demonstrated understanding of HTTP methods", "..."]
+      "prerequisites": []
     }
-  ],
-  "edges": [["http_fundamentals", "rest_api_basics"]]
+  ]
 }
 ```
 
@@ -243,7 +251,7 @@ sequenceDiagram
     Client->>API: POST /assessment/start
     API->>LangGraph: Initialize pipeline
     LangGraph-->>API: Calibration Q1 (interrupt)
-    API-->>Client: SSE: calibration question
+    API-->>Client: JSON: AssessmentStartResponse
 
     Client->>API: POST /assessment/{id}/respond
     API->>LangGraph: Resume with answer
@@ -270,7 +278,7 @@ sequenceDiagram
 
 ## SSE Streaming
 
-The `/assessment/start` and `/assessment/{id}/respond` endpoints use Server-Sent Events (SSE) for streaming responses. The frontend receives events as they're generated, enabling real-time display of questions and progress updates.
+The `/assessment/{id}/respond` endpoint uses Server-Sent Events (SSE) for streaming responses. The frontend receives events as they're generated, enabling real-time display of questions and progress updates. Note that `/assessment/start` returns a regular JSON response, not SSE.
 
 ## Swagger Documentation
 

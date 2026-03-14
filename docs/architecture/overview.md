@@ -132,7 +132,10 @@ OpenLearning/
 │   ├── package.json
 │   └── eslint.config.mjs
 ├── scripts/
-│   └── generate-api.sh          # OpenAPI → TypeScript type generation
+│   ├── export-openapi.py        # Export OpenAPI spec from FastAPI app
+│   ├── generate-api.sh          # OpenAPI → TypeScript type generation
+│   ├── forbid-env-files.sh      # Pre-commit hook: block .env file commits
+│   └── lint-frontend-staged.sh  # Pre-commit hook: lint staged frontend files
 ├── docs/                        # Documentation site (MkDocs)
 ├── docker-compose.yml           # Production-like Docker Compose config
 ├── docker-compose.dev.yml       # Development Docker Compose overrides (hot-reload)

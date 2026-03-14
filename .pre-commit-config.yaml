@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ["--unsafe"]
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.4
+    hooks:
+      - id: ruff-format
+        files: ^backend/
+      - id: ruff
+        args: ["--fix"]
+        files: ^backend/
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: scripts/lint-frontend-staged.sh
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx|mjs)$
+        pass_filenames: true
+
+      - id: forbid-env-files
+        name: forbid .env files
+        entry: scripts/forbid-env-files.sh
+        language: system
+        always_run: true
+        pass_filenames: false

@@ -55,12 +55,64 @@ make docker-up     # Production-like mode
 # All checks (lint + typecheck + test)
 make check
 
-# Backend tests only
+# All tests (backend + frontend)
 make test
+
+# Backend tests only
+make test-backend
+
+# Frontend tests only
+make test-frontend
 
 # Format code
 make fmt
 ```
+
+## Pre-Commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com) to catch lint, format, and security issues before they reach CI.
+
+### Setup
+
+Pre-commit hooks are installed automatically when you run `make install`. To install them separately:
+
+```bash
+make install-hooks
+```
+
+### What the hooks check
+
+| Hook | What it does |
+|------|-------------|
+| `trailing-whitespace` | Removes trailing whitespace |
+| `end-of-file-fixer` | Ensures files end with a newline |
+| `check-yaml` | Validates YAML syntax |
+| `check-merge-conflict` | Catches unresolved merge conflict markers |
+| `check-added-large-files` | Blocks files larger than 500KB |
+| `detect-private-key` | Catches accidentally committed private keys |
+| `ruff-format` | Auto-formats Python code in `backend/` |
+| `ruff` | Lints Python code with auto-fix in `backend/` |
+| `eslint` | Lints TypeScript/JavaScript in `frontend/` |
+| `forbid-env-files` | Blocks `.env` files (except `.env.example`) |
+
+### When a hook fails
+
+- **Auto-fix hooks** (ruff-format, ruff, trailing-whitespace, end-of-file-fixer) will modify your files automatically. Review the changes, `git add` them, and commit again.
+- **Blocking hooks** (eslint, forbid-env-files, detect-private-key) require you to fix the issue manually before committing.
+
+### Running manually
+
+```bash
+# Run all hooks on all files
+make pre-commit
+
+# Run on specific files
+pre-commit run --files path/to/file.py
+```
+
+### Bypassing hooks
+
+In rare cases, you can skip hooks with `git commit --no-verify`. This is **not recommended** — CI will still catch the issues.
 
 ## Code Style
 

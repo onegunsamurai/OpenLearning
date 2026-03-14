@@ -3,7 +3,7 @@
 ## Running Tests
 
 ```bash
-# Run all backend tests
+# Run all tests (backend + frontend)
 make test
 
 # Run with verbose output
@@ -77,6 +77,68 @@ def test_knowledge_graph_update(initial_state, sample_evaluation):
     state["latest_evaluation"] = sample_evaluation
     # ... assertions
 ```
+
+## Frontend (TypeScript)
+
+### Setup
+
+Frontend tests use **Vitest** with jsdom environment and React Testing Library. Configuration is in `frontend/vitest.config.ts`.
+
+```bash
+# Run frontend tests (single run)
+cd frontend && npm test
+
+# Run in watch mode
+cd frontend && npx vitest
+
+# Or via Makefile
+make test-frontend
+```
+
+### Test File Conventions
+
+Test files are co-located next to their source files with a `.test.ts` or `.test.tsx` extension:
+
+```
+frontend/src/
+├── components/
+│   ├── assessment/
+│   │   └── ChatMessage.test.tsx
+│   ├── gap-analysis/
+│   │   └── RadarChart.test.tsx
+│   └── onboarding/
+│       └── SkillBrowser.test.tsx
+├── hooks/
+│   └── useAssessmentChat.test.ts
+└── lib/
+    ├── api.test.ts
+    └── store.test.ts
+```
+
+### Configuration
+
+- **Environment:** jsdom
+- **Globals:** Enabled — no need to import `describe`, `it`, `expect`
+- **Path alias:** `@/` maps to `./src/*` (same as Next.js config)
+- **Setup file:** `frontend/vitest.setup.ts`
+
+### Writing Frontend Tests
+
+```typescript
+import { render, screen } from "@testing-library/react";
+import { ChatMessage } from "./ChatMessage";
+
+describe("ChatMessage", () => {
+  it("renders user message", () => {
+    render(<ChatMessage role="user" content="Hello" />);
+    expect(screen.getByText("Hello")).toBeInTheDocument();
+  });
+});
+```
+
+- Use `vi.mock()` for module mocking (must appear before imports of the mocked module)
+- Query components by role/text, not test IDs
+- Clean up `sessionStorage` and Zustand store state between tests
 
 ## CI Pipeline
 

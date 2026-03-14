@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
+.PHONY: dev dev-backend dev-frontend install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -9,13 +9,20 @@ dev-backend:
 dev-frontend:
 	cd frontend && npm run dev
 
-install: install-backend install-frontend
+install: install-backend install-frontend install-hooks
 
 install-backend:
 	cd backend && pip install -r requirements.txt
 
 install-frontend:
 	cd frontend && npm install
+
+install-hooks:
+	pip install pre-commit
+	pre-commit install
+
+pre-commit:
+	pre-commit run --all-files
 
 generate-api:
 	bash scripts/generate-api.sh
