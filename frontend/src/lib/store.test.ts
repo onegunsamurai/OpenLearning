@@ -13,6 +13,8 @@ describe("useAppStore", () => {
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
+      expect(state.selectedRoleId).toBeNull();
+      expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
@@ -60,6 +62,28 @@ describe("useAppStore", () => {
       useAppStore.getState().toggleSkill("b");
       useAppStore.getState().toggleSkill("a");
       expect(useAppStore.getState().selectedSkillIds).toEqual(["b"]);
+    });
+  });
+
+  describe("setSelectedRoleId", () => {
+    it("updates selected role ID", () => {
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      expect(useAppStore.getState().selectedRoleId).toBe(
+        "backend_engineering"
+      );
+    });
+
+    it("clears selected role ID", () => {
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      useAppStore.getState().setSelectedRoleId(null);
+      expect(useAppStore.getState().selectedRoleId).toBeNull();
+    });
+  });
+
+  describe("setTargetLevel", () => {
+    it("updates target level", () => {
+      useAppStore.getState().setTargetLevel("senior");
+      expect(useAppStore.getState().targetLevel).toBe("senior");
     });
   });
 
@@ -117,6 +141,8 @@ describe("useAppStore", () => {
       useAppStore.getState().setCurrentStep(5);
       useAppStore.getState().setJobDescription("JD");
       useAppStore.getState().setSelectedSkillIds(["x"]);
+      useAppStore.getState().setSelectedRoleId("backend_engineering");
+      useAppStore.getState().setTargetLevel("senior");
       useAppStore.getState().setAssessmentSessionId("sess-1");
       useAppStore.getState().setProficiencyScores([
         {
@@ -139,6 +165,8 @@ describe("useAppStore", () => {
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
       expect(state.jobDescription).toBe("");
+      expect(state.selectedRoleId).toBeNull();
+      expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();

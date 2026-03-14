@@ -5,6 +5,7 @@ import pytest
 from app.agents.gap_analyzer import _topological_sort, analyze_gaps
 from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
 from app.knowledge_base.loader import (
+    clear_cache,
     get_all_topics,
     get_target_graph,
     get_topics_for_level,
@@ -13,15 +14,21 @@ from app.knowledge_base.loader import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _clear_kb_cache():
+    clear_cache()
+    yield
+    clear_cache()
+
+
 class TestLoadKnowledgeBase:
     def test_loads_backend_engineering(self):
         kb = load_knowledge_base("backend_engineering")
-        assert kb["domain"] == "backend_engineering"
-        assert "levels" in kb
-        assert "junior" in kb["levels"]
-        assert "mid" in kb["levels"]
-        assert "senior" in kb["levels"]
-        assert "staff" in kb["levels"]
+        assert kb.domain == "backend_engineering"
+        assert "junior" in kb.levels
+        assert "mid" in kb.levels
+        assert "senior" in kb.levels
+        assert "staff" in kb.levels
 
     def test_raises_for_unknown_domain(self):
         with pytest.raises(FileNotFoundError):
@@ -29,8 +36,8 @@ class TestLoadKnowledgeBase:
 
     def test_has_mapped_skill_ids(self):
         kb = load_knowledge_base("backend_engineering")
-        assert "nodejs" in kb["mapped_skill_ids"]
-        assert "rest-api" in kb["mapped_skill_ids"]
+        assert "nodejs" in kb.mapped_skill_ids
+        assert "rest-api" in kb.mapped_skill_ids
 
 
 class TestGetTargetGraph:
@@ -84,6 +91,14 @@ class TestMapSkillsToDomain:
     def test_maps_backend_skills(self):
         domain = map_skills_to_domain(["nodejs", "rest-api", "sql"])
         assert domain == "backend_engineering"
+
+    def test_maps_frontend_skills(self):
+        domain = map_skills_to_domain(["react", "nextjs", "css", "html-accessibility"])
+        assert domain == "frontend_engineering"
+
+    def test_maps_devops_skills(self):
+        domain = map_skills_to_domain(["docker", "kubernetes", "cicd", "aws", "monitoring"])
+        assert domain == "devops_engineering"
 
     def test_fallback_for_unknown_skills(self):
         domain = map_skills_to_domain(["totally-unknown-skill"])

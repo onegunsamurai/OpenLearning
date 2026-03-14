@@ -5,12 +5,14 @@ from pathlib import Path
 import yaml
 
 from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
+from app.knowledge_base.schema import LEVEL_ORDER, KnowledgeBaseSchema
 
 _KB_DIR = Path(__file__).parent
-_cache: dict[str, dict] = {}
+_cache: dict[str, KnowledgeBaseSchema] = {}
+_domain_list_cache: list[str] | None = None
 
 
-def load_knowledge_base(domain: str) -> dict:
+def load_knowledge_base(domain: str) -> KnowledgeBaseSchema:
     if domain in _cache:
         return _cache[domain]
     path = _KB_DIR / f"{domain}.yaml"
@@ -18,40 +20,58 @@ def load_knowledge_base(domain: str) -> dict:
         raise FileNotFoundError(f"Knowledge base not found: {domain}")
     with open(path) as f:
         data = yaml.safe_load(f)
-    _cache[domain] = data
-    return data
+    kb = KnowledgeBaseSchema(**data)
+    _cache[domain] = kb
+    return kb
+
+
+def list_domains() -> list[str]:
+    """Return sorted list of all available knowledge base domain names."""
+    global _domain_list_cache
+    if _domain_list_cache is not None:
+        return _domain_list_cache
+    domains = sorted(p.stem for p in _KB_DIR.glob("*.yaml"))
+    _domain_list_cache = domains
+    return domains
+
+
+def clear_cache() -> None:
+    """Clear all caches. Useful for tests."""
+    global _domain_list_cache
+    _cache.clear()
+    _domain_list_cache = None
 
 
 def get_target_graph(domain: str, level: str) -> KnowledgeGraph:
     """Build a KnowledgeGraph containing all concepts up to and including the target level."""
     kb = load_knowledge_base(domain)
-    level_order = ["junior", "mid", "senior", "staff"]
-    if level not in level_order:
-        raise ValueError(f"Unknown level: {level}. Must be one of {level_order}")
+    if level not in LEVEL_ORDER:
+        raise ValueError(f"Unknown level: {level}. Must be one of {LEVEL_ORDER}")
 
-    target_idx = level_order.index(level)
+    target_idx = LEVEL_ORDER.index(level)
     nodes: list[KnowledgeNode] = []
     edges: list[tuple[str, str]] = []
     seen_concepts: set[str] = set()
 
-    for lvl in level_order[: target_idx + 1]:
-        level_data = kb.get("levels", {}).get(lvl, {})
-        for concept_data in level_data.get("concepts", []):
-            concept = concept_data["concept"]
-            if concept in seen_concepts:
+    for lvl in LEVEL_ORDER[: target_idx + 1]:
+        level_data = kb.levels.get(lvl)
+        if not level_data:
+            continue
+        for concept_data in level_data.concepts:
+            if concept_data.concept in seen_concepts:
                 continue
-            seen_concepts.add(concept)
+            seen_concepts.add(concept_data.concept)
             nodes.append(
                 KnowledgeNode(
-                    concept=concept,
-                    confidence=concept_data["target_confidence"],
-                    bloom_level=BloomLevel(concept_data["bloom_target"]),
-                    prerequisites=concept_data.get("prerequisites", []),
+                    concept=concept_data.concept,
+                    confidence=concept_data.target_confidence,
+                    bloom_level=BloomLevel(concept_data.bloom_target),
+                    prerequisites=concept_data.prerequisites,
                     evidence=[],
                 )
             )
-            for prereq in concept_data.get("prerequisites", []):
-                edges.append((prereq, concept))
+            for prereq in concept_data.prerequisites:
+                edges.append((prereq, concept_data.concept))
 
     return KnowledgeGraph(nodes=nodes, edges=edges)
 
@@ -59,8 +79,10 @@ def get_target_graph(domain: str, level: str) -> KnowledgeGraph:
 def get_topics_for_level(domain: str, level: str) -> list[str]:
     """Get the topic names for a specific level."""
     kb = load_knowledge_base(domain)
-    level_data = kb.get("levels", {}).get(level, {})
-    return [c["concept"] for c in level_data.get("concepts", [])]
+    level_data = kb.levels.get(level)
+    if not level_data:
+        return []
+    return [c.concept for c in level_data.concepts]
 
 
 def get_all_topics(domain: str, up_to_level: str) -> list[str]:
@@ -78,13 +100,12 @@ def map_skills_to_domain(skill_ids: list[str]) -> str:
     best_domain = "backend_engineering"
     best_count = 0
 
-    for yaml_file in _KB_DIR.glob("*.yaml"):
-        domain = yaml_file.stem
+    for domain in list_domains():
         try:
             kb = load_knowledge_base(domain)
         except Exception:
             continue
-        mapped = set(kb.get("mapped_skill_ids", []))
+        mapped = set(kb.mapped_skill_ids)
         overlap = len(mapped & set(skill_ids))
         if overlap > best_count:
             best_count = overlap

@@ -13,6 +13,10 @@ interface AppState {
   setSelectedSkillIds: (ids: string[]) => void;
   jobDescription: string;
   setJobDescription: (jd: string) => void;
+  selectedRoleId: string | null;
+  setSelectedRoleId: (roleId: string | null) => void;
+  targetLevel: string;
+  setTargetLevel: (level: string) => void;
 
   // Assessment
   assessmentSessionId: string | null;
@@ -36,6 +40,8 @@ const initialState = {
   currentStep: 0,
   selectedSkillIds: [],
   jobDescription: "",
+  selectedRoleId: null as string | null,
+  targetLevel: "mid",
   assessmentSessionId: null as string | null,
   proficiencyScores: [],
   gapAnalysis: null,
@@ -58,6 +64,8 @@ export const useAppStore = create<AppState>()(
 
       setSelectedSkillIds: (ids) => set({ selectedSkillIds: ids }),
       setJobDescription: (jd) => set({ jobDescription: jd }),
+      setSelectedRoleId: (roleId) => set({ selectedRoleId: roleId }),
+      setTargetLevel: (level) => set({ targetLevel: level }),
 
       setAssessmentSessionId: (id) => set({ assessmentSessionId: id }),
       setProficiencyScores: (scores) => set({ proficiencyScores: scores }),

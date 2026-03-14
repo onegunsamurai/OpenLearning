@@ -1,0 +1,239 @@
+domain: frontend_engineering
+display_name: "Frontend Engineer"
+description: Frontend engineering concepts from junior to staff level
+
+# Skills from taxonomy that map to this domain
+mapped_skill_ids:
+  - javascript
+  - typescript
+  - react
+  - nextjs
+  - css
+  - html-accessibility
+  - state-management
+  - testing
+  - design-patterns
+  - git
+  - nodejs
+  - rest-api
+
+levels:
+  junior:
+    concepts:
+      - concept: html_css_fundamentals
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: []
+      - concept: dom_manipulation
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [html_css_fundamentals]
+      - concept: component_basics
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [html_css_fundamentals]
+      - concept: javascript_essentials
+        target_confidence: 0.8
+        bloom_target: apply
+        prerequisites: []
+      - concept: event_handling
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [javascript_essentials, dom_manipulation]
+      - concept: css_layout
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [html_css_fundamentals]
+      - concept: responsive_design
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [css_layout]
+      - concept: version_control
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: []
+      - concept: basic_debugging
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [javascript_essentials]
+      - concept: package_management
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: []
+      - concept: api_consumption
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [javascript_essentials]
+      - concept: basic_accessibility
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [html_css_fundamentals]
+      - concept: form_handling
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [event_handling, component_basics]
+
+  mid:
+    concepts:
+      - concept: typescript_fundamentals
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [javascript_essentials]
+      - concept: react_hooks
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [component_basics, javascript_essentials]
+      - concept: state_management
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [react_hooks]
+      - concept: routing_navigation
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [component_basics]
+      - concept: css_architecture
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [css_layout, responsive_design]
+      - concept: component_testing
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [component_basics, react_hooks]
+      - concept: async_data_fetching
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [api_consumption, react_hooks]
+      - concept: error_boundaries
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [component_basics]
+      - concept: build_tooling
+        target_confidence: 0.6
+        bloom_target: understand
+        prerequisites: [package_management]
+      - concept: animation_transitions
+        target_confidence: 0.5
+        bloom_target: apply
+        prerequisites: [css_layout, javascript_essentials]
+      - concept: web_accessibility_wcag
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [basic_accessibility, component_basics]
+      - concept: code_splitting
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [routing_navigation, build_tooling]
+      - concept: design_system_usage
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [component_basics, css_architecture]
+
+  senior:
+    concepts:
+      - concept: advanced_typescript
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [typescript_fundamentals]
+      - concept: performance_optimization
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [react_hooks, code_splitting]
+      - concept: ssr_ssg
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [routing_navigation, async_data_fetching]
+      - concept: advanced_state_patterns
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [state_management]
+      - concept: testing_strategies
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [component_testing]
+      - concept: design_system_creation
+        target_confidence: 0.6
+        bloom_target: create
+        prerequisites: [design_system_usage, css_architecture]
+      - concept: ci_cd_frontend
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [build_tooling, component_testing]
+      - concept: security_frontend
+        target_confidence: 0.7
+        bloom_target: analyze
+        prerequisites: [api_consumption, form_handling]
+      - concept: observability_frontend
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [error_boundaries, async_data_fetching]
+      - concept: api_layer_architecture
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [async_data_fetching, advanced_typescript]
+      - concept: micro_frontends
+        target_confidence: 0.5
+        bloom_target: understand
+        prerequisites: [build_tooling, routing_navigation]
+      - concept: accessibility_architecture
+        target_confidence: 0.6
+        bloom_target: apply
+        prerequisites: [web_accessibility_wcag, design_system_creation]
+      - concept: internationalization
+        target_confidence: 0.5
+        bloom_target: apply
+        prerequisites: [component_basics, routing_navigation]
+
+  staff:
+    concepts:
+      - concept: frontend_architecture
+        target_confidence: 0.8
+        bloom_target: create
+        prerequisites: [ssr_ssg, advanced_state_patterns, performance_optimization]
+      - concept: platform_dx
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [build_tooling, ci_cd_frontend, design_system_creation]
+      - concept: technical_strategy
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [frontend_architecture]
+      - concept: cross_team_standards
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [frontend_architecture, design_system_creation]
+      - concept: performance_culture
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [performance_optimization, observability_frontend]
+      - concept: migration_strategies
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [frontend_architecture, micro_frontends]
+      - concept: web_platform_evolution
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [frontend_architecture]
+      - concept: reliability_engineering
+        target_confidence: 0.7
+        bloom_target: evaluate
+        prerequisites: [observability_frontend, testing_strategies]
+      - concept: mentorship_patterns
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: []
+      - concept: vendor_evaluation
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [technical_strategy]
+      - concept: cost_optimization
+        target_confidence: 0.6
+        bloom_target: evaluate
+        prerequisites: [performance_optimization, platform_dx]
+      - concept: accessibility_strategy
+        target_confidence: 0.6
+        bloom_target: create
+        prerequisites: [accessibility_architecture, cross_team_standards]
+      - concept: technical_documentation
+        target_confidence: 0.7
+        bloom_target: create
+        prerequisites: [frontend_architecture]

@@ -21,6 +21,8 @@ export default function AssessPage() {
     setProficiencyScores,
     setCurrentStep,
     setAssessmentSessionId,
+    targetLevel,
+    selectedRoleId,
   } = useAppStore();
 
   const [assessmentDone, setAssessmentDone] = useState(false);
@@ -40,6 +42,8 @@ export default function AssessPage() {
   const { messages, sendMessage, status, error, initialiseChat, sessionId, progress } =
     useAssessmentChat({
       skillIds: selectedSkillIds,
+      targetLevel,
+      roleId: selectedRoleId,
       onAssessmentComplete,
     });
 

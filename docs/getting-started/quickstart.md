@@ -4,14 +4,16 @@ This walkthrough guides you through a complete assessment cycle — from skill s
 
 ## Step 1: Select Skills
 
-On the onboarding page, you have two options:
+On the onboarding page, you have three options:
 
-**Option A — Paste a job description**: The AI extracts relevant skills automatically using the `/api/parse-jd` endpoint. It matches skills against the built-in taxonomy and returns a curated list.
+**Option A — Select a role** (recommended): Choose a predefined role (e.g., Backend Engineer, Frontend Engineer, DevOps / Platform Engineer). This automatically selects the relevant skills and maps to the correct knowledge base domain.
 
-**Option B — Browse and select**: Browse the skills taxonomy by category and select the skills you want to be assessed on.
+**Option B — Paste a job description**: The AI extracts relevant skills automatically using the `/api/parse-jd` endpoint. It matches skills against the built-in taxonomy and returns a curated list.
+
+**Option C — Browse and select**: Browse the skills taxonomy by category and select the skills you want to be assessed on.
 
 !!! info
-    Skills map to knowledge base domains. Currently, backend engineering skills are fully supported with a comprehensive concept hierarchy.
+    Skills map to knowledge base domains. Three domains are fully supported with comprehensive concept hierarchies: Backend Engineering, Frontend Engineering, and DevOps / Platform Engineering.
 
 ## Step 2: Calibration
 

@@ -20,6 +20,7 @@ router = APIRouter()
 class AssessmentStartRequest(CamelModel):
     skill_ids: list[str]
     target_level: str = "mid"
+    role_id: str | None = None
 
 
 class AssessmentStartResponse(CamelModel):
@@ -108,8 +109,8 @@ async def assessment_start(
     if not request.skill_ids:
         raise HTTPException(status_code=400, detail="At least one skill is required")
 
-    # Map skills to domain
-    domain = map_skills_to_domain(request.skill_ids)
+    # Map skills to domain (skip mapping if role_id provided)
+    domain = request.role_id if request.role_id else map_skills_to_domain(request.skill_ids)
 
     # Build target graph
     target_graph = get_target_graph(domain, request.target_level)

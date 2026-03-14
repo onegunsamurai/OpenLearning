@@ -4,6 +4,8 @@ import {
   parseJdApiParseJdPost,
   gapAnalysisApiGapAnalysisPost,
   learningPlanApiLearningPlanPost,
+  getRolesApiRolesGet,
+  getRoleApiRolesRoleIdGet,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -11,6 +13,8 @@ import type {
   GapAnalysis,
   LearningPlan,
   ProficiencyScore,
+  RoleSummary,
+  RoleDetail,
 } from "@/lib/generated/api-client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -64,6 +68,12 @@ export interface AssessmentReportResponse {
 }
 
 export const api = {
+  getRoles: async (): Promise<RoleSummary[]> =>
+    unwrap(await getRolesApiRolesGet()),
+
+  getRole: async (roleId: string): Promise<RoleDetail> =>
+    unwrap(await getRoleApiRolesRoleIdGet({ path: { role_id: roleId } })),
+
   getSkills: async (): Promise<SkillsResponse> =>
     unwrap(await getSkillsApiSkillsGet()),
 
@@ -90,12 +100,13 @@ export const api = {
 
   assessmentStart: async (
     skillIds: string[],
-    targetLevel?: string
+    targetLevel?: string,
+    roleId?: string | null
   ): Promise<AssessmentStartResponse> => {
     const res = await fetch(`${API_URL}/api/assessment/start`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ skillIds, targetLevel }),
+      body: JSON.stringify({ skillIds, targetLevel, roleId: roleId ?? undefined }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Request failed" }));
