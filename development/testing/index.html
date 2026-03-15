@@ -996,6 +996,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#docs-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docs-build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docker-build
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1271,6 +1293,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#docs-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docs-build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docker-build
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1451,7 +1495,7 @@ make<span class="w"> </span>test-frontend
 <h2 id="ci-pipeline">CI Pipeline<a class="headerlink" href="#ci-pipeline" title="Permanent link">&para;</a></h2>
 <p>Tests run automatically on every push and PR via GitHub Actions.</p>
 <p><strong>Workflow</strong>: <code>.github/workflows/ci.yml</code></p>
-<p>The CI pipeline runs three jobs:</p>
+<p>The CI pipeline runs five jobs:</p>
 <h3 id="backend-checks"><code>backend-checks</code><a class="headerlink" href="#backend-checks" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Python 3.11</li>
@@ -1463,12 +1507,23 @@ make<span class="w"> </span>test-frontend
 <li>Node.js 20</li>
 <li><code>npx eslint .</code> (lint)</li>
 <li><code>npx tsc --noEmit</code> (type check)</li>
+<li><code>npm test</code> (tests)</li>
 <li><code>npm run build</code> (build verification)</li>
 </ul>
 <h3 id="security"><code>security</code><a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Gitleaks scanning for secrets</li>
 <li>Verification that no <code>.env</code> files (except <code>.env.example</code>) are committed</li>
+</ul>
+<h3 id="docs-build"><code>docs-build</code><a class="headerlink" href="#docs-build" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Runs only when <code>docs/**</code> or <code>mkdocs.yml</code> change</li>
+<li><code>mkdocs build --strict</code> (validates docs build)</li>
+</ul>
+<h3 id="docker-build"><code>docker-build</code><a class="headerlink" href="#docker-build" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Runs only when <code>Dockerfile</code>, <code>docker-compose*.yml</code>, or <code>.dockerignore</code> change</li>
+<li><code>docker compose build</code> (validates Docker images build)</li>
 </ul>
 <h2 id="test-conventions">Test Conventions<a class="headerlink" href="#test-conventions" title="Permanent link">&para;</a></h2>
 <ul>
