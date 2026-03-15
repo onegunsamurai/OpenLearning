@@ -9,6 +9,7 @@ import pytest
 from app.agents.knowledge_mapper import update_knowledge_graph
 from app.agents.question_generator import generate_question
 from app.agents.response_evaluator import evaluate_response
+from app.agents.schemas import EvaluationOutput, QuestionOutput
 from app.graph.state import (
     BloomLevel,
     EvaluationResult,
@@ -143,11 +144,12 @@ class TestKnowledgeMapper:
 class TestResponseEvaluator:
     @pytest.mark.asyncio
     async def test_evaluates_response(self):
-        mock_response = AsyncMock()
-        mock_response.content = '{"confidence": 0.75, "bloom_level": "apply", "evidence": ["Good answer"], "reasoning": "Solid"}'
-
-        mock_model = AsyncMock()
-        mock_model.ainvoke = AsyncMock(return_value=mock_response)
+        mock_output = EvaluationOutput(
+            confidence=0.75,
+            bloom_level="apply",
+            evidence=["Good answer"],
+            reasoning="Solid",
+        )
 
         state = make_initial_state("test", ["nodejs"], "backend_engineering")
         state["question_history"] = [
@@ -163,7 +165,10 @@ class TestResponseEvaluator:
             Response(question_id="q-1", text="HTTP is a protocol for web communication.")
         ]
 
-        with patch("app.agents.response_evaluator.get_chat_model", return_value=mock_model):
+        with patch(
+            "app.agents.response_evaluator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
             result = await evaluate_response(state)
 
         ev = result["latest_evaluation"]
@@ -171,24 +176,79 @@ class TestResponseEvaluator:
         assert ev.bloom_level == BloomLevel.apply
         assert "Good answer" in ev.evidence
 
+    @pytest.mark.asyncio
+    async def test_clamps_confidence_to_valid_range(self):
+        mock_output = EvaluationOutput(
+            confidence=1.5,
+            bloom_level="apply",
+            evidence=["Over-confident"],
+            reasoning="Test",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["question_history"] = [
+            Question(
+                id="q-1",
+                topic="http_fundamentals",
+                bloom_level=BloomLevel.apply,
+                text="Q?",
+                question_type="conceptual",
+            )
+        ]
+        state["response_history"] = [Response(question_id="q-1", text="Answer")]
+
+        with patch(
+            "app.agents.response_evaluator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await evaluate_response(state)
+
+        assert result["latest_evaluation"].confidence == 1.0
+
 
 class TestQuestionGenerator:
     @pytest.mark.asyncio
     async def test_generates_question(self):
-        mock_response = AsyncMock()
-        mock_response.content = '{"topic": "http_fundamentals", "bloom_level": "apply", "text": "Design a REST endpoint.", "question_type": "design"}'
-
-        mock_model = AsyncMock()
-        mock_model.ainvoke = AsyncMock(return_value=mock_response)
+        mock_output = QuestionOutput(
+            topic="http_fundamentals",
+            bloom_level="apply",
+            text="Design a REST endpoint.",
+            question_type="design",
+        )
 
         state = make_initial_state("test", ["nodejs"], "backend_engineering")
         state["current_topic"] = "http_fundamentals"
         state["current_bloom_level"] = BloomLevel.apply
 
-        with patch("app.agents.question_generator.get_chat_model", return_value=mock_model):
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
             result = await generate_question(state)
 
         assert result["pending_question"] is not None
         assert result["pending_question"].text == "Design a REST endpoint."
         assert result["pending_question"].question_type == "design"
         assert len(result["question_history"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_increments_question_counter(self):
+        mock_output = QuestionOutput(
+            topic="http_fundamentals",
+            bloom_level="apply",
+            text="Another question.",
+            question_type="scenario",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["current_topic"] = "http_fundamentals"
+        state["current_bloom_level"] = BloomLevel.apply
+        state["questions_on_current_topic"] = 2
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await generate_question(state)
+
+        assert result["questions_on_current_topic"] == 3

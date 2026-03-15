@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import os
 import warnings
 from contextlib import asynccontextmanager
@@ -12,6 +14,7 @@ from app.config import get_settings
 from app.db import init_db
 from app.graph.pipeline import compile_graph
 from app.routes import assessment, gap_analysis, health, learning_plan, parse_jd, roles, skills
+from app.services.session_cleanup import cleanup_stale_sessions
 
 settings = get_settings()
 
@@ -20,9 +23,13 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     await init_db()
     os.makedirs("data", exist_ok=True)
+    cleanup_task = asyncio.create_task(cleanup_stale_sessions())
     async with AsyncSqliteSaver.from_conn_string("./data/checkpoints.db") as checkpointer:
         app.state.graph = compile_graph(checkpointer)
         yield
+    cleanup_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await cleanup_task
 
 
 app = FastAPI(

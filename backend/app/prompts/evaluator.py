@@ -15,17 +15,5 @@ Evaluate the response on:
 4. **Bloom level demonstrated**: What cognitive level does the response actually show?
    (remember < understand < apply < analyze < evaluate < create)
 
-Respond with ONLY a JSON object:
-{{
-  "confidence": 0.7,
-  "bloom_level": "apply",
-  "evidence": [
-    "Correctly identified X",
-    "Demonstrated understanding of Y",
-    "Missed consideration of Z"
-  ],
-  "reasoning": "Brief overall assessment"
-}}
-
 confidence: 0.0 = completely wrong, 0.5 = partial understanding, 1.0 = excellent mastery
 bloom_level: the level the candidate ACTUALLY demonstrated (not what was targeted)"""

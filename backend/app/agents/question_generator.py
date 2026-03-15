@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import uuid
 
-from langchain_core.messages import HumanMessage, SystemMessage
-
+from app.agents.schemas import QuestionOutput
 from app.graph.state import AssessmentState, BloomLevel, Question
 from app.prompts.question_gen import QUESTION_GEN_PROMPT
-from app.services.ai import get_chat_model, parse_json_response
+from app.services.ai import ainvoke_structured
 
 
 async def generate_question(state: AssessmentState) -> dict:
@@ -34,28 +33,18 @@ async def generate_question(state: AssessmentState) -> dict:
         previous_questions=prev_questions,
     )
 
-    model = get_chat_model()
-    result = await model.ainvoke(
-        [
-            SystemMessage(
-                content="You are a technical question generator. Respond only with JSON."
-            ),
-            HumanMessage(content=prompt),
-        ]
+    result = await ainvoke_structured(
+        QuestionOutput,
+        prompt,
+        agent_name="question_generator.generate",
     )
-
-    text = result.content
-    if not isinstance(text, str):
-        raise ValueError("Unexpected response format from question generator")
-
-    parsed = parse_json_response(text)
 
     question = Question(
         id=str(uuid.uuid4()),
-        topic=parsed.get("topic", topic),
-        bloom_level=BloomLevel(parsed.get("bloom_level", bloom_level.value)),
-        text=parsed["text"],
-        question_type=parsed.get("question_type", "conceptual"),
+        topic=result.topic or topic,
+        bloom_level=BloomLevel(result.bloom_level or bloom_level.value),
+        text=result.text,
+        question_type=result.question_type or "conceptual",
     )
 
     question_history = list(state.get("question_history", []))

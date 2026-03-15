@@ -1,47 +1,14 @@
 from __future__ import annotations
 
-from langchain_core.messages import HumanMessage, SystemMessage
-
+from app.agents.schemas import PlanOutput
 from app.graph.state import (
     AssessmentState,
     LearningPhase,
     LearningPlan,
     Resource,
 )
-from app.services.ai import get_chat_model, parse_json_response
-
-PLAN_GEN_PROMPT = """You are a learning engineer creating a personalized learning plan.
-
-The candidate was assessed at level "{calibrated_level}" targeting "{target_level}" in backend engineering.
-
-Knowledge gaps (sorted by prerequisite order):
-{gap_summary}
-
-Create a phased learning plan that:
-1. Groups gaps into 3-5 phases, respecting prerequisite order
-2. Each phase should build on the previous
-3. Include specific resources (real documentation, courses, books)
-4. Estimate realistic hours per phase
-5. Mix resource types: video, article, project, exercise
-
-Respond with ONLY a JSON object:
-{{
-  "summary": "2-3 sentence plan overview",
-  "total_hours": 40,
-  "phases": [
-    {{
-      "phase_number": 1,
-      "title": "Phase title",
-      "concepts": ["concept1", "concept2"],
-      "rationale": "Why these concepts are grouped and ordered this way",
-      "resources": [
-        {{"type": "article", "title": "Resource name", "url": "https://..."}},
-        {{"type": "project", "title": "Hands-on exercise", "url": null}}
-      ],
-      "estimated_hours": 10
-    }}
-  ]
-}}"""
+from app.prompts.plan_generator import PLAN_GEN_PROMPT
+from app.services.ai import ainvoke_structured
 
 
 async def generate_plan(state: AssessmentState) -> dict:
@@ -70,46 +37,30 @@ async def generate_plan(state: AssessmentState) -> dict:
         gap_summary=gap_summary,
     )
 
-    model = get_chat_model()
-    result = await model.ainvoke(
-        [
-            SystemMessage(content="You are a learning engineer. Respond only with JSON."),
-            HumanMessage(content=prompt),
-        ]
+    result = await ainvoke_structured(
+        PlanOutput,
+        prompt,
+        agent_name="plan_generator.generate",
     )
 
-    text = result.content
-    if not isinstance(text, str):
-        raise ValueError("Unexpected response from plan generator")
-
-    parsed = parse_json_response(text)
-
     phases = []
-    for p in parsed.get("phases", []):
-        resources = []
-        for r in p.get("resources", []):
-            resources.append(
-                Resource(
-                    type=r.get("type", "article"),
-                    title=r.get("title", ""),
-                    url=r.get("url"),
-                )
-            )
+    for p in result.phases:
+        resources = [Resource(type=r.type, title=r.title, url=r.url) for r in p.resources]
         phases.append(
             LearningPhase(
-                phase_number=p["phase_number"],
-                title=p["title"],
-                concepts=p.get("concepts", []),
-                rationale=p.get("rationale", ""),
+                phase_number=p.phase_number,
+                title=p.title,
+                concepts=p.concepts,
+                rationale=p.rationale,
                 resources=resources,
-                estimated_hours=float(p.get("estimated_hours", 0)),
+                estimated_hours=p.estimated_hours,
             )
         )
 
     plan = LearningPlan(
         phases=phases,
-        total_hours=float(parsed.get("total_hours", sum(p.estimated_hours for p in phases))),
-        summary=parsed.get("summary", ""),
+        total_hours=result.total_hours or sum(p.estimated_hours for p in phases),
+        summary=result.summary,
     )
 
     return {"learning_plan": plan}
