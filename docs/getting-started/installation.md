@@ -22,6 +22,7 @@ This runs:
 
 - `pip install -r backend/requirements.txt` (Python packages)
 - `npm install` in the `frontend/` directory (Node packages)
+- `pip install pre-commit && pre-commit install` (Git pre-commit hooks)
 
 ## Configure Environment
 

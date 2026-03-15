@@ -1,4 +1,4 @@
-import { useAppStore } from "./store";
+import { useAppStore, initialState } from "./store";
 
 // Reset store between tests
 beforeEach(() => {
@@ -20,6 +20,8 @@ describe("useAppStore", () => {
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
+      expect(state.demoMode).toBe(initialState.demoMode);
+      expect(state.demoStep).toBe(0);
     });
   });
 
@@ -187,6 +189,57 @@ describe("useAppStore", () => {
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
+      expect(state.demoMode).toBe(initialState.demoMode);
+      expect(state.demoStep).toBe(0);
+    });
+  });
+
+  describe("demoMode", () => {
+    it("defaults to false", () => {
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
+    });
+
+    it("toggles demo mode on", () => {
+      useAppStore.getState().setDemoMode(true);
+      expect(useAppStore.getState().demoMode).toBe(true);
+    });
+
+    it("toggles demo mode off", () => {
+      useAppStore.getState().setDemoMode(true);
+      useAppStore.getState().setDemoMode(false);
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
+    });
+
+    it("resets demo mode on full reset", () => {
+      useAppStore.getState().setDemoMode(true);
+      useAppStore.getState().reset();
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
+    });
+  });
+
+  describe("demoStep", () => {
+    it("defaults to 0", () => {
+      expect(useAppStore.getState().demoStep).toBe(0);
+    });
+
+    it("advances step", () => {
+      useAppStore.getState().advanceDemoStep();
+      expect(useAppStore.getState().demoStep).toBe(1);
+      useAppStore.getState().advanceDemoStep();
+      expect(useAppStore.getState().demoStep).toBe(2);
+    });
+
+    it("resets step", () => {
+      useAppStore.getState().advanceDemoStep();
+      useAppStore.getState().advanceDemoStep();
+      useAppStore.getState().resetDemoStep();
+      expect(useAppStore.getState().demoStep).toBe(0);
+    });
+
+    it("resets on full reset", () => {
+      useAppStore.getState().advanceDemoStep();
+      useAppStore.getState().reset();
+      expect(useAppStore.getState().demoStep).toBe(0);
     });
   });
 
@@ -198,6 +251,16 @@ describe("useAppStore", () => {
       expect(stored).not.toBeNull();
       const parsed = JSON.parse(stored!);
       expect(parsed.state.currentStep).toBe(2);
+    });
+
+    it("excludes demoMode and demoStep from persistence", () => {
+      useAppStore.getState().setDemoMode(true);
+      useAppStore.getState().advanceDemoStep();
+      const stored = sessionStorage.getItem("open-learning-store");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed.state).not.toHaveProperty("demoMode");
+      expect(parsed.state).not.toHaveProperty("demoStep");
     });
 
     it("rehydrates from sessionStorage", async () => {
@@ -227,6 +290,9 @@ describe("useAppStore", () => {
         "rehydrated",
       ]);
       expect(useAppStore.getState().roleSkillIds).toEqual(["rehydrated"]);
+      // demoMode should remain at default, not rehydrated
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
+      expect(useAppStore.getState().demoStep).toBe(0);
     });
   });
 });

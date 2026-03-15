@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { Skill } from "@/lib/types";
 import { api } from "@/lib/api";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FlaskConical } from "lucide-react";
 import { motion } from "motion/react";
 
 export default function OnboardingPage() {
@@ -26,17 +26,35 @@ export default function OnboardingPage() {
     setRoleSkillIds,
     targetLevel,
     setTargetLevel,
+    demoMode,
+    setDemoMode,
   } = useAppStore();
 
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
 
+  // Bootstrap demo mode from URL param and fetch skills.
+  // Merged into one effect to prevent a race where the skills fetch
+  // hits the real backend before demo mode is activated.
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("demo") === "true") {
+      setDemoMode(true);
+      params.delete("demo");
+      const newUrl = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+      // Return early — setDemoMode will trigger a re-render and this
+      // effect will re-run with demoMode=true, fetching from demo API.
+      return;
+    }
+
     api.getSkills().then((data) => {
       setSkills(data.skills);
       setCategories(data.categories);
     });
-  }, []);
+  }, [setDemoMode, demoMode]);
 
   const handleRoleSelected = useCallback(
     (roleId: string, skillIds: string[]) => {
@@ -178,7 +196,21 @@ export default function OnboardingPage() {
         transition={{ delay: 0.3 }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <button
+              type="button"
+              aria-pressed={demoMode}
+              onClick={() => setDemoMode(!demoMode)}
+              className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-mono transition-colors ${
+                demoMode
+                  ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+              title={demoMode ? "Disable demo mode" : "Enable demo mode (no API key needed)"}
+            >
+              <FlaskConical className="h-3 w-3" />
+              Demo
+            </button>
             {selectedSkillIds.length === 0 ? (
               "Select at least 1 skill to continue"
             ) : (

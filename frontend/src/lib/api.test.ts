@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { useAppStore } from "@/lib/store";
 
 // Mock the generated SDK functions
 vi.mock("@/lib/generated/api-client", () => ({
@@ -33,6 +34,7 @@ afterAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useAppStore.getState().reset();
 });
 
 describe("unwrap", () => {
@@ -239,5 +241,50 @@ describe("SDK-wrapped methods", () => {
     );
 
     await expect(api.parseJD("bad")).rejects.toThrow("Bad input");
+  });
+});
+
+describe("Proxy demo mode delegation", () => {
+  it("uses real API when demo mode is off", async () => {
+    const data = { skills: [], categories: [] };
+    vi.mocked(getSkillsApiSkillsGet).mockResolvedValueOnce(
+      { data, request: {}, response: {} } as never
+    );
+
+    useAppStore.getState().setDemoMode(false);
+    const result = await api.getSkills();
+    expect(result).toEqual(data);
+    expect(getSkillsApiSkillsGet).toHaveBeenCalled();
+  });
+
+  it("delegates to demo API when demo mode is on", async () => {
+    useAppStore.getState().setDemoMode(true);
+    const result = await api.getSkills();
+
+    // Should return demo fixture data, not call the real SDK
+    expect(result.skills.length).toBeGreaterThan(0);
+    expect(result.skills[0].id).toBe("react");
+    expect(getSkillsApiSkillsGet).not.toHaveBeenCalled();
+  });
+
+  it("delegates getRoles to demo API", async () => {
+    useAppStore.getState().setDemoMode(true);
+    const result = await api.getRoles();
+    expect(result[0].id).toBe("frontend_engineering");
+  });
+
+  it("delegates assessmentStart to demo API", async () => {
+    useAppStore.getState().setDemoMode(true);
+    const result = await api.assessmentStart(["react"]);
+    expect(result.sessionId).toBe("demo-session-001");
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("delegates assessmentRespond to demo API with SSE stream", async () => {
+    useAppStore.getState().setDemoMode(true);
+    const response = await api.assessmentRespond("s", "answer");
+    expect(response).toBeInstanceOf(Response);
+    expect(response.headers.get("Content-Type")).toBe("text/event-stream");
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
