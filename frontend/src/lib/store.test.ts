@@ -253,6 +253,16 @@ describe("useAppStore", () => {
       expect(parsed.state.currentStep).toBe(2);
     });
 
+    it("excludes demoMode and demoStep from persistence", () => {
+      useAppStore.getState().setDemoMode(true);
+      useAppStore.getState().advanceDemoStep();
+      const stored = sessionStorage.getItem("open-learning-store");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(parsed.state).not.toHaveProperty("demoMode");
+      expect(parsed.state).not.toHaveProperty("demoStep");
+    });
+
     it("rehydrates from sessionStorage", async () => {
       const payload = {
         state: {
@@ -280,6 +290,9 @@ describe("useAppStore", () => {
         "rehydrated",
       ]);
       expect(useAppStore.getState().roleSkillIds).toEqual(["rehydrated"]);
+      // demoMode should remain at default, not rehydrated
+      expect(useAppStore.getState().demoMode).toBe(false);
+      expect(useAppStore.getState().demoStep).toBe(0);
     });
   });
 });

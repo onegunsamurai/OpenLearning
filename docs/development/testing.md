@@ -152,7 +152,7 @@ Tests run automatically on every push and PR via GitHub Actions.
 
 **Workflow**: `.github/workflows/ci.yml`
 
-The CI pipeline runs three jobs:
+The CI pipeline runs five jobs:
 
 ### `backend-checks`
 - Python 3.11
@@ -163,11 +163,20 @@ The CI pipeline runs three jobs:
 - Node.js 20
 - `npx eslint .` (lint)
 - `npx tsc --noEmit` (type check)
+- `npm test` (tests)
 - `npm run build` (build verification)
 
 ### `security`
 - Gitleaks scanning for secrets
 - Verification that no `.env` files (except `.env.example`) are committed
+
+### `docs-build`
+- Runs only when `docs/**` or `mkdocs.yml` change
+- `mkdocs build --strict` (validates docs build)
+
+### `docker-build`
+- Runs only when `Dockerfile`, `docker-compose*.yml`, or `.dockerignore` change
+- `docker compose build` (validates Docker images build)
 
 ## Test Conventions
 

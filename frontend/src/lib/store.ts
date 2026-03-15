@@ -96,6 +96,11 @@ export const useAppStore = create<AppState>()(
     {
       name: "open-learning-store",
       storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { demoMode, demoStep, ...rest } = state;
+        return rest;
+      },
     }
   )
 );
