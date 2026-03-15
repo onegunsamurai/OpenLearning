@@ -143,7 +143,6 @@ let _demoApi: Record<string, (...args: any[]) => unknown> | null = null;
 
 function isDemoMode(): boolean {
   if (typeof window === "undefined") return false;
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
   return useAppStore.getState().demoMode;
 }
 

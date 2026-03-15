@@ -56,7 +56,7 @@ export const initialState = {
   proficiencyScores: [],
   gapAnalysis: null,
   learningPlan: null,
-  demoMode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+  demoMode: false,
   demoStep: 0,
 };
 
