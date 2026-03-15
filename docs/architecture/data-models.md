@@ -313,6 +313,74 @@ The pipeline maintains two knowledge graphs:
 
 Gap analysis diffs these two graphs.
 
+## LLM Output Schemas
+
+These Pydantic models define the contract between the LLM and the assessment agents. They use plain `BaseModel` (not `CamelModel`) because they are internal to the LLM integration — the LLM returns data in this shape, and agents map it to the `CamelModel` state types.
+
+**Source**: `backend/app/agents/schemas.py`
+
+### Calibration
+
+```python
+class CalibrationQuestionOutput(BaseModel):
+    topic: str           # Technical concept being tested
+    text: str            # The question text
+    question_type: str   # "conceptual", "scenario", "debugging", "design"
+
+class CalibrationEvalConcept(BaseModel):
+    concept: str         # Concept name
+    confidence: float    # 0.0–1.0
+    bloom_level: str     # Bloom taxonomy level
+
+class CalibrationEvalOutput(BaseModel):
+    calibrated_level: str                        # "junior", "mid", "senior", "staff"
+    initial_concepts: list[CalibrationEvalConcept]
+    first_topic: str                             # Best first topic for in-depth assessment
+    reasoning: str                               # Explanation of level determination
+```
+
+### Question Generation
+
+```python
+class QuestionOutput(BaseModel):
+    topic: str           # Technical concept being tested
+    bloom_level: str     # Target Bloom taxonomy level
+    text: str            # The question text
+    question_type: str   # "conceptual", "scenario", "debugging", "design"
+```
+
+### Response Evaluation
+
+```python
+class EvaluationOutput(BaseModel):
+    confidence: float    # 0.0 = wrong, 0.5 = partial, 1.0 = excellent
+    bloom_level: str     # Bloom level actually demonstrated
+    evidence: list[str]  # Specific observations
+    reasoning: str       # Brief overall assessment
+```
+
+### Learning Plan
+
+```python
+class PlanResourceOutput(BaseModel):
+    type: str            # "video", "article", "project", "exercise"
+    title: str
+    url: str | None
+
+class PlanPhaseOutput(BaseModel):
+    phase_number: int
+    title: str
+    concepts: list[str]
+    rationale: str
+    resources: list[PlanResourceOutput]
+    estimated_hours: float
+
+class PlanOutput(BaseModel):
+    summary: str
+    total_hours: float
+    phases: list[PlanPhaseOutput]
+```
+
 ## Database Schema
 
 SQLite database with two tables for persisting assessment sessions and results.
@@ -327,7 +395,7 @@ SQLite database with two tables for persisting assessment sessions and results.
 | `thread_id` | `String(36)` UNIQUE | LangGraph thread identifier |
 | `skill_ids` | `JSON` | List of selected skill IDs |
 | `target_level` | `String(20)` | Target career level (default: "mid") |
-| `status` | `String(20)` | Session status (default: "active") |
+| `status` | `String(20)` | Session status: `"active"`, `"completed"`, or `"timed_out"` (default: `"active"`) |
 | `created_at` | `DateTime` | Creation timestamp |
 | `updated_at` | `DateTime` | Last update timestamp |
 

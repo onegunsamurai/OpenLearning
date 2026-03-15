@@ -19,12 +19,4 @@ Requirements:
 - Use a different question type than those already used
 - Question types: conceptual, scenario, debugging, design
 - Be specific and practical — avoid vague or overly broad questions
-- The question should be answerable in 2-5 sentences
-
-Respond with ONLY a JSON object:
-{{
-  "topic": "{topic}",
-  "bloom_level": "{bloom_level}",
-  "text": "Your question here",
-  "question_type": "scenario"
-}}"""
+- The question should be answerable in 2-5 sentences"""

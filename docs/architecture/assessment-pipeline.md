@@ -228,3 +228,40 @@ Each interrupt sends metadata to the frontend:
 ```
 
 The pipeline state is persisted to SQLite via `AsyncSqliteSaver`, so assessments survive server restarts.
+
+## LLM Integration
+
+All agent LLM calls go through a shared integration layer that provides structured output, automatic retry, and observability.
+
+**Source**: `backend/app/services/ai.py`, `backend/app/agents/schemas.py`
+
+### Structured Output
+
+Agents use LangChain's `with_structured_output()` instead of regex-based JSON parsing. Each agent defines a Pydantic schema in `backend/app/agents/schemas.py` that the LLM must conform to:
+
+| Schema | Agent | Purpose |
+|--------|-------|---------|
+| `CalibrationQuestionOutput` | Calibrator | Single calibration question |
+| `CalibrationEvalOutput` | Calibrator | Calibration evaluation (level + initial concepts) |
+| `QuestionOutput` | Question Generator | Assessment question |
+| `EvaluationOutput` | Response Evaluator | Response confidence, Bloom level, evidence |
+| `PlanOutput` | Plan Generator | Full learning plan with phases and resources |
+
+Agents call `ainvoke_structured(schema, prompt)`, which returns a validated Pydantic instance. The agent then maps this to the pipeline's `CamelModel` state types.
+
+### Retry with Exponential Backoff
+
+Transient LLM failures (timeouts, rate limits, 5xx errors) are retried automatically:
+
+- **Max attempts**: 3
+- **Backoff**: Exponential with jitter (`wait_exponential_jitter=True`)
+- **Retryable errors**: `APITimeoutError`, `RateLimitError`, `APIStatusError` (server errors)
+- **Non-retryable**: `AuthenticationError` and validation errors fail immediately
+
+### Structured Logging
+
+Every LLM call emits structured log entries via the `openlearning.llm` logger:
+
+- **Success**: agent name, duration (ms), schema name
+- **Retry**: agent name, attempt number, error type and message
+- **Failure**: agent name, duration (ms), schema name, error type and message

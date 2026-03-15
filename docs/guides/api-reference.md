@@ -181,6 +181,14 @@ Submit an answer and receive the next question (or completion).
 | Metadata event | Assessment progress (topics evaluated, total questions) |
 | Completion event | Assessment complete with proficiency scores |
 
+**Response** (410 — session timed out):
+
+```json
+{"detail": "Session has timed out"}
+```
+
+Sessions are marked as timed out after 30 minutes of inactivity. Once timed out, no further responses can be submitted.
+
 ---
 
 ### GET `/api/assessment/{session_id}/graph`

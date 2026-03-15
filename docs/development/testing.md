@@ -28,9 +28,12 @@ backend/tests/
 ├── test_health.py         # Health endpoint tests
 ├── test_knowledge_base.py # Knowledge base loader and mapper tests
 ├── test_pipeline.py       # LangGraph pipeline tests
+├── test_retry.py          # Retry configuration and ainvoke_structured behavior tests
 ├── test_roles.py          # Roles endpoint and YAML validation tests
 ├── test_router.py         # Router logic tests
-└── test_state.py          # Assessment state tests
+├── test_session_cleanup.py # Session timeout cleanup tests
+├── test_state.py          # Assessment state tests
+└── test_structured_output.py # LLM output schema validation tests
 ```
 
 ## Fixtures

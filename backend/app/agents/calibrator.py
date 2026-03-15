@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from langchain_core.messages import HumanMessage, SystemMessage
-
+from app.agents.schemas import CalibrationEvalOutput, CalibrationQuestionOutput
 from app.graph.state import (
     AssessmentState,
     BloomLevel,
@@ -12,7 +11,7 @@ from app.graph.state import (
     Question,
 )
 from app.prompts.calibration import CALIBRATION_EVAL_PROMPT, CALIBRATION_QUESTION_PROMPT
-from app.services.ai import get_chat_model, parse_json_response
+from app.services.ai import ainvoke_structured
 
 DIFFICULTY_LEVELS = ["easy", "medium", "hard"]
 
@@ -22,28 +21,18 @@ async def generate_calibration_question(state: AssessmentState, difficulty: str)
     domain = state["skill_domain"]
     prompt = CALIBRATION_QUESTION_PROMPT.format(domain=domain, difficulty=difficulty)
 
-    model = get_chat_model()
-    result = await model.ainvoke(
-        [
-            SystemMessage(
-                content="You are a technical question generator. Respond only with JSON."
-            ),
-            HumanMessage(content=prompt),
-        ]
+    result = await ainvoke_structured(
+        CalibrationQuestionOutput,
+        prompt,
+        agent_name="calibrator.generate_question",
     )
-
-    text = result.content
-    if not isinstance(text, str):
-        raise ValueError("Unexpected response from calibration question generator")
-
-    parsed = parse_json_response(text)
 
     return Question(
         id=str(uuid.uuid4()),
-        topic=parsed.get("topic", "general"),
+        topic=result.topic,
         bloom_level=BloomLevel.understand,
-        text=parsed["text"],
-        question_type=parsed.get("question_type", "conceptual"),
+        text=result.text,
+        question_type=result.question_type,
     )
 
 
@@ -59,35 +48,26 @@ async def evaluate_calibration(state: AssessmentState) -> dict:
 
     prompt = CALIBRATION_EVAL_PROMPT.format(qa_pairs=qa_pairs)
 
-    model = get_chat_model()
-    result = await model.ainvoke(
-        [
-            SystemMessage(content="You are an expert technical evaluator. Respond only with JSON."),
-            HumanMessage(content=prompt),
-        ]
+    result = await ainvoke_structured(
+        CalibrationEvalOutput,
+        prompt,
+        agent_name="calibrator.evaluate",
     )
-
-    text = result.content
-    if not isinstance(text, str):
-        raise ValueError("Unexpected response from calibration evaluator")
-
-    parsed = parse_json_response(text)
 
     # Build initial knowledge graph from calibration
     nodes: list[KnowledgeNode] = []
-    for concept_data in parsed.get("initial_concepts", []):
+    for concept_data in result.initial_concepts:
         nodes.append(
             KnowledgeNode(
-                concept=concept_data["concept"],
-                confidence=float(concept_data["confidence"]),
-                bloom_level=BloomLevel(concept_data["bloom_level"]),
+                concept=concept_data.concept,
+                confidence=float(concept_data.confidence),
+                bloom_level=BloomLevel(concept_data.bloom_level),
                 prerequisites=[],
                 evidence=["calibration"],
             )
         )
 
-    calibrated_level = parsed.get("calibrated_level", "mid")
-    first_topic = parsed.get("first_topic", "")
+    calibrated_level = result.calibrated_level
 
     # Determine starting bloom level based on calibrated level
     bloom_map = {
@@ -100,6 +80,6 @@ async def evaluate_calibration(state: AssessmentState) -> dict:
     return {
         "calibrated_level": calibrated_level,
         "knowledge_graph": KnowledgeGraph(nodes=nodes, edges=[]),
-        "current_topic": first_topic,
+        "current_topic": result.first_topic,
         "current_bloom_level": bloom_map.get(calibrated_level, BloomLevel.apply),
     }

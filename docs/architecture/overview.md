@@ -58,6 +58,12 @@ graph LR
 4. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
 5. **Learning Plan** — Claude generates a phased plan from the identified gaps with concrete resources.
 
+### Session Management
+
+A background cleanup task runs during the application's lifespan (started in `main.py`). Every 5 minutes it checks for active sessions whose `updated_at` timestamp is older than 30 minutes and marks them as `timed_out`. This prevents abandoned sessions from accumulating indefinitely. Timed-out sessions return a `410 Gone` response if the client attempts to continue them.
+
+**Source**: `backend/app/services/session_cleanup.py`
+
 ## Tech Stack
 
 | Layer | Technology | Purpose |
@@ -110,8 +116,8 @@ OpenLearning/
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
 │   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, parse_jd, roles)
-│   │   ├── services/            # AI service layer (LLM client, JSON parsing)
-│   │   ├── agents/              # LLM agents (calibrator, evaluator, question gen, etc.)
+│   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
+│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
 │   │   ├── data/                # Skills taxonomy definitions

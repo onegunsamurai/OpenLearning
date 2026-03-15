@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from langgraph.types import Command
 from pydantic import field_validator
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
@@ -14,6 +15,8 @@ from app.db import AssessmentResult, AssessmentSession, get_db
 from app.graph.state import make_initial_state
 from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
+
+logger = logging.getLogger("openlearning.assessment")
 
 router = APIRouter()
 
@@ -187,6 +190,14 @@ async def assessment_respond(
 ) -> StreamingResponse:
     thread_id = await _get_thread_id(session_id, db)
 
+    # Touch updated_at to prevent session timeout during active assessments
+    session_row = await db.get(AssessmentSession, session_id)
+    if session_row:
+        if session_row.status == "timed_out":
+            raise HTTPException(status_code=410, detail="Session has timed out")
+        session_row.updated_at = func.now()
+        await db.commit()
+
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
 
@@ -239,8 +250,9 @@ async def assessment_respond(
             yield "data: [DONE]\n\n"
         except asyncio.CancelledError:
             return
-        except Exception as e:
-            yield f"data: [ERROR] {e}\n\n"
+        except Exception:
+            logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
+            yield "data: [ERROR] An internal error occurred\n\n"
 
     return StreamingResponse(
         event_stream(),
