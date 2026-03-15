@@ -59,7 +59,7 @@ async def generate_plan(state: AssessmentState) -> dict:
 
     plan = LearningPlan(
         phases=phases,
-        total_hours=result.total_hours or sum(p.estimated_hours for p in phases),
+        total_hours=result.total_hours,
         summary=result.summary,
     )
 
