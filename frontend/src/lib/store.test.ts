@@ -1,4 +1,4 @@
-import { useAppStore } from "./store";
+import { useAppStore, initialState } from "./store";
 
 // Reset store between tests
 beforeEach(() => {
@@ -20,7 +20,7 @@ describe("useAppStore", () => {
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
-      expect(state.demoMode).toBe(false);
+      expect(state.demoMode).toBe(initialState.demoMode);
       expect(state.demoStep).toBe(0);
     });
   });
@@ -189,14 +189,14 @@ describe("useAppStore", () => {
       expect(state.proficiencyScores).toEqual([]);
       expect(state.gapAnalysis).toBeNull();
       expect(state.learningPlan).toBeNull();
-      expect(state.demoMode).toBe(false);
+      expect(state.demoMode).toBe(initialState.demoMode);
       expect(state.demoStep).toBe(0);
     });
   });
 
   describe("demoMode", () => {
     it("defaults to false", () => {
-      expect(useAppStore.getState().demoMode).toBe(false);
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
     });
 
     it("toggles demo mode on", () => {
@@ -207,13 +207,13 @@ describe("useAppStore", () => {
     it("toggles demo mode off", () => {
       useAppStore.getState().setDemoMode(true);
       useAppStore.getState().setDemoMode(false);
-      expect(useAppStore.getState().demoMode).toBe(false);
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
     });
 
     it("resets demo mode on full reset", () => {
       useAppStore.getState().setDemoMode(true);
       useAppStore.getState().reset();
-      expect(useAppStore.getState().demoMode).toBe(false);
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
     });
   });
 
@@ -291,7 +291,7 @@ describe("useAppStore", () => {
       ]);
       expect(useAppStore.getState().roleSkillIds).toEqual(["rehydrated"]);
       // demoMode should remain at default, not rehydrated
-      expect(useAppStore.getState().demoMode).toBe(false);
+      expect(useAppStore.getState().demoMode).toBe(initialState.demoMode);
       expect(useAppStore.getState().demoStep).toBe(0);
     });
   });

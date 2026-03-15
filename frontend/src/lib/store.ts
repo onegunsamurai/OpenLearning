@@ -45,7 +45,7 @@ interface AppState {
   reset: () => void;
 }
 
-const initialState = {
+export const initialState = {
   currentStep: 0,
   selectedSkillIds: [],
   jobDescription: "",

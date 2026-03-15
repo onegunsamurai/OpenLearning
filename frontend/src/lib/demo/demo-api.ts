@@ -24,6 +24,9 @@ import { useAppStore } from "@/lib/store";
 
 /** Simulate a short network delay (100-200ms). */
 function fakeDelay(): Promise<void> {
+  if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
+    return Promise.resolve();
+  }
   return new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 100));
 }
 

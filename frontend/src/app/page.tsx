@@ -33,7 +33,9 @@ export default function OnboardingPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
 
-  // Bootstrap demo mode from URL param ?demo=true
+  // Bootstrap demo mode from URL param and fetch skills.
+  // Merged into one effect to prevent a race where the skills fetch
+  // hits the real backend before demo mode is activated.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("demo") === "true") {
@@ -43,15 +45,16 @@ export default function OnboardingPage() {
         ? `${window.location.pathname}?${params.toString()}`
         : window.location.pathname;
       window.history.replaceState({}, "", newUrl);
+      // Return early — setDemoMode will trigger a re-render and this
+      // effect will re-run with demoMode=true, fetching from demo API.
+      return;
     }
-  }, [setDemoMode]);
 
-  useEffect(() => {
     api.getSkills().then((data) => {
       setSkills(data.skills);
       setCategories(data.categories);
     });
-  }, [demoMode]);
+  }, [setDemoMode, demoMode]);
 
   const handleRoleSelected = useCallback(
     (roleId: string, skillIds: string[]) => {
@@ -195,6 +198,8 @@ export default function OnboardingPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <button
+              type="button"
+              aria-pressed={demoMode}
               onClick={() => setDemoMode(!demoMode)}
               className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-mono transition-colors ${
                 demoMode

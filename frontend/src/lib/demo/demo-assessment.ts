@@ -17,7 +17,7 @@ export function createDemoSSEResponse(
 
   const words = responseText.split(" ");
   const nextQuestionWords = nextQuestion
-    ? ["\n\n", ...nextQuestion.question.split(" ")]
+    ? nextQuestion.question.split(" ")
     : [];
 
   const encoder = new TextEncoder();
@@ -47,8 +47,10 @@ export function createDemoSSEResponse(
 
       // Emit next question text if not final
       if (nextQuestionWords.length > 0) {
+        // Emit a space separator so question text doesn't fuse with response text
+        controller.enqueue(encoder.encode("data:  \n\n"));
         for (let i = 0; i < nextQuestionWords.length; i++) {
-          const prefix = i <= 1 ? "" : " ";
+          const prefix = i === 0 ? "" : " ";
           const data = `data: ${prefix}${nextQuestionWords[i]}\n\n`;
           controller.enqueue(encoder.encode(data));
           await delay(30 + Math.random() * 20);
@@ -68,5 +70,8 @@ export function createDemoSSEResponse(
 }
 
 function delay(ms: number): Promise<void> {
+  if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
+    return Promise.resolve();
+  }
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
