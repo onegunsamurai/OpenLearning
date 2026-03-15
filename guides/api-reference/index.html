@@ -1404,6 +1404,10 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Response</strong> (410 — session timed out):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session has timed out&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p>Sessions are marked as timed out after 30 minutes of inactivity. Once timed out, no further responses can be submitted.</p>
 <hr />
 <h3 id="get-apiassessmentsession_idgraph">GET <code>/api/assessment/{session_id}/graph</code><a class="headerlink" href="#get-apiassessmentsession_idgraph" title="Permanent link">&para;</a></h3>
 <p>Get the current knowledge graph for an assessment session.</p>

@@ -796,6 +796,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#llm-output-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Output Schemas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Output Schemas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#learning-plan_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#database-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1383,6 +1444,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#llm-output-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Output Schemas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Output Schemas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#learning-plan_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#database-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1730,6 +1852,59 @@
 <li><strong><code>target_graph</code></strong> — The <em>expected</em> understanding for their target level, loaded from the knowledge base YAML</li>
 </ul>
 <p>Gap analysis diffs these two graphs.</p>
+<h2 id="llm-output-schemas">LLM Output Schemas<a class="headerlink" href="#llm-output-schemas" title="Permanent link">&para;</a></h2>
+<p>These Pydantic models define the contract between the LLM and the assessment agents. They use plain <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal to the LLM integration — the LLM returns data in this shape, and agents map it to the <code>CamelModel</code> state types.</p>
+<p><strong>Source</strong>: <code>backend/app/agents/schemas.py</code></p>
+<h3 id="calibration">Calibration<a class="headerlink" href="#calibration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CalibrationQuestionOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Technical concept being tested</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># The question text</span>
+    <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span>   <span class="c1"># &quot;conceptual&quot;, &quot;scenario&quot;, &quot;debugging&quot;, &quot;design&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CalibrationEvalConcept</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Concept name</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># 0.0–1.0</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">str</span>     <span class="c1"># Bloom taxonomy level</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CalibrationEvalOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">calibrated_level</span><span class="p">:</span> <span class="nb">str</span>                        <span class="c1"># &quot;junior&quot;, &quot;mid&quot;, &quot;senior&quot;, &quot;staff&quot;</span>
+    <span class="n">initial_concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CalibrationEvalConcept</span><span class="p">]</span>
+    <span class="n">first_topic</span><span class="p">:</span> <span class="nb">str</span>                             <span class="c1"># Best first topic for in-depth assessment</span>
+    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>                               <span class="c1"># Explanation of level determination</span>
+</code></pre></div>
+<h3 id="question-generation">Question Generation<a class="headerlink" href="#question-generation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">QuestionOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Technical concept being tested</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">str</span>     <span class="c1"># Target Bloom taxonomy level</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># The question text</span>
+    <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span>   <span class="c1"># &quot;conceptual&quot;, &quot;scenario&quot;, &quot;debugging&quot;, &quot;design&quot;</span>
+</code></pre></div>
+<h3 id="response-evaluation">Response Evaluation<a class="headerlink" href="#response-evaluation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">EvaluationOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># 0.0 = wrong, 0.5 = partial, 1.0 = excellent</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">str</span>     <span class="c1"># Bloom level actually demonstrated</span>
+    <span class="n">evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Specific observations</span>
+    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Brief overall assessment</span>
+</code></pre></div>
+<h3 id="learning-plan_1">Learning Plan<a class="headerlink" href="#learning-plan_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PlanResourceOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># &quot;video&quot;, &quot;article&quot;, &quot;project&quot;, &quot;exercise&quot;</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlanPhaseOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">phase_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">rationale</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanResourceOutput</span><span class="p">]</span>
+    <span class="n">estimated_hours</span><span class="p">:</span> <span class="nb">float</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PlanOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">total_hours</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanPhaseOutput</span><span class="p">]</span>
+</code></pre></div>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
 <p>SQLite database with two tables for persisting assessment sessions and results.</p>
 <p><strong>Source</strong>: <code>backend/app/db.py</code></p>
@@ -1766,7 +1941,7 @@
 <tr>
 <td><code>status</code></td>
 <td><code>String(20)</code></td>
-<td>Session status (default: "active")</td>
+<td>Session status: <code>"active"</code>, <code>"completed"</code>, or <code>"timed_out"</code> (default: <code>"active"</code>)</td>
 </tr>
 <tr>
 <td><code>created_at</code></td>

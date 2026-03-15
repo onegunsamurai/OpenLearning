@@ -537,6 +537,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Data Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#session-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -969,6 +986,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Data Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#session-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1092,6 +1126,9 @@
 <li><strong>Gap Analysis</strong> — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.</li>
 <li><strong>Learning Plan</strong> — Claude generates a phased plan from the identified gaps with concrete resources.</li>
 </ol>
+<h3 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h3>
+<p>A background cleanup task runs during the application's lifespan (started in <code>main.py</code>). Every 5 minutes it checks for active sessions whose <code>updated_at</code> timestamp is older than 30 minutes and marks them as <code>timed_out</code>. This prevents abandoned sessions from accumulating indefinitely. Timed-out sessions return a <code>410 Gone</code> response if the client attempts to continue them.</p>
+<p><strong>Source</strong>: <code>backend/app/services/session_cleanup.py</code></p>
 <h2 id="tech-stack">Tech Stack<a class="headerlink" href="#tech-stack" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1216,8 +1253,8 @@
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
 │   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, parse_jd, roles)
-│   │   ├── services/            # AI service layer (LLM client, JSON parsing)
-│   │   ├── agents/              # LLM agents (calibrator, evaluator, question gen, etc.)
+│   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
+│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
 │   │   ├── data/                # Skills taxonomy definitions

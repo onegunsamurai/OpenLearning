@@ -789,6 +789,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#llm-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structured-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-with-exponential-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry with Exponential Backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structured-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1365,6 +1415,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#llm-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structured-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retry-with-exponential-backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry with Exponential Backoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structured-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1707,6 +1807,63 @@
 <span class="p">}</span>
 </code></pre></div>
 <p>The pipeline state is persisted to SQLite via <code>AsyncSqliteSaver</code>, so assessments survive server restarts.</p>
+<h2 id="llm-integration">LLM Integration<a class="headerlink" href="#llm-integration" title="Permanent link">&para;</a></h2>
+<p>All agent LLM calls go through a shared integration layer that provides structured output, automatic retry, and observability.</p>
+<p><strong>Source</strong>: <code>backend/app/services/ai.py</code>, <code>backend/app/agents/schemas.py</code></p>
+<h3 id="structured-output">Structured Output<a class="headerlink" href="#structured-output" title="Permanent link">&para;</a></h3>
+<p>Agents use LangChain's <code>with_structured_output()</code> instead of regex-based JSON parsing. Each agent defines a Pydantic schema in <code>backend/app/agents/schemas.py</code> that the LLM must conform to:</p>
+<table>
+<thead>
+<tr>
+<th>Schema</th>
+<th>Agent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CalibrationQuestionOutput</code></td>
+<td>Calibrator</td>
+<td>Single calibration question</td>
+</tr>
+<tr>
+<td><code>CalibrationEvalOutput</code></td>
+<td>Calibrator</td>
+<td>Calibration evaluation (level + initial concepts)</td>
+</tr>
+<tr>
+<td><code>QuestionOutput</code></td>
+<td>Question Generator</td>
+<td>Assessment question</td>
+</tr>
+<tr>
+<td><code>EvaluationOutput</code></td>
+<td>Response Evaluator</td>
+<td>Response confidence, Bloom level, evidence</td>
+</tr>
+<tr>
+<td><code>PlanOutput</code></td>
+<td>Plan Generator</td>
+<td>Full learning plan with phases and resources</td>
+</tr>
+</tbody>
+</table>
+<p>Agents call <code>ainvoke_structured(schema, prompt)</code>, which returns a validated Pydantic instance. The agent then maps this to the pipeline's <code>CamelModel</code> state types.</p>
+<h3 id="retry-with-exponential-backoff">Retry with Exponential Backoff<a class="headerlink" href="#retry-with-exponential-backoff" title="Permanent link">&para;</a></h3>
+<p>Transient LLM failures (timeouts, rate limits, 5xx errors) are retried automatically:</p>
+<ul>
+<li><strong>Max attempts</strong>: 3</li>
+<li><strong>Backoff</strong>: Exponential with jitter (<code>wait_exponential_jitter=True</code>)</li>
+<li><strong>Retryable errors</strong>: <code>APITimeoutError</code>, <code>RateLimitError</code>, <code>APIStatusError</code> (server errors)</li>
+<li><strong>Non-retryable</strong>: <code>AuthenticationError</code> and validation errors fail immediately</li>
+</ul>
+<h3 id="structured-logging">Structured Logging<a class="headerlink" href="#structured-logging" title="Permanent link">&para;</a></h3>
+<p>Every LLM call emits structured log entries via the <code>openlearning.llm</code> logger:</p>
+<ul>
+<li><strong>Success</strong>: agent name, duration (ms), schema name</li>
+<li><strong>Retry</strong>: agent name, attempt number, error type and message</li>
+<li><strong>Failure</strong>: agent name, duration (ms), schema name, error type and message</li>
+</ul>
 
 
 
