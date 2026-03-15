@@ -4,9 +4,8 @@ import json
 import logging
 import re
 import time
-from typing import Any
 
-from anthropic import APIStatusError, APITimeoutError, RateLimitError
+from anthropic import APITimeoutError, InternalServerError, RateLimitError
 from langchain_anthropic import ChatAnthropic
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel
@@ -36,22 +35,6 @@ def parse_json_response(text: str) -> dict:
     return json.loads(cleaned)
 
 
-def _log_retry(retry_state: Any) -> None:
-    """Log each retry attempt with structured context."""
-    exc = retry_state.outcome.exception()
-    agent_name = retry_state.kwargs.get("agent_name", "unknown")
-    attempt = retry_state.attempt_number
-    logger.warning(
-        "LLM call retry",
-        extra={
-            "agent_name": agent_name,
-            "attempt": attempt,
-            "error_type": type(exc).__name__,
-            "error_message": str(exc),
-        },
-    )
-
-
 def get_structured_model(
     schema: type[BaseModel],
     *,
@@ -65,10 +48,9 @@ def get_structured_model(
     model = get_chat_model().with_structured_output(schema)
 
     return model.with_retry(
-        retry_if_exception_type=(APITimeoutError, RateLimitError, APIStatusError),
+        retry_if_exception_type=(APITimeoutError, RateLimitError, InternalServerError),
         wait_exponential_jitter=True,
         stop_after_attempt=max_retries,
-        before_sleep=_log_retry,
     )
 
 

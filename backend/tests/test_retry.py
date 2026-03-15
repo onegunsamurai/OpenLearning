@@ -5,7 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from anthropic import APIStatusError, APITimeoutError, AuthenticationError, RateLimitError
+from anthropic import APITimeoutError, AuthenticationError, InternalServerError, RateLimitError
 
 from app.agents.schemas import EvaluationOutput
 from app.services.ai import ainvoke_structured, get_structured_model
@@ -29,7 +29,7 @@ def _make_mock_chain(side_effects):
 
 class TestRetryConfiguration:
     def test_configures_retry_with_transient_error_types(self):
-        """with_retry should be called with APITimeoutError, RateLimitError, and APIStatusError."""
+        """with_retry should be called with APITimeoutError, RateLimitError, and InternalServerError."""
         mock_chat, mock_runnable = _make_mock_chain([])
 
         with patch("app.services.ai.get_chat_model", return_value=mock_chat):
@@ -39,7 +39,7 @@ class TestRetryConfiguration:
         call_kwargs = mock_runnable.with_retry.call_args[1]
         assert APITimeoutError in call_kwargs["retry_if_exception_type"]
         assert RateLimitError in call_kwargs["retry_if_exception_type"]
-        assert APIStatusError in call_kwargs["retry_if_exception_type"]
+        assert InternalServerError in call_kwargs["retry_if_exception_type"]
 
     def test_configures_retry_with_max_attempts(self):
         """with_retry should respect the max_retries parameter."""
