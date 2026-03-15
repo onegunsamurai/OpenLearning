@@ -34,6 +34,13 @@ interface AppState {
   learningPlan: LearningPlan | null;
   setLearningPlan: (plan: LearningPlan) => void;
 
+  // Demo mode
+  demoMode: boolean;
+  setDemoMode: (enabled: boolean) => void;
+  demoStep: number;
+  advanceDemoStep: () => void;
+  resetDemoStep: () => void;
+
   // Reset
   reset: () => void;
 }
@@ -49,6 +56,8 @@ const initialState = {
   proficiencyScores: [],
   gapAnalysis: null,
   learningPlan: null,
+  demoMode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+  demoStep: 0,
 };
 
 export const useAppStore = create<AppState>()(
@@ -76,6 +85,11 @@ export const useAppStore = create<AppState>()(
 
       setGapAnalysis: (analysis) => set({ gapAnalysis: analysis }),
       setLearningPlan: (plan) => set({ learningPlan: plan }),
+
+      setDemoMode: (enabled) => set({ demoMode: enabled }),
+      advanceDemoStep: () =>
+        set((state) => ({ demoStep: state.demoStep + 1 })),
+      resetDemoStep: () => set({ demoStep: 0 }),
 
       reset: () => set(initialState),
     }),

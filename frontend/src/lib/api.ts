@@ -16,6 +16,7 @@ import type {
   RoleSummary,
   RoleDetail,
 } from "@/lib/generated/api-client";
+import { useAppStore } from "@/lib/store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -67,7 +68,7 @@ export interface AssessmentReportResponse {
   proficiencyScores: ProficiencyScore[];
 }
 
-export const api = {
+const realApi = {
   getRoles: async (): Promise<RoleSummary[]> =>
     unwrap(await getRolesApiRolesGet()),
 
@@ -135,3 +136,35 @@ export const api = {
     return res.json();
   },
 };
+
+// Demo mode: lazy-loaded to keep the demo bundle out of production builds
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _demoApi: Record<string, (...args: any[]) => unknown> | null = null;
+
+function isDemoMode(): boolean {
+  if (typeof window === "undefined") return false;
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
+  return useAppStore.getState().demoMode;
+}
+
+export const api = new Proxy(realApi, {
+  get(target, prop, receiver) {
+    if (typeof prop !== "string" || !(prop in target)) {
+      return Reflect.get(target, prop, receiver);
+    }
+    if (!isDemoMode()) {
+      return Reflect.get(target, prop, receiver);
+    }
+    // Return a function that lazy-loads and delegates to the demo API
+    return (...args: unknown[]) => {
+      if (_demoApi) {
+        return _demoApi[prop](...args);
+      }
+      // Dynamic import returns a promise; we chain the actual call onto it
+      return import("@/lib/demo").then(({ demoApi }) => {
+        _demoApi = demoApi as unknown as typeof _demoApi;
+        return _demoApi![prop](...args);
+      });
+    };
+  },
+});

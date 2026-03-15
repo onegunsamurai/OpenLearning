@@ -4,6 +4,7 @@ export type {
   ProficiencyScore,
   GapItem,
   GapAnalysis,
+  JdParseResponse,
   LearningModule,
   LearningPlan,
   Phase,
