@@ -137,7 +137,7 @@ const realApi = {
   },
 };
 
-// Demo mode: lazy-loaded to keep the demo bundle out of production builds
+// Demo mode: lazy-loaded to keep the demo bundle out of the initial bundle
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _demoApi: Record<string, (...args: any[]) => unknown> | null = null;
 

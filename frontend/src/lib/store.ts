@@ -56,7 +56,8 @@ export const initialState = {
   proficiencyScores: [],
   gapAnalysis: null,
   learningPlan: null,
-  demoMode: false,
+  demoMode: typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("demo") === "true",
   demoStep: 0,
 };
 
@@ -86,7 +87,7 @@ export const useAppStore = create<AppState>()(
       setGapAnalysis: (analysis) => set({ gapAnalysis: analysis }),
       setLearningPlan: (plan) => set({ learningPlan: plan }),
 
-      setDemoMode: (enabled) => set({ demoMode: enabled }),
+      setDemoMode: (enabled) => set({ ...initialState, demoMode: enabled }),
       advanceDemoStep: () =>
         set((state) => ({ demoStep: state.demoStep + 1 })),
       resetDemoStep: () => set({ demoStep: 0 }),
