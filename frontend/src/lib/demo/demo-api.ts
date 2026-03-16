@@ -17,6 +17,7 @@ import {
   DEMO_LEARNING_PLAN,
   DEMO_ASSESSMENT_START,
   DEMO_ASSESSMENT_REPORT,
+  DEMO_EXPORT_MARKDOWN,
   DEMO_QUESTIONS,
 } from "./fixtures";
 import { createDemoSSEResponse } from "./demo-assessment";
@@ -86,5 +87,10 @@ export const demoApi = {
   ): Promise<AssessmentReportResponse> => {
     await fakeDelay();
     return DEMO_ASSESSMENT_REPORT;
+  },
+
+  assessmentExport: async (_sessionId: string): Promise<string> => {
+    await fakeDelay();
+    return DEMO_EXPORT_MARKDOWN;
   },
 };

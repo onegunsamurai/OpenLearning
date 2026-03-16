@@ -6,7 +6,7 @@ The assessment pipeline is a LangGraph state machine that adaptively evaluates a
 
 ## Pipeline Overview
 
-The pipeline has **16 nodes** organized into four phases:
+The pipeline has **14 nodes** organized into four phases:
 
 ```mermaid
 graph TD
@@ -215,15 +215,26 @@ The pipeline uses LangGraph's `interrupt()` at every point where user input is n
 - `await_response` node (main assessment)
 - `await_probe_response` node (follow-up questions)
 
-Each interrupt sends metadata to the frontend:
+Each interrupt sends metadata to the frontend. There are two shapes depending on the phase:
 
+**Calibration interrupt** (`type: "calibration"`):
 ```json
 {
-  "type": "calibration | assessment",
+  "type": "calibration",
   "question": { "id": "...", "topic": "...", "bloomLevel": "...", "text": "...", "questionType": "..." },
-  "topicsEvaluated": 3,
-  "totalQuestions": 12,
-  "maxQuestions": 25
+  "step": 1,
+  "total_steps": 3
+}
+```
+
+**Assessment interrupt** (`type: "assessment"`, used by both `await_response` and `await_probe_response`):
+```json
+{
+  "type": "assessment",
+  "question": { "id": "...", "topic": "...", "bloomLevel": "...", "text": "...", "questionType": "..." },
+  "topics_evaluated": 3,
+  "total_questions": 12,
+  "max_questions": 25
 }
 ```
 

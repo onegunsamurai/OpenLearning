@@ -9,12 +9,13 @@ from langgraph.types import Command
 from pydantic import field_validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import StreamingResponse
+from starlette.responses import PlainTextResponse, StreamingResponse
 
 from app.db import AssessmentResult, AssessmentSession, get_db
 from app.graph.state import make_initial_state
 from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
+from app.routes.export_utils import build_assessment_markdown
 
 logger = logging.getLogger("openlearning.assessment")
 
@@ -320,7 +321,7 @@ async def assessment_report(
                 knowledge_graph=kg.model_dump() if kg else None,
                 gap_nodes=[n.model_dump() for n in gap_nodes] if gap_nodes else None,
                 learning_plan=learning_plan.model_dump() if learning_plan else None,
-                proficiency_scores=[s.model_dump(by_alias=True) for s in proficiency_scores],
+                proficiency_scores=[s.model_dump() for s in proficiency_scores],
             )
         )
         session_row = await db.get(AssessmentSession, session_id)
@@ -367,6 +368,63 @@ async def assessment_report(
             ],
         ),
         proficiency_scores=proficiency_scores,
+    )
+
+
+@router.get("/assessment/{session_id}/export")
+async def assessment_export(
+    session_id: str, req: Request, db: AsyncSession = Depends(get_db)
+) -> PlainTextResponse:
+    thread_id = await _get_thread_id(session_id, db)
+
+    # Fetch session row for metadata
+    session_row = await db.get(AssessmentSession, session_id)
+
+    # Try DB-stored result first
+    result_row_res = await db.execute(
+        select(AssessmentResult).where(AssessmentResult.session_id == session_id)
+    )
+    result_row = result_row_res.scalar_one_or_none()
+
+    if result_row:
+        knowledge_graph = result_row.knowledge_graph
+        gap_nodes = result_row.gap_nodes
+        learning_plan = result_row.learning_plan
+        proficiency_scores = result_row.proficiency_scores
+        completed_at = result_row.completed_at
+    else:
+        # Fall back to live graph state
+        graph = req.app.state.graph
+        config = {"configurable": {"thread_id": thread_id}}
+        state = (await graph.aget_state(config)).values
+
+        kg = state.get("knowledge_graph")
+        gap_node_objs = state.get("gap_nodes", [])
+        lp = state.get("learning_plan")
+        scores = _build_proficiency_scores(state)
+
+        knowledge_graph = kg.model_dump() if kg else None
+        gap_nodes = [n.model_dump() for n in gap_node_objs] if gap_node_objs else None
+        learning_plan = lp.model_dump() if lp else None
+        proficiency_scores = [s.model_dump() for s in scores]
+        completed_at = None
+
+    markdown = build_assessment_markdown(
+        session_id=session_id,
+        target_level=session_row.target_level if session_row else "unknown",
+        completed_at=completed_at,
+        knowledge_graph=knowledge_graph,
+        gap_nodes=gap_nodes,
+        learning_plan=learning_plan,
+        proficiency_scores=proficiency_scores,
+    )
+
+    return PlainTextResponse(
+        content=markdown,
+        media_type="text/markdown",
+        headers={
+            "Content-Disposition": f'attachment; filename="assessment-{session_id[:8]}.md"',
+        },
     )
 
 

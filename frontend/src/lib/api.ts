@@ -135,6 +135,15 @@ const realApi = {
     }
     return res.json();
   },
+
+  assessmentExport: async (sessionId: string): Promise<string> => {
+    const res = await fetch(`${API_URL}/api/assessment/${sessionId}/export`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Request failed" }));
+      throw new Error(err.detail ?? `Request failed: ${res.status}`);
+    }
+    return res.text();
+  },
 };
 
 // Demo mode: lazy-loaded to keep the demo bundle out of the initial bundle

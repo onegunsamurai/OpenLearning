@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Loader2, Copy, RotateCcw, Check } from "lucide-react";
+import { Loader2, Copy, RotateCcw, Check, FileDown } from "lucide-react";
 
 export default function LearningPlanPage() {
   const router = useRouter();
-  const { gapAnalysis, learningPlan, setLearningPlan, setCurrentStep, reset } =
+  const { gapAnalysis, learningPlan, setLearningPlan, setCurrentStep, reset, assessmentSessionId } =
     useAppStore();
 
   const [loading, setLoading] = useState(false);
@@ -169,6 +169,18 @@ export default function LearningPlanPage() {
           )}
           {copied ? "Copied!" : "Save Plan (JSON)"}
         </Button>
+        {assessmentSessionId && (
+          <Button
+            asChild
+            variant="outline"
+            className="gap-2 border-border"
+          >
+            <a href={`/export/${assessmentSessionId}`} target="_blank" rel="noopener noreferrer">
+              <FileDown className="h-4 w-4" />
+              Export Report
+            </a>
+          </Button>
+        )}
         <Button
           onClick={handleStartOver}
           variant="outline"
