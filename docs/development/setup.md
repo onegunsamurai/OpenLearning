@@ -81,7 +81,7 @@ make dev-frontend  # http://localhost:3000
 | `make install-hooks` | `pip install pre-commit && pre-commit install` | Install pre-commit git hooks |
 | `make pre-commit` | `pre-commit run --all-files` | Run all pre-commit checks manually (runs Ruff, `forbid-env-files.sh`, and `lint-frontend-staged.sh`) |
 | `make generate-api` | `bash scripts/generate-api.sh` | Generate TypeScript types from OpenAPI spec |
-| `make docs-serve` | `mkdocs serve` | Preview docs locally (port 8000) |
+| `make docs-serve` | `mkdocs serve` | Preview docs locally (port 8000 — conflicts with dev-backend; use mkdocs serve --dev-addr 127.0.0.1:8001 to run both) |
 | `make docs-build` | `mkdocs build` | Build docs site |
 | `make docker-build` | `docker compose build` | Build Docker images |
 | `make docker-dev` | `docker compose ... up --build` | Start stack with hot-reload |

@@ -52,7 +52,7 @@ graph LR
     D --> E[Learning Plan]
 ```
 
-1. **Onboarding** — User selects a role (primary path), pastes a job description to auto-extract skills, or browses and selects skills manually. Skills are mapped to a knowledge base domain.
+1. **Onboarding** — User selects a role (primary path) or browses and selects skills manually. Skills are mapped to a knowledge base domain.
 2. **Calibration** — 3 questions at easy/medium/hard determine the starting level and initial knowledge graph.
 3. **Assessment Loop** — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels.
 4. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
@@ -115,7 +115,7 @@ OpenLearning/
 │   │   ├── config.py            # Settings (API key, CORS origins)
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
-│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, parse_jd, roles)
+│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles) + export helpers
 │   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic

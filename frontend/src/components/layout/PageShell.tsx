@@ -1,14 +1,17 @@
 "use client";
 
-import { StepProgress } from "./StepProgress";
-import { useAppStore } from "@/lib/store";
+import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
+import Link from "next/link";
+import { Play } from "lucide-react";
 
 interface PageShellProps {
   currentStep: number;
   children: React.ReactNode;
   maxWidth?: string;
   noPadding?: boolean;
+  isDemo?: boolean;
+  steps?: StepDefinition[];
 }
 
 export function PageShell({
@@ -16,9 +19,9 @@ export function PageShell({
   children,
   maxWidth = "max-w-7xl",
   noPadding = false,
+  isDemo = false,
+  steps,
 }: PageShellProps) {
-  const demoMode = useAppStore((s) => s.demoMode);
-
   return (
     <div className="grid-background min-h-screen">
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -27,17 +30,26 @@ export function PageShell({
             <h1 className="font-heading text-lg font-bold tracking-tight">
               <span className="text-cyan">Open</span>Learning
             </h1>
-            {demoMode ? (
+            {isDemo ? (
               <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-400">
                 Demo
               </span>
             ) : (
-              <span className="hidden text-xs text-muted-foreground font-mono sm:block">
-                session resets on close
-              </span>
+              <>
+                <span className="hidden text-xs text-muted-foreground font-mono sm:block">
+                  session resets on close
+                </span>
+                <Link
+                  href="/demo/assess"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full bg-cyan-400 px-3.5 text-[13px] font-semibold text-[#0a0a1a] shadow-[0_0_12px_rgba(34,211,238,0.35)] transition-all duration-200 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] hover:brightness-110"
+                >
+                  <Play className="h-3 w-3 fill-current" />
+                  Try Demo
+                </Link>
+              </>
             )}
           </div>
-          <StepProgress currentStep={currentStep} />
+          <StepProgress currentStep={currentStep} steps={steps} />
         </div>
       </header>
       <motion.main

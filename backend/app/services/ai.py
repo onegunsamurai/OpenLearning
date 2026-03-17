@@ -27,7 +27,7 @@ def get_chat_model() -> ChatAnthropic:
 def parse_json_response(text: str) -> dict:
     """Parse JSON from AI response, stripping markdown code fences if present.
 
-    Used by non-assessment routes (gap_analysis, parse_jd, learning_plan).
+    Used by non-assessment routes (gap_analysis, learning_plan).
     Assessment pipeline agents use ainvoke_structured() instead.
     """
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip())

@@ -87,17 +87,6 @@ class LearningPlanRequest(CamelModel):
     gap_analysis: GapAnalysis
 ```
 
-### JD Parser
-
-```python
-class JDParseRequest(CamelModel):
-    job_description: str
-
-class JDParseResponse(CamelModel):
-    skills: list[str]
-    summary: str
-```
-
 ### Roles
 
 ```python
@@ -121,6 +110,75 @@ class RoleDetail(CamelModel):
 ```
 
 **Source**: `backend/app/models/roles.py`
+
+### Assessment Route Models
+
+These are simplified output projections defined directly in the route module (not in `models/`). They differ from the pipeline state types in `graph/state.py`.
+
+**Source**: `backend/app/routes/assessment.py`
+
+```python
+# Request/Response for /assessment/start
+class AssessmentStartRequest(CamelModel):
+    skill_ids: list[str]
+    target_level: str = "mid"
+    role_id: str | None = None  # Validated: must be in list_domains() or None
+
+class AssessmentStartResponse(CamelModel):
+    session_id: str
+    question: str
+    question_type: str = "calibration"
+    step: int = 1
+    total_steps: int = 3
+
+# Response for /assessment/{id}/graph
+class KnowledgeNodeOut(CamelModel):
+    concept: str
+    confidence: float
+    bloom_level: str
+    prerequisites: list[str]
+
+class KnowledgeGraphOut(CamelModel):
+    nodes: list[KnowledgeNodeOut]
+
+class ProficiencyScoreOut(CamelModel):
+    skill_id: str
+    skill_name: str
+    score: int
+    confidence: float
+    reasoning: str
+
+class ResourceOut(CamelModel):
+    type: str
+    title: str
+    url: str | None = None
+
+class LearningPhaseOut(CamelModel):
+    phase_number: int
+    title: str
+    concepts: list[str]
+    rationale: str
+    resources: list[ResourceOut]
+    estimated_hours: float
+
+# Response for /assessment/{id}/report
+class GapNodeOut(CamelModel):
+    concept: str
+    current_confidence: float
+    target_bloom_level: str
+    prerequisites: list[str]
+
+class LearningPlanOut(CamelModel):
+    summary: str
+    total_hours: float
+    phases: list[LearningPhaseOut]
+
+class AssessmentReportResponse(CamelModel):
+    knowledge_graph: KnowledgeGraphOut
+    gap_nodes: list[GapNodeOut]
+    learning_plan: LearningPlanOut
+    proficiency_scores: list[ProficiencyScoreOut]
+```
 
 ### Knowledge Base Schema
 

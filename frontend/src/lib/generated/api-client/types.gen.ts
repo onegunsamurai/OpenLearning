@@ -183,30 +183,6 @@ export type HealthResponse = {
 };
 
 /**
- * JDParseRequest
- */
-export type JdParseRequest = {
-    /**
-     * Jobdescription
-     */
-    jobDescription: string;
-};
-
-/**
- * JDParseResponse
- */
-export type JdParseResponse = {
-    /**
-     * Skills
-     */
-    skills: Array<string>;
-    /**
-     * Summary
-     */
-    summary: string;
-};
-
-/**
  * KnowledgeGraphOut
  */
 export type KnowledgeGraphOut = {
@@ -632,31 +608,6 @@ export type GetSkillsApiSkillsGetResponses = {
 
 export type GetSkillsApiSkillsGetResponse = GetSkillsApiSkillsGetResponses[keyof GetSkillsApiSkillsGetResponses];
 
-export type ParseJdApiParseJdPostData = {
-    body: JdParseRequest;
-    path?: never;
-    query?: never;
-    url: '/api/parse-jd';
-};
-
-export type ParseJdApiParseJdPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ParseJdApiParseJdPostError = ParseJdApiParseJdPostErrors[keyof ParseJdApiParseJdPostErrors];
-
-export type ParseJdApiParseJdPostResponses = {
-    /**
-     * Successful Response
-     */
-    200: JdParseResponse;
-};
-
-export type ParseJdApiParseJdPostResponse = ParseJdApiParseJdPostResponses[keyof ParseJdApiParseJdPostResponses];
-
 export type AssessmentStartApiAssessmentStartPostData = {
     body: AssessmentStartRequest;
     path?: never;
@@ -769,6 +720,34 @@ export type AssessmentReportApiAssessmentSessionIdReportGetResponses = {
 };
 
 export type AssessmentReportApiAssessmentSessionIdReportGetResponse = AssessmentReportApiAssessmentSessionIdReportGetResponses[keyof AssessmentReportApiAssessmentSessionIdReportGetResponses];
+
+export type AssessmentExportApiAssessmentSessionIdExportGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/assessment/{session_id}/export';
+};
+
+export type AssessmentExportApiAssessmentSessionIdExportGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentExportApiAssessmentSessionIdExportGetError = AssessmentExportApiAssessmentSessionIdExportGetErrors[keyof AssessmentExportApiAssessmentSessionIdExportGetErrors];
+
+export type AssessmentExportApiAssessmentSessionIdExportGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type GetRolesApiRolesGetData = {
     body?: never;
