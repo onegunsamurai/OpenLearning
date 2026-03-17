@@ -725,17 +725,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#post-apiparse-jd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /api/parse-jd
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#get-apiroles" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -795,6 +784,17 @@
     <span class="md-ellipsis">
       
         GET /api/assessment/{session_id}/report
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiassessmentsession_idexport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/assessment/{session_id}/export
       
     </span>
   </a>
@@ -1083,17 +1083,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#post-apiparse-jd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /api/parse-jd
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#get-apiroles" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1153,6 +1142,17 @@
     <span class="md-ellipsis">
       
         GET /api/assessment/{session_id}/report
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiassessmentsession_idexport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/assessment/{session_id}/export
       
     </span>
   </a>
@@ -1269,20 +1269,6 @@
 <span class="p">}</span>
 </code></pre></div>
 <hr />
-<h3 id="post-apiparse-jd">POST <code>/api/parse-jd</code><a class="headerlink" href="#post-apiparse-jd" title="Permanent link">&para;</a></h3>
-<p>Extract skills from a job description using AI.</p>
-<p><strong>Request</strong>: <code>JDParseRequest</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;jobDescription&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;We&#39;re looking for a senior backend engineer with experience in Node.js, PostgreSQL, and Kubernetes...&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Response</strong>: <code>JDParseResponse</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;skills&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;nodejs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;sql&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kubernetes&quot;</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Senior backend role focusing on Node.js services with PostgreSQL and K8s infrastructure.&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-<hr />
 <h3 id="get-apiroles">GET <code>/api/roles</code><a class="headerlink" href="#get-apiroles" title="Permanent link">&para;</a></h3>
 <p>Returns a list of all available roles (knowledge base domains).</p>
 <p><strong>Response</strong>: <code>list[RoleSummary]</code></p>
@@ -1381,26 +1367,45 @@
 <span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTTP is a stateless protocol that uses request-response pairs...&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p><strong>Response</strong> (SSE stream): Events include:</p>
+<p><strong>Response</strong> (SSE stream): Each event is a line of the form <code>data: &lt;payload&gt;\n\n</code>.</p>
 <table>
 <thead>
 <tr>
-<th>Event</th>
+<th>Signal</th>
+<th>Payload</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Question event</td>
-<td>Next question with metadata (topic, Bloom level, progress)</td>
+<td><em>(plain text)</em></td>
+<td>The question text</td>
+<td>Next question streamed as plain text</td>
 </tr>
 <tr>
-<td>Metadata event</td>
-<td>Assessment progress (topics evaluated, total questions)</td>
+<td><code>[META]</code> + JSON</td>
+<td><code>{"type":"assessment","step":null,"total_steps":null,"topics_evaluated":3,"total_questions":12,"max_questions":25}</code></td>
+<td>Assessment progress metadata</td>
 </tr>
 <tr>
-<td>Completion event</td>
-<td>Assessment complete with proficiency scores</td>
+<td><code>[ASSESSMENT_COMPLETE]</code></td>
+<td>—</td>
+<td>Pipeline finished; scores follow</td>
+</tr>
+<tr>
+<td><em>(fenced JSON)</em></td>
+<td><code>ProficiencyScoreOut[]</code> JSON array</td>
+<td>Proficiency scores wrapped in markdown code fences (sent after <code>[ASSESSMENT_COMPLETE]</code>)</td>
+</tr>
+<tr>
+<td><code>[DONE]</code></td>
+<td>—</td>
+<td>Stream complete</td>
+</tr>
+<tr>
+<td><code>[ERROR]</code></td>
+<td>Error message string</td>
+<td>An internal error occurred</td>
 </tr>
 </tbody>
 </table>
@@ -1426,7 +1431,51 @@
 <hr />
 <h3 id="get-apiassessmentsession_idreport">GET <code>/api/assessment/{session_id}/report</code><a class="headerlink" href="#get-apiassessmentsession_idreport" title="Permanent link">&para;</a></h3>
 <p>Get the full assessment report. Stores results in the database (idempotent).</p>
-<p><strong>Response</strong>: Full report including knowledge graph, gap nodes, learning plan, and proficiency scores.</p>
+<p><strong>Response</strong>: <code>AssessmentReportResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;knowledgeGraph&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;concept&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;bloomLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;apply&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;prerequisites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;gapNodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;concept&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;distributed_systems&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;currentConfidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;targetBloomLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;analyze&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;prerequisites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;networking&quot;</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;learningPlan&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Focus on distributed systems and security fundamentals.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;totalHours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">24.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;phases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;phaseNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Foundations&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;networking&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;distributed_systems&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;rationale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Build prerequisite knowledge first.&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;article&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Distributed Systems Primer&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">        </span><span class="nt">&quot;estimatedHours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8.0</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;proficiencyScores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;skillId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;skillName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Http Fundamentals&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">85</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;reasoning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Strong understanding demonstrated&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="get-apiassessmentsession_idexport">GET <code>/api/assessment/{session_id}/export</code><a class="headerlink" href="#get-apiassessmentsession_idexport" title="Permanent link">&para;</a></h3>
+<p>Export the full assessment report as a formatted Markdown file.</p>
+<ul>
+<li>If the assessment is complete, data is read from the database.</li>
+<li>If the assessment is still in progress, data falls back to the live graph state (sections without data render gracefully with fallback text).</li>
+</ul>
+<p><strong>Response</strong> (200):</p>
+<ul>
+<li><strong>Content-Type</strong>: <code>text/markdown</code></li>
+<li><strong>Content-Disposition</strong>: <code>attachment; filename="assessment-{session_id[:8]}.md"</code></li>
+<li><strong>Body</strong>: Formatted Markdown with sections: Proficiency Scores, Knowledge Map, Knowledge Gaps, Learning Plan.</li>
+</ul>
+<p><strong>Response</strong> (404 — session not found):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session not found&quot;</span><span class="p">}</span>
+</code></pre></div>
 <hr />
 <h3 id="post-apigap-analysis">POST <code>/api/gap-analysis</code><a class="headerlink" href="#post-apigap-analysis" title="Permanent link">&para;</a></h3>
 <p>Generate a gap analysis from proficiency scores.</p>

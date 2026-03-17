@@ -630,10 +630,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#jd-parser" class="md-nav__link">
+  <a href="#roles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        JD Parser
+        Roles
       
     </span>
   </a>
@@ -641,10 +641,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#roles" class="md-nav__link">
+  <a href="#assessment-route-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Roles
+        Assessment Route Models
       
     </span>
   </a>
@@ -1278,10 +1278,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#jd-parser" class="md-nav__link">
+  <a href="#roles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        JD Parser
+        Roles
       
     </span>
   </a>
@@ -1289,10 +1289,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#roles" class="md-nav__link">
+  <a href="#assessment-route-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Roles
+        Assessment Route Models
       
     </span>
   </a>
@@ -1657,14 +1657,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">LearningPlanRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">gap_analysis</span><span class="p">:</span> <span class="n">GapAnalysis</span>
 </code></pre></div>
-<h3 id="jd-parser">JD Parser<a class="headerlink" href="#jd-parser" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">JDParseRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">job_description</span><span class="p">:</span> <span class="nb">str</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">JDParseResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">skills</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
-</code></pre></div>
 <h3 id="roles">Roles<a class="headerlink" href="#roles" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RoleLevelSummary</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -1685,6 +1677,70 @@
     <span class="n">levels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">RoleLevelSummary</span><span class="p">]</span>
 </code></pre></div>
 <p><strong>Source</strong>: <code>backend/app/models/roles.py</code></p>
+<h3 id="assessment-route-models">Assessment Route Models<a class="headerlink" href="#assessment-route-models" title="Permanent link">&para;</a></h3>
+<p>These are simplified output projections defined directly in the route module (not in <code>models/</code>). They differ from the pipeline state types in <code>graph/state.py</code>.</p>
+<p><strong>Source</strong>: <code>backend/app/routes/assessment.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Request/Response for /assessment/start</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">target_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mid&quot;</span>
+    <span class="n">role_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Validated: must be in list_domains() or None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">question</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
+    <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">total_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># Response for /assessment/{id}/graph</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeNodeOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeGraphOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KnowledgeNodeOut</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProficiencyScoreOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">skill_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">skill_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResourceOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LearningPhaseOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">phase_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">rationale</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ResourceOut</span><span class="p">]</span>
+    <span class="n">estimated_hours</span><span class="p">:</span> <span class="nb">float</span>
+
+<span class="c1"># Response for /assessment/{id}/report</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GapNodeOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">current_confidence</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">target_bloom_level</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LearningPlanOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">total_hours</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LearningPhaseOut</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AssessmentReportResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">knowledge_graph</span><span class="p">:</span> <span class="n">KnowledgeGraphOut</span>
+    <span class="n">gap_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GapNodeOut</span><span class="p">]</span>
+    <span class="n">learning_plan</span><span class="p">:</span> <span class="n">LearningPlanOut</span>
+    <span class="n">proficiency_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProficiencyScoreOut</span><span class="p">]</span>
+</code></pre></div>
 <h3 id="knowledge-base-schema">Knowledge Base Schema<a class="headerlink" href="#knowledge-base-schema" title="Permanent link">&para;</a></h3>
 <p>These models validate YAML knowledge base files on load. They use <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal, not API-facing.</p>
 <div class="highlight"><pre><span></span><code><span class="n">LEVEL_ORDER</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;junior&quot;</span><span class="p">,</span> <span class="s2">&quot;mid&quot;</span><span class="p">,</span> <span class="s2">&quot;senior&quot;</span><span class="p">,</span> <span class="s2">&quot;staff&quot;</span><span class="p">]</span>
