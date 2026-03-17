@@ -25,6 +25,7 @@ backend/tests/
 ├── conftest.py            # Shared fixtures
 ├── test_agents.py         # LLM agent tests
 ├── test_db.py             # Database tests
+├── test_export.py         # Assessment report export tests
 ├── test_health.py         # Health endpoint tests
 ├── test_knowledge_base.py # Knowledge base loader and mapper tests
 ├── test_pipeline.py       # LangGraph pipeline tests
