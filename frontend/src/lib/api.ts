@@ -1,7 +1,6 @@
 import { client } from "@/lib/generated/api-client/client.gen";
 import {
   getSkillsApiSkillsGet,
-  parseJdApiParseJdPost,
   gapAnalysisApiGapAnalysisPost,
   learningPlanApiLearningPlanPost,
   getRolesApiRolesGet,
@@ -9,7 +8,6 @@ import {
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
-  JdParseResponse,
   GapAnalysis,
   LearningPlan,
   ProficiencyScore,
@@ -75,11 +73,6 @@ const realApi = {
 
   getSkills: async (): Promise<SkillsResponse> =>
     unwrap(await getSkillsApiSkillsGet()),
-
-  parseJD: async (jobDescription: string): Promise<JdParseResponse> =>
-    unwrap(
-      await parseJdApiParseJdPost({ body: { jobDescription } })
-    ),
 
   gapAnalysis: async (
     proficiencyScores: ProficiencyScore[]

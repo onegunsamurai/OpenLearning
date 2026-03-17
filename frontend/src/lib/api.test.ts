@@ -3,7 +3,6 @@ import { vi } from "vitest";
 // Mock the generated SDK functions
 vi.mock("@/lib/generated/api-client", () => ({
   getSkillsApiSkillsGet: vi.fn(),
-  parseJdApiParseJdPost: vi.fn(),
   gapAnalysisApiGapAnalysisPost: vi.fn(),
   learningPlanApiLearningPlanPost: vi.fn(),
 }));
@@ -16,7 +15,6 @@ vi.mock("@/lib/generated/api-client/client.gen", () => ({
 import { unwrap, api } from "./api";
 import {
   getSkillsApiSkillsGet,
-  parseJdApiParseJdPost,
   gapAnalysisApiGapAnalysisPost,
   learningPlanApiLearningPlanPost,
 } from "@/lib/generated/api-client";
@@ -187,14 +185,6 @@ describe("SDK-wrapped methods", () => {
     expect(result).toEqual(data);
   });
 
-  it("parseJD unwraps SDK result", async () => {
-    const data = { skills: ["React"], summary: "Frontend role" };
-    vi.mocked(parseJdApiParseJdPost).mockResolvedValueOnce(sdkResult(data));
-
-    const result = await api.parseJD("Some JD text");
-    expect(result).toEqual(data);
-  });
-
   it("gapAnalysis unwraps SDK result", async () => {
     const data = { overallReadiness: 80, summary: "Good", gaps: [] };
     vi.mocked(gapAnalysisApiGapAnalysisPost).mockResolvedValueOnce(
@@ -233,13 +223,6 @@ describe("SDK-wrapped methods", () => {
     await expect(api.getSkills()).rejects.toThrow("Unauthorized");
   });
 
-  it("parseJD propagates error through unwrap", async () => {
-    vi.mocked(parseJdApiParseJdPost).mockResolvedValueOnce(
-      { error: { detail: "Bad input" }, request: {}, response: {} } as never
-    );
-
-    await expect(api.parseJD("bad")).rejects.toThrow("Bad input");
-  });
 });
 
 describe("api.assessmentExport", () => {

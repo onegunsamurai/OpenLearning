@@ -1,4 +1,5 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
 const mockPush = vi.fn();
@@ -11,19 +12,61 @@ import { DEMO_ASSESSMENT_START } from "@/lib/demo/fixtures";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
   // jsdom doesn't implement scrollIntoView
   Element.prototype.scrollIntoView = vi.fn();
 });
 
 describe("DemoAssessPage", () => {
-  it("renders first demo question on mount", async () => {
+  it("shows onboarding dialog on first visit", () => {
     render(<DemoAssessPage />);
 
+    expect(screen.getByText("You're in Demo Mode")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Start Demo/ })).toBeInTheDocument();
+  });
+
+  it("skips dialog if sessionStorage has demo-onboarding-seen", async () => {
+    sessionStorage.setItem("demo-onboarding-seen", "true");
+    render(<DemoAssessPage />);
+
+    expect(screen.queryByText("You're in Demo Mode")).not.toBeInTheDocument();
+
+    // Chat should auto-start
     await waitFor(() => {
       expect(
         screen.getByText(DEMO_ASSESSMENT_START.question)
       ).toBeInTheDocument();
     });
+  });
+
+  it("does not auto-start chat while dialog is open", async () => {
+    render(<DemoAssessPage />);
+
+    // Dialog is visible
+    expect(screen.getByText("You're in Demo Mode")).toBeInTheDocument();
+
+    // The first demo question should NOT appear yet
+    expect(
+      screen.queryByText(DEMO_ASSESSMENT_START.question)
+    ).not.toBeInTheDocument();
+  });
+
+  it("starts chat after dialog is dismissed", async () => {
+    const user = userEvent.setup();
+    render(<DemoAssessPage />);
+
+    // Dismiss the dialog
+    await user.click(screen.getByRole("button", { name: /Start Demo/ }));
+
+    // Chat should start
+    await waitFor(() => {
+      expect(
+        screen.getByText(DEMO_ASSESSMENT_START.question)
+      ).toBeInTheDocument();
+    });
+
+    // sessionStorage should be set
+    expect(sessionStorage.getItem("demo-onboarding-seen")).toBe("true");
   });
 
   it("shows demo badge", () => {
@@ -37,6 +80,7 @@ describe("DemoAssessPage", () => {
   });
 
   it("renders user message after form submission", async () => {
+    sessionStorage.setItem("demo-onboarding-seen", "true");
     render(<DemoAssessPage />);
 
     await waitFor(() => {
@@ -58,6 +102,7 @@ describe("DemoAssessPage", () => {
   });
 
   it("shows progress bar", async () => {
+    sessionStorage.setItem("demo-onboarding-seen", "true");
     render(<DemoAssessPage />);
 
     await waitFor(() => {

@@ -46,29 +46,6 @@ Returns the full skills taxonomy with categories.
 
 ---
 
-### POST `/api/parse-jd`
-
-Extract skills from a job description using AI.
-
-**Request**: `JDParseRequest`
-
-```json
-{
-  "jobDescription": "We're looking for a senior backend engineer with experience in Node.js, PostgreSQL, and Kubernetes..."
-}
-```
-
-**Response**: `JDParseResponse`
-
-```json
-{
-  "skills": ["nodejs", "sql", "kubernetes"],
-  "summary": "Senior backend role focusing on Node.js services with PostgreSQL and K8s infrastructure."
-}
-```
-
----
-
 ### GET `/api/roles`
 
 Returns a list of all available roles (knowledge base domains).
@@ -180,7 +157,7 @@ Submit an answer and receive the next question (or completion).
 | _(plain text)_ | The question text | Next question streamed as plain text |
 | `[META]` + JSON | `{"type":"assessment","step":null,"total_steps":null,"topics_evaluated":3,"total_questions":12,"max_questions":25}` | Assessment progress metadata |
 | `[ASSESSMENT_COMPLETE]` | — | Pipeline finished; scores follow |
-| _(JSON block)_ | `{"scores":[...]}` | Proficiency scores (sent after `[ASSESSMENT_COMPLETE]`) |
+| _(fenced JSON)_ | `ProficiencyScoreOut[]` JSON array | Proficiency scores wrapped in markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
 | `[DONE]` | — | Stream complete |
 | `[ERROR]` | Error message string | An internal error occurred |
 
@@ -219,7 +196,37 @@ Get the current knowledge graph for an assessment session.
 
 Get the full assessment report. Stores results in the database (idempotent).
 
-**Response**: Full report including knowledge graph, gap nodes, learning plan, and proficiency scores.
+**Response**: `AssessmentReportResponse`
+
+```json
+{
+  "knowledgeGraph": {
+    "nodes": [
+      { "concept": "http_fundamentals", "confidence": 0.85, "bloomLevel": "apply", "prerequisites": [] }
+    ]
+  },
+  "gapNodes": [
+    { "concept": "distributed_systems", "currentConfidence": 0.3, "targetBloomLevel": "analyze", "prerequisites": ["networking"] }
+  ],
+  "learningPlan": {
+    "summary": "Focus on distributed systems and security fundamentals.",
+    "totalHours": 24.0,
+    "phases": [
+      {
+        "phaseNumber": 1,
+        "title": "Foundations",
+        "concepts": ["networking", "distributed_systems"],
+        "rationale": "Build prerequisite knowledge first.",
+        "resources": [{ "type": "article", "title": "Distributed Systems Primer", "url": null }],
+        "estimatedHours": 8.0
+      }
+    ]
+  },
+  "proficiencyScores": [
+    { "skillId": "http_fundamentals", "skillName": "Http Fundamentals", "score": 85, "confidence": 0.85, "reasoning": "Strong understanding demonstrated" }
+  ]
+}
+```
 
 ---
 

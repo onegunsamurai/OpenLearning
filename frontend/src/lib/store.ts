@@ -11,8 +11,6 @@ interface AppState {
   selectedSkillIds: string[];
   toggleSkill: (skillId: string) => void;
   setSelectedSkillIds: (ids: string[]) => void;
-  jobDescription: string;
-  setJobDescription: (jd: string) => void;
   selectedRoleId: string | null;
   setSelectedRoleId: (roleId: string | null) => void;
   roleSkillIds: string[];
@@ -41,7 +39,6 @@ interface AppState {
 export const initialState = {
   currentStep: 0,
   selectedSkillIds: [],
-  jobDescription: "",
   selectedRoleId: null as string | null,
   roleSkillIds: [] as string[],
   targetLevel: "mid",
@@ -66,7 +63,6 @@ export const useAppStore = create<AppState>()(
         })),
 
       setSelectedSkillIds: (ids) => set({ selectedSkillIds: ids }),
-      setJobDescription: (jd) => set({ jobDescription: jd }),
       setSelectedRoleId: (roleId) => set({ selectedRoleId: roleId }),
       setRoleSkillIds: (ids) => set({ roleSkillIds: ids }),
       setTargetLevel: (level) => set({ targetLevel: level }),

@@ -9,7 +9,7 @@ Most learning platforms treat assessment as a static quiz. OpenLearning uses a [
 ## Features
 
 ### Onboarding
-Select a role to get started quickly, paste a job description to auto-extract skills, or browse and select manually from a curated taxonomy.
+Select a role to get started quickly or browse and select manually from a curated taxonomy.
 
 ### Skill Assessment
 Adaptive AI interview powered by Claude. The system calibrates difficulty with initial questions, then uses Bloom taxonomy levels to probe understanding depth across multiple topics.

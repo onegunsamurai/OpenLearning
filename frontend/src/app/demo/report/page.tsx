@@ -16,15 +16,9 @@ import {
   DEMO_PROFICIENCY_SCORES,
 } from "@/lib/demo/fixtures";
 import { cn } from "@/lib/utils";
+import { DEMO_STEPS } from "@/lib/demo/constants";
 import { ArrowRight, Download, RotateCcw } from "lucide-react";
 import { motion } from "motion/react";
-import type { StepDefinition } from "@/components/layout/StepProgress";
-
-const DEMO_STEPS: StepDefinition[] = [
-  { label: "Skills", path: "/demo" },
-  { label: "Assess", path: "/demo/assess" },
-  { label: "Report", path: "/demo/report" },
-];
 
 export default function DemoReportPage() {
   const router = useRouter();
@@ -47,7 +41,7 @@ export default function DemoReportPage() {
   };
 
   return (
-    <PageShell currentStep={2} isDemo steps={DEMO_STEPS}>
+    <PageShell currentStep={1} isDemo steps={DEMO_STEPS}>
       {/* Section tabs */}
       <div className="flex gap-2 mb-8">
         <button
@@ -177,7 +171,10 @@ export default function DemoReportPage() {
           Download Report (.md)
         </Button>
         <Button
-          onClick={() => router.push("/demo")}
+          onClick={() => {
+            sessionStorage.removeItem("demo-onboarding-seen");
+            router.push("/demo/assess");
+          }}
           variant="outline"
           className="gap-2 border-border text-muted-foreground"
         >

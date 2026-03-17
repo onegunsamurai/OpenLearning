@@ -11,18 +11,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProficiencyScore } from "@/lib/types";
 import { useDemoAssessmentChat } from "@/hooks/useDemoAssessmentChat";
 import { Progress } from "@/components/ui/progress";
+import { DemoOnboardingDialog } from "@/components/demo/DemoOnboardingDialog";
+import { DEMO_STEPS } from "@/lib/demo/constants";
 import { Send, Bot } from "lucide-react";
-import type { StepDefinition } from "@/components/layout/StepProgress";
-
-const DEMO_STEPS: StepDefinition[] = [
-  { label: "Skills", path: "/demo" },
-  { label: "Assess", path: "/demo/assess" },
-  { label: "Report", path: "/demo/report" },
-];
 
 export default function DemoAssessPage() {
   const router = useRouter();
 
+  const [popupDismissed, setPopupDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("demo-onboarding-seen") === "true";
+  });
   const [assessmentDone, setAssessmentDone] = useState(false);
   const [scores, setScores] = useState<ProficiencyScore[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -43,11 +42,16 @@ export default function DemoAssessPage() {
 
   const isLoading = status === "submitted" || status === "streaming";
 
+  const handlePopupDismiss = useCallback(() => {
+    sessionStorage.setItem("demo-onboarding-seen", "true");
+    setPopupDismissed(true);
+  }, []);
+
   useEffect(() => {
-    if (messages.length === 0 && status === "ready") {
+    if (messages.length === 0 && status === "ready" && popupDismissed) {
       initialiseChat();
     }
-  }, [messages.length, status, initialiseChat]);
+  }, [messages.length, status, initialiseChat, popupDismissed]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -72,7 +76,7 @@ export default function DemoAssessPage() {
   };
 
   return (
-    <PageShell currentStep={1} noPadding isDemo steps={DEMO_STEPS}>
+    <PageShell currentStep={0} noPadding isDemo steps={DEMO_STEPS}>
       <div className="flex h-[calc(100vh-57px)] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">
@@ -174,6 +178,11 @@ export default function DemoAssessPage() {
           </>
         )}
       </div>
+
+      <DemoOnboardingDialog
+        open={!popupDismissed}
+        onDismiss={handlePopupDismiss}
+      />
     </PageShell>
   );
 }

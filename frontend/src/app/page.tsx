@@ -3,14 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
-import { JDPasteInput } from "@/components/onboarding/JDPasteInput";
 import { SkillBrowser } from "@/components/onboarding/SkillBrowser";
 import { RoleSelector } from "@/components/onboarding/role-selector";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { Skill } from "@/lib/types";
 import { api } from "@/lib/api";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { ArrowRight, FlaskConical, Play } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 
@@ -48,13 +47,6 @@ export default function OnboardingPage() {
     [setSelectedRoleId, setSelectedSkillIds, setRoleSkillIds]
   );
 
-  const handleSkillsExtracted = (skillIds: string[]) => {
-    const merged = [...new Set([...selectedSkillIds, ...skillIds])];
-    setSelectedSkillIds(merged);
-    setSelectedRoleId(null);
-    setRoleSkillIds([]);
-  };
-
   const handleStart = () => {
     setCurrentStep(1);
     router.push("/assess");
@@ -84,9 +76,9 @@ export default function OnboardingPage() {
             <span className="text-gradient">skill gaps</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-            Select a role, paste a job description, or choose skills manually.
-            Our AI will assess your proficiency, identify gaps, and generate a
-            personalized learning plan.
+            Select a role or choose skills manually. Our AI will assess your
+            proficiency, identify gaps, and generate a personalized learning
+            plan.
           </p>
           <div className="mt-6 space-y-2">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -107,6 +99,18 @@ export default function OnboardingPage() {
               </span>
               Get your gap analysis & learning plan
             </div>
+          </div>
+          <div className="mt-8 flex flex-col items-start gap-2">
+            <Link
+              href="/demo/assess"
+              className="inline-flex min-h-[48px] items-center gap-2.5 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-300 px-8 text-base font-semibold text-[#0a0a1a] transition-all duration-200 hover:scale-[1.03] hover:brightness-110"
+            >
+              <Play className="h-4 w-4 fill-current" />
+              Try Interactive Demo
+            </Link>
+            <span className="pl-2 text-[13px] text-muted-foreground">
+              No signup required &middot; 2 min walkthrough
+            </span>
           </div>
         </motion.div>
 
@@ -132,27 +136,7 @@ export default function OnboardingPage() {
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-border" />
             <span className="text-xs font-mono text-muted-foreground uppercase">
-              or paste a JD
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 font-heading text-lg font-semibold">
-              Paste a Job Description
-            </h3>
-            <JDPasteInput
-              skills={skills}
-              selectedSkillIds={selectedSkillIds}
-              onSkillsExtracted={handleSkillsExtracted}
-              onToggleSkill={toggleSkill}
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-mono text-muted-foreground uppercase">
-              or browse manually
+              or browse skills
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
@@ -181,7 +165,7 @@ export default function OnboardingPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Link
-              href="/demo"
+              href="/demo/assess"
               className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-mono text-muted-foreground transition-colors hover:text-foreground"
               title="Try a demo with pre-loaded data (no API key needed)"
             >

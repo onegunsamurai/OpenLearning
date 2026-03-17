@@ -2,6 +2,8 @@
 
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
+import Link from "next/link";
+import { Play } from "lucide-react";
 
 interface PageShellProps {
   currentStep: number;
@@ -33,9 +35,18 @@ export function PageShell({
                 Demo
               </span>
             ) : (
-              <span className="hidden text-xs text-muted-foreground font-mono sm:block">
-                session resets on close
-              </span>
+              <>
+                <span className="hidden text-xs text-muted-foreground font-mono sm:block">
+                  session resets on close
+                </span>
+                <Link
+                  href="/demo/assess"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full bg-cyan-400 px-3.5 text-[13px] font-semibold text-[#0a0a1a] shadow-[0_0_12px_rgba(34,211,238,0.35)] transition-all duration-200 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] hover:brightness-110"
+                >
+                  <Play className="h-3 w-3 fill-current" />
+                  Try Demo
+                </Link>
+              </>
             )}
           </div>
           <StepProgress currentStep={currentStep} steps={steps} />

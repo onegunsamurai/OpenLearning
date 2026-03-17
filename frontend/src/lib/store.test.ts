@@ -12,7 +12,6 @@ describe("useAppStore", () => {
       const state = useAppStore.getState();
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
-      expect(state.jobDescription).toBe("");
       expect(state.selectedRoleId).toBeNull();
       expect(state.roleSkillIds).toEqual([]);
       expect(state.targetLevel).toBe("mid");
@@ -27,15 +26,6 @@ describe("useAppStore", () => {
     it("updates step", () => {
       useAppStore.getState().setCurrentStep(3);
       expect(useAppStore.getState().currentStep).toBe(3);
-    });
-  });
-
-  describe("setJobDescription", () => {
-    it("updates job description", () => {
-      useAppStore.getState().setJobDescription("Senior React Developer");
-      expect(useAppStore.getState().jobDescription).toBe(
-        "Senior React Developer"
-      );
     });
   });
 
@@ -153,7 +143,6 @@ describe("useAppStore", () => {
   describe("reset", () => {
     it("restores all fields to initial values", () => {
       useAppStore.getState().setCurrentStep(5);
-      useAppStore.getState().setJobDescription("JD");
       useAppStore.getState().setSelectedSkillIds(["x"]);
       useAppStore.getState().setSelectedRoleId("backend_engineering");
       useAppStore.getState().setRoleSkillIds(["nodejs"]);
@@ -179,7 +168,6 @@ describe("useAppStore", () => {
       const state = useAppStore.getState();
       expect(state.currentStep).toBe(0);
       expect(state.selectedSkillIds).toEqual([]);
-      expect(state.jobDescription).toBe("");
       expect(state.selectedRoleId).toBeNull();
       expect(state.roleSkillIds).toEqual([]);
       expect(state.targetLevel).toBe("mid");
@@ -206,7 +194,6 @@ describe("useAppStore", () => {
           currentStep: 7,
           selectedSkillIds: ["rehydrated"],
           roleSkillIds: ["rehydrated"],
-          jobDescription: "test",
           assessmentSessionId: null,
           proficiencyScores: [],
           gapAnalysis: null,

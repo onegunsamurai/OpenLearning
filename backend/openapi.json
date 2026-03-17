@@ -52,44 +52,6 @@
         }
       }
     },
-    "/api/parse-jd": {
-      "post": {
-        "summary": "Parse Jd",
-        "operationId": "parse_jd_api_parse_jd_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JDParseRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JDParseResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/assessment/start": {
       "post": {
         "summary": "Assessment Start",
@@ -237,6 +199,43 @@
                 "schema": {
                   "$ref": "#/components/schemas/AssessmentReportResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/{session_id}/export": {
+      "get": {
+        "summary": "Assessment Export",
+        "operationId": "assessment_export_api_assessment__session_id__export_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -661,40 +660,6 @@
           "status"
         ],
         "title": "HealthResponse"
-      },
-      "JDParseRequest": {
-        "properties": {
-          "jobDescription": {
-            "type": "string",
-            "title": "Jobdescription"
-          }
-        },
-        "type": "object",
-        "required": [
-          "jobDescription"
-        ],
-        "title": "JDParseRequest"
-      },
-      "JDParseResponse": {
-        "properties": {
-          "skills": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Skills"
-          },
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          }
-        },
-        "type": "object",
-        "required": [
-          "skills",
-          "summary"
-        ],
-        "title": "JDParseResponse"
       },
       "KnowledgeGraphOut": {
         "properties": {

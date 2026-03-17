@@ -24,6 +24,7 @@ import { DEMO_GAP_ANALYSIS, DEMO_LEARNING_PLAN, DEMO_PROFICIENCY_SCORES } from "
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
 });
 
 describe("DemoReportPage", () => {
@@ -113,12 +114,14 @@ describe("DemoReportPage", () => {
     expect(revokeObjectURL).toHaveBeenCalledWith(mockObjectURL);
   });
 
-  it("Start Over navigates to /demo", async () => {
+  it("Start Over clears sessionStorage and navigates to /demo/assess", async () => {
     const user = userEvent.setup();
+    sessionStorage.setItem("demo-onboarding-seen", "true");
     render(<DemoReportPage />);
 
     await user.click(screen.getByRole("button", { name: /Start Over/i }));
-    expect(mockPush).toHaveBeenCalledWith("/demo");
+    expect(sessionStorage.getItem("demo-onboarding-seen")).toBeNull();
+    expect(mockPush).toHaveBeenCalledWith("/demo/assess");
   });
 
   it("Try the Real Thing navigates to /", async () => {

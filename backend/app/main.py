@@ -13,7 +13,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.config import get_settings
 from app.db import init_db
 from app.graph.pipeline import compile_graph
-from app.routes import assessment, gap_analysis, health, learning_plan, parse_jd, roles, skills
+from app.routes import assessment, gap_analysis, health, learning_plan, roles, skills
 from app.services.session_cleanup import cleanup_stale_sessions
 
 settings = get_settings()
@@ -50,7 +50,6 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api")
 app.include_router(skills.router, prefix="/api")
-app.include_router(parse_jd.router, prefix="/api")
 app.include_router(assessment.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(gap_analysis.router, prefix="/api")
