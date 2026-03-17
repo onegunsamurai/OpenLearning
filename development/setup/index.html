@@ -1277,12 +1277,12 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make dev-backend</code></td>
-<td><code>uvicorn app.main:app --reload --port 8000</code></td>
+<td><code>cd backend &amp;&amp; uvicorn app.main:app --reload --port 8000</code></td>
 <td>Start backend with hot reload</td>
 </tr>
 <tr>
 <td><code>make dev-frontend</code></td>
-<td><code>npm run dev</code></td>
+<td><code>cd frontend &amp;&amp; npm run dev</code></td>
 <td>Start frontend dev server</td>
 </tr>
 <tr>
@@ -1292,12 +1292,12 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make install-backend</code></td>
-<td><code>pip install -r requirements.txt</code></td>
+<td><code>cd backend &amp;&amp; pip install -r requirements.txt</code></td>
 <td>Install Python dependencies</td>
 </tr>
 <tr>
 <td><code>make install-frontend</code></td>
-<td><code>npm install</code></td>
+<td><code>cd frontend &amp;&amp; npm install</code></td>
 <td>Install Node dependencies</td>
 </tr>
 <tr>
@@ -1312,17 +1312,17 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make lint-backend</code></td>
-<td><code>ruff check .</code></td>
+<td><code>cd backend &amp;&amp; ruff check .</code></td>
 <td>Lint Python code</td>
 </tr>
 <tr>
 <td><code>make lint-frontend</code></td>
-<td><code>npx eslint .</code></td>
+<td><code>cd frontend &amp;&amp; npx eslint .</code></td>
 <td>Lint TypeScript code</td>
 </tr>
 <tr>
 <td><code>make typecheck</code></td>
-<td><code>npx tsc --noEmit</code></td>
+<td><code>cd frontend &amp;&amp; npx tsc --noEmit</code></td>
 <td>TypeScript type checking</td>
 </tr>
 <tr>
@@ -1332,12 +1332,12 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make test-backend</code></td>
-<td><code>pytest tests/ -v</code></td>
+<td><code>cd backend &amp;&amp; pytest tests/ -v</code></td>
 <td>Run backend tests</td>
 </tr>
 <tr>
 <td><code>make test-frontend</code></td>
-<td><code>npm test</code></td>
+<td><code>cd frontend &amp;&amp; npm test</code></td>
 <td>Run frontend tests (Vitest)</td>
 </tr>
 <tr>
@@ -1362,7 +1362,7 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 </tr>
 <tr>
 <td><code>make build-frontend</code></td>
-<td><code>npm run build</code></td>
+<td><code>cd frontend &amp;&amp; npm run build</code></td>
 <td>Build frontend for production</td>
 </tr>
 <tr>
