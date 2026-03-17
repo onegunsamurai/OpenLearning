@@ -1,7 +1,6 @@
 "use client";
 
-import { StepProgress } from "./StepProgress";
-import { useAppStore } from "@/lib/store";
+import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 
 interface PageShellProps {
@@ -9,6 +8,8 @@ interface PageShellProps {
   children: React.ReactNode;
   maxWidth?: string;
   noPadding?: boolean;
+  isDemo?: boolean;
+  steps?: StepDefinition[];
 }
 
 export function PageShell({
@@ -16,9 +17,9 @@ export function PageShell({
   children,
   maxWidth = "max-w-7xl",
   noPadding = false,
+  isDemo = false,
+  steps,
 }: PageShellProps) {
-  const demoMode = useAppStore((s) => s.demoMode);
-
   return (
     <div className="grid-background min-h-screen">
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -27,7 +28,7 @@ export function PageShell({
             <h1 className="font-heading text-lg font-bold tracking-tight">
               <span className="text-cyan">Open</span>Learning
             </h1>
-            {demoMode ? (
+            {isDemo ? (
               <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-400">
                 Demo
               </span>
@@ -37,7 +38,7 @@ export function PageShell({
               </span>
             )}
           </div>
-          <StepProgress currentStep={currentStep} />
+          <StepProgress currentStep={currentStep} steps={steps} />
         </div>
       </header>
       <motion.main

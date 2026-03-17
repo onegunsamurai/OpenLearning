@@ -20,6 +20,8 @@ interface RoleSelectorProps {
   onSelectRole: (roleId: string, skillIds: string[]) => void;
   targetLevel: string;
   onTargetLevelChange: (level: string) => void;
+  getRoles?: () => Promise<RoleSummary[]>;
+  getRole?: (roleId: string) => Promise<{ mappedSkillIds: string[] }>;
 }
 
 export function RoleSelector({
@@ -27,6 +29,8 @@ export function RoleSelector({
   onSelectRole,
   targetLevel,
   onTargetLevelChange,
+  getRoles: getRolesOverride,
+  getRole: getRoleOverride,
 }: RoleSelectorProps) {
   const [roles, setRoles] = useState<RoleSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +41,7 @@ export function RoleSelector({
   const fetchRoles = useCallback(() => {
     setLoading(true);
     setError(null);
-    api
-      .getRoles()
+    (getRolesOverride ?? api.getRoles)()
       .then((data) => {
         setRoles(data);
         setLoading(false);
@@ -47,7 +50,7 @@ export function RoleSelector({
         setError(err instanceof Error ? err.message : "Failed to load roles");
         setLoading(false);
       });
-  }, []);
+  }, [getRolesOverride]);
 
   useEffect(() => {
     fetchRoles();
@@ -58,7 +61,7 @@ export function RoleSelector({
     setLoadingRoleId(roleId);
     const requestId = ++requestCounterRef.current;
     try {
-      const detail = await api.getRole(roleId);
+      const detail = await (getRoleOverride ?? api.getRole)(roleId);
       if (requestCounterRef.current !== requestId) return;
       onSelectRole(roleId, detail.mappedSkillIds);
     } catch {

@@ -3,7 +3,12 @@
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
-const steps = [
+export interface StepDefinition {
+  label: string;
+  path: string;
+}
+
+const defaultSteps: StepDefinition[] = [
   { label: "Skills", path: "/" },
   { label: "Assess", path: "/assess" },
   { label: "Gaps", path: "/gap-analysis" },
@@ -12,9 +17,10 @@ const steps = [
 
 interface StepProgressProps {
   currentStep: number;
+  steps?: StepDefinition[];
 }
 
-export function StepProgress({ currentStep }: StepProgressProps) {
+export function StepProgress({ currentStep, steps = defaultSteps }: StepProgressProps) {
   return (
     <div className="flex items-center gap-2">
       {steps.map((step, index) => (

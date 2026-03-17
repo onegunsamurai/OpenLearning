@@ -1,4 +1,3 @@
-export { demoApi } from "./demo-api";
 export { createDemoSSEResponse } from "./demo-assessment";
 export {
   DEMO_SKILLS,

@@ -109,6 +109,16 @@ Test files are co-located next to their source files with a `.test.ts` or `.test
 
 ```
 frontend/src/
+├── app/
+│   ├── demo/
+│   │   ├── page.test.tsx
+│   │   ├── assess/
+│   │   │   └── page.test.tsx
+│   │   └── report/
+│   │       └── page.test.tsx
+│   └── export/
+│       └── [id]/
+│           └── page.test.tsx
 ├── components/
 │   ├── assessment/
 │   │   └── ChatMessage.test.tsx
@@ -118,10 +128,13 @@ frontend/src/
 │       ├── SkillBrowser.test.tsx
 │       └── role-selector.test.tsx
 ├── hooks/
-│   └── useAssessmentChat.test.ts
+│   ├── useAssessmentChat.test.ts
+│   └── useDemoAssessmentChat.test.ts
 └── lib/
     ├── api.test.ts
-    └── store.test.ts
+    ├── store.test.ts
+    └── demo/
+        └── demo-assessment.test.ts
 ```
 
 ### Configuration
