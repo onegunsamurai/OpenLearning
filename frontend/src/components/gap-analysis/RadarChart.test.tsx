@@ -98,15 +98,15 @@ describe("RadarChart component", () => {
   });
 
   it("renders without crashing with valid data", () => {
-    const { container } = render(
+    const { getByTestId } = render(
       <RadarChart gaps={[makeGap(), makeGap({ skillId: "s2", skillName: "TypeScript" })]} />
     );
-    expect(container).toBeTruthy();
+    expect(getByTestId("responsive-container")).toBeInTheDocument();
   });
 
   it("renders without crashing with empty array", () => {
-    const { container } = render(<RadarChart gaps={[]} />);
-    expect(container).toBeTruthy();
+    const { getByTestId } = render(<RadarChart gaps={[]} />);
+    expect(getByTestId("responsive-container")).toBeInTheDocument();
   });
 
   it("renders chart sub-components", () => {

@@ -205,6 +205,56 @@ class TestResponseEvaluator:
 
         assert result["latest_evaluation"].confidence == 1.0
 
+    @pytest.mark.asyncio
+    async def test_clamps_confidence_below_zero(self):
+        mock_output = EvaluationOutput(
+            confidence=-0.5,
+            bloom_level="remember",
+            evidence=["Negative confidence"],
+            reasoning="Test",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["question_history"] = [
+            Question(
+                id="q-1",
+                topic="http_fundamentals",
+                bloom_level=BloomLevel.apply,
+                text="Q?",
+                question_type="conceptual",
+            )
+        ]
+        state["response_history"] = [Response(question_id="q-1", text="Answer")]
+
+        with patch(
+            "app.agents.response_evaluator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await evaluate_response(state)
+
+        assert result["latest_evaluation"].confidence == 0.0
+
+    @pytest.mark.asyncio
+    async def test_llm_error_propagates(self):
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["question_history"] = [
+            Question(
+                id="q-1",
+                topic="http_fundamentals",
+                bloom_level=BloomLevel.apply,
+                text="Q?",
+                question_type="conceptual",
+            )
+        ]
+        state["response_history"] = [Response(question_id="q-1", text="Answer")]
+
+        with patch(
+            "app.agents.response_evaluator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.side_effect = RuntimeError("LLM error")
+            with pytest.raises(RuntimeError, match="LLM error"):
+                await evaluate_response(state)
+
 
 class TestQuestionGenerator:
     @pytest.mark.asyncio
@@ -252,3 +302,79 @@ class TestQuestionGenerator:
             result = await generate_question(state)
 
         assert result["questions_on_current_topic"] == 3
+
+    @pytest.mark.asyncio
+    async def test_fallback_topic_when_empty(self):
+        mock_output = QuestionOutput(
+            topic="",
+            bloom_level="apply",
+            text="Fallback question.",
+            question_type="conceptual",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["current_topic"] = "http_fundamentals"
+        state["current_bloom_level"] = BloomLevel.apply
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await generate_question(state)
+
+        assert result["pending_question"].topic == "http_fundamentals"
+
+    @pytest.mark.asyncio
+    async def test_fallback_bloom_when_empty(self):
+        mock_output = QuestionOutput(
+            topic="http_fundamentals",
+            bloom_level="",
+            text="Fallback bloom.",
+            question_type="conceptual",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["current_topic"] = "http_fundamentals"
+        state["current_bloom_level"] = BloomLevel.apply
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await generate_question(state)
+
+        assert result["pending_question"].bloom_level == BloomLevel.apply
+
+    @pytest.mark.asyncio
+    async def test_fallback_question_type_when_empty(self):
+        mock_output = QuestionOutput(
+            topic="http_fundamentals",
+            bloom_level="apply",
+            text="Fallback type.",
+            question_type="",
+        )
+
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["current_topic"] = "http_fundamentals"
+        state["current_bloom_level"] = BloomLevel.apply
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            result = await generate_question(state)
+
+        assert result["pending_question"].question_type == "conceptual"
+
+    @pytest.mark.asyncio
+    async def test_llm_error_propagates(self):
+        state = make_initial_state("test", ["nodejs"], "backend_engineering")
+        state["current_topic"] = "http_fundamentals"
+        state["current_bloom_level"] = BloomLevel.apply
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.side_effect = RuntimeError("LLM error")
+            with pytest.raises(RuntimeError, match="LLM error"):
+                await generate_question(state)
