@@ -6,109 +6,21 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-import pytest_asyncio
-from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.db import AssessmentResult, AssessmentSession, Base, get_db
-from app.routes.assessment import router
+from app.db import AssessmentResult
 from app.routes.export_utils import build_assessment_markdown
-
-# ── In-memory SQLite test database ──────────────────────────────────────────
-
-_test_engine = create_async_engine("sqlite+aiosqlite:///:memory:")
-_TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
-
-# ── Minimal FastAPI app with the router ─────────────────────────────────────
-
-_test_app = FastAPI()
-_test_app.include_router(router, prefix="/api")
-
-
-async def _override_get_db():
-    async with _TestSessionFactory() as session:
-        yield session
-
-
-_test_app.dependency_overrides[get_db] = _override_get_db
-
-_mock_graph = AsyncMock()
-_test_app.state.graph = _mock_graph
-
-
-# ── Fixtures ────────────────────────────────────────────────────────────────
-
-FULL_KNOWLEDGE_GRAPH = {
-    "nodes": [
-        {
-            "concept": "React Hooks",
-            "confidence": 0.85,
-            "bloom_level": "apply",
-            "prerequisites": [],
-            "evidence": ["Demonstrated useState usage", "Explained useEffect"],
-        },
-        {
-            "concept": "TypeScript Generics",
-            "confidence": 0.7,
-            "bloom_level": "apply",
-            "prerequisites": ["React Hooks"],
-            "evidence": [],
-        },
-    ]
-}
-
-FULL_GAP_NODES = [
-    {
-        "concept": "Next.js App Router",
-        "confidence": 0.6,
-        "bloom_level": "apply",
-        "prerequisites": ["React Hooks"],
-    }
-]
-
-FULL_LEARNING_PLAN = {
-    "summary": "Focus on deepening Next.js knowledge.",
-    "total_hours": 20,
-    "phases": [
-        {
-            "phase_number": 1,
-            "title": "Next.js Deep Dive",
-            "estimated_hours": 16,
-            "rationale": "Biggest gap relative to target level",
-            "concepts": ["App Router", "Server Actions"],
-            "resources": [
-                {
-                    "title": "Next.js Docs",
-                    "url": "https://nextjs.org/docs",
-                    "type": "documentation",
-                },
-                {"title": "Internal Guide", "url": None, "type": "guide"},
-            ],
-        }
-    ],
-}
-
-FULL_PROFICIENCY_SCORES = [
-    {
-        "skill_id": "react",
-        "skill_name": "React",
-        "score": 72,
-        "confidence": 0.85,
-        "bloom_level": "apply",
-    }
-]
-
-
-@pytest_asyncio.fixture
-async def setup_db():
-    """Create tables before each test, drop after."""
-    async with _test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with _test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-
+from tests.conftest import (
+    FULL_GAP_NODES,
+    FULL_KNOWLEDGE_GRAPH,
+    FULL_LEARNING_PLAN,
+    FULL_PROFICIENCY_SCORES,
+    _mock_graph,
+    _test_app,
+    _TestSessionFactory,
+    seed_result,
+    seed_session,
+)
 
 # ── TestBuildAssessmentMarkdown ──────────────────────────────────────────────
 
@@ -253,29 +165,6 @@ class TestBuildAssessmentMarkdown:
 
 
 class TestAssessmentExportRoute:
-    async def _seed_session(self, db: AsyncSession, session_id: str = "sess-001") -> str:
-        session = AssessmentSession(
-            session_id=session_id,
-            thread_id="thread-001",
-            skill_ids=["react"],
-            target_level="mid",
-            status="completed",
-        )
-        db.add(session)
-        await db.commit()
-        return session_id
-
-    async def _seed_result(self, db: AsyncSession, session_id: str = "sess-001") -> None:
-        result = AssessmentResult(
-            session_id=session_id,
-            knowledge_graph=FULL_KNOWLEDGE_GRAPH,
-            gap_nodes=FULL_GAP_NODES,
-            learning_plan=FULL_LEARNING_PLAN,
-            proficiency_scores=FULL_PROFICIENCY_SCORES,
-        )
-        db.add(result)
-        await db.commit()
-
     @pytest.mark.asyncio
     async def test_export_session_not_found_returns_404(self, setup_db):
         async with AsyncClient(
@@ -287,8 +176,8 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_from_db_result_returns_200_markdown(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
-            await self._seed_result(db)
+            await seed_session(db, status="completed")
+            await seed_result(db)
 
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -301,8 +190,8 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_response_content_type_is_text_markdown(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
-            await self._seed_result(db)
+            await seed_session(db, status="completed")
+            await seed_result(db)
 
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -314,8 +203,8 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_response_has_content_disposition_attachment(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
-            await self._seed_result(db)
+            await seed_session(db, status="completed")
+            await seed_result(db)
 
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -328,8 +217,8 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_response_has_content_length(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
-            await self._seed_result(db)
+            await seed_session(db, status="completed")
+            await seed_result(db)
 
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -342,7 +231,7 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_falls_back_to_graph_state_when_no_db_row(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
+            await seed_session(db, status="completed")
             # No AssessmentResult row — must fall back to graph state
 
         fake_kg = MagicMock()
@@ -372,7 +261,7 @@ class TestAssessmentExportRoute:
     @pytest.mark.asyncio
     async def test_export_incomplete_assessment_returns_200_with_fallbacks(self, setup_db):
         async with _TestSessionFactory() as db:
-            await self._seed_session(db)
+            await seed_session(db, status="completed")
             result = AssessmentResult(
                 session_id="sess-001",
                 knowledge_graph=None,

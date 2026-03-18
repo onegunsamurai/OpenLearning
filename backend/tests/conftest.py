@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-import pytest
+from unittest.mock import AsyncMock
 
+import pytest
+import pytest_asyncio
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from app.db import AssessmentResult, AssessmentSession, Base, get_db
 from app.graph.state import (
     AssessmentState,
     BloomLevel,
@@ -12,6 +18,162 @@ from app.graph.state import (
     Response,
     make_initial_state,
 )
+from app.routes.assessment import router as assessment_router
+from app.routes.gap_analysis import router as gap_analysis_router
+from app.routes.learning_plan import router as learning_plan_router
+
+# ── In-memory SQLite test database ──────────────────────────────────────────
+
+_test_engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+_TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
+
+
+async def _override_get_db():
+    async with _TestSessionFactory() as session:
+        yield session
+
+
+# ── Shared test app with all routers ────────────────────────────────────────
+
+_test_app = FastAPI()
+_test_app.include_router(assessment_router, prefix="/api")
+_test_app.include_router(gap_analysis_router, prefix="/api")
+_test_app.include_router(learning_plan_router, prefix="/api")
+_test_app.dependency_overrides[get_db] = _override_get_db
+
+_mock_graph = AsyncMock()
+_test_app.state.graph = _mock_graph
+
+# ── Sample data constants ───────────────────────────────────────────────────
+
+FULL_KNOWLEDGE_GRAPH = {
+    "nodes": [
+        {
+            "concept": "React Hooks",
+            "confidence": 0.85,
+            "bloom_level": "apply",
+            "prerequisites": [],
+            "evidence": ["Demonstrated useState usage", "Explained useEffect"],
+        },
+        {
+            "concept": "TypeScript Generics",
+            "confidence": 0.7,
+            "bloom_level": "apply",
+            "prerequisites": ["React Hooks"],
+            "evidence": [],
+        },
+    ]
+}
+
+FULL_GAP_NODES = [
+    {
+        "concept": "Next.js App Router",
+        "confidence": 0.6,
+        "bloom_level": "apply",
+        "prerequisites": ["React Hooks"],
+    }
+]
+
+FULL_LEARNING_PLAN = {
+    "summary": "Focus on deepening Next.js knowledge.",
+    "total_hours": 20,
+    "phases": [
+        {
+            "phase_number": 1,
+            "title": "Next.js Deep Dive",
+            "estimated_hours": 16,
+            "rationale": "Biggest gap relative to target level",
+            "concepts": ["App Router", "Server Actions"],
+            "resources": [
+                {
+                    "title": "Next.js Docs",
+                    "url": "https://nextjs.org/docs",
+                    "type": "documentation",
+                },
+                {"title": "Internal Guide", "url": None, "type": "guide"},
+            ],
+        }
+    ],
+}
+
+FULL_PROFICIENCY_SCORES = [
+    {
+        "skill_id": "react",
+        "skill_name": "React",
+        "score": 72,
+        "confidence": 0.85,
+        "bloom_level": "apply",
+    }
+]
+
+# ── Fixtures ────────────────────────────────────────────────────────────────
+
+
+@pytest_asyncio.fixture
+async def setup_db():
+    """Create tables before each test, drop after."""
+    async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+# ── Seed helpers ────────────────────────────────────────────────────────────
+
+
+async def seed_session(
+    db: AsyncSession,
+    session_id: str = "sess-001",
+    thread_id: str = "thread-001",
+    status: str = "active",
+) -> str:
+    session = AssessmentSession(
+        session_id=session_id,
+        thread_id=thread_id,
+        skill_ids=["react"],
+        target_level="mid",
+        status=status,
+    )
+    db.add(session)
+    await db.commit()
+    return session_id
+
+
+async def seed_result(
+    db: AsyncSession,
+    session_id: str = "sess-001",
+    knowledge_graph: dict | None = None,
+    gap_nodes: list | None = None,
+    learning_plan: dict | None = None,
+    proficiency_scores: list | None = None,
+) -> None:
+    result = AssessmentResult(
+        session_id=session_id,
+        knowledge_graph=knowledge_graph if knowledge_graph is not None else FULL_KNOWLEDGE_GRAPH,
+        gap_nodes=gap_nodes if gap_nodes is not None else FULL_GAP_NODES,
+        learning_plan=learning_plan if learning_plan is not None else FULL_LEARNING_PLAN,
+        proficiency_scores=(
+            proficiency_scores if proficiency_scores is not None else FULL_PROFICIENCY_SCORES
+        ),
+    )
+    db.add(result)
+    await db.commit()
+
+
+# ── Mock helpers ────────────────────────────────────────────────────────────
+
+
+def mock_llm_response(text: str) -> AsyncMock:
+    """Return an AsyncMock chat model whose ainvoke returns a message with given text."""
+    mock_model = AsyncMock()
+    mock_response = AsyncMock()
+    mock_response.content = text
+    mock_model.ainvoke.return_value = mock_response
+    return mock_model
+
+
+# ── State fixtures (from original conftest) ─────────────────────────────────
 
 
 @pytest.fixture

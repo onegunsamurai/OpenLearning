@@ -266,7 +266,7 @@ Transient LLM failures (timeouts, rate limits, 5xx errors) are retried automatic
 
 - **Max attempts**: 3
 - **Backoff**: Exponential with jitter (`wait_exponential_jitter=True`)
-- **Retryable errors**: `APITimeoutError`, `RateLimitError`, `APIStatusError` (server errors)
+- **Retryable errors**: `APITimeoutError`, `RateLimitError`, `InternalServerError`
 - **Non-retryable**: `AuthenticationError` and validation errors fail immediately
 
 ### Structured Logging

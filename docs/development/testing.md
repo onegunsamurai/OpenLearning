@@ -22,26 +22,31 @@ Tests live in `backend/tests/` and use pytest with pytest-asyncio for async test
 
 ```
 backend/tests/
-├── conftest.py            # Shared fixtures
-├── test_agents.py         # LLM agent tests
-├── test_db.py             # Database tests
-├── test_export.py         # Assessment report export tests
-├── test_health.py         # Health endpoint tests
-├── test_knowledge_base.py # Knowledge base loader and mapper tests
-├── test_pipeline.py       # LangGraph pipeline tests
-├── test_retry.py          # Retry configuration and ainvoke_structured behavior tests
-├── test_roles.py          # Roles endpoint and YAML validation tests
-├── test_router.py         # Router logic tests
-├── test_session_cleanup.py # Session timeout cleanup tests
-├── test_state.py          # Assessment state tests
-└── test_structured_output.py # LLM output schema validation tests
+├── conftest.py                # Shared fixtures, DB infrastructure, seed helpers
+├── test_agents.py             # LLM agent tests (evaluator, question gen, knowledge mapper)
+├── test_assessment_routes.py  # Assessment endpoint tests (start, respond, graph, report)
+├── test_db.py                 # Database tests
+├── test_export.py             # Assessment report export tests
+├── test_gap_analysis_route.py # Gap analysis endpoint tests
+├── test_health.py             # Health endpoint tests
+├── test_knowledge_base.py     # Knowledge base loader and mapper tests
+├── test_learning_plan_route.py # Learning plan endpoint tests
+├── test_models_gap_learning.py # Gap/learning plan model validation tests
+├── test_parse_json_response.py # JSON response parser edge-case tests
+├── test_pipeline.py           # LangGraph pipeline tests
+├── test_retry.py              # Retry configuration and ainvoke_structured tests
+├── test_roles.py              # Roles endpoint and YAML validation tests
+├── test_router.py             # Router logic tests
+├── test_session_cleanup.py    # Session timeout cleanup tests
+├── test_state.py              # Assessment state tests
+└── test_structured_output.py  # LLM output schema validation tests
 ```
 
 ## Fixtures
 
 Shared fixtures are defined in `backend/tests/conftest.py`:
 
-| Fixture | Description |
+| Fixture / Export | Description |
 |---------|-------------|
 | `sample_question` | A `Question` with topic "http_fundamentals", Bloom level "understand" |
 | `sample_response` | A `Response` explaining GET vs POST differences |
@@ -49,6 +54,13 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `sample_knowledge_graph` | A `KnowledgeGraph` with 2 nodes and 1 edge |
 | `initial_state` | Fresh `AssessmentState` for "backend_engineering" domain |
 | `mid_assessment_state` | `AssessmentState` mid-assessment with history and calibrated_level="mid" |
+| `setup_db` | Creates in-memory SQLite tables before each test, drops after |
+| `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan routers (shared across route tests) |
+| `seed_session()` | Helper to insert an `AssessmentSession` row |
+| `seed_result()` | Helper to insert an `AssessmentResult` row with sample data |
+| `mock_llm_response()` | Helper returning an `AsyncMock` chat model with given response text |
+| `FULL_KNOWLEDGE_GRAPH` | Sample knowledge graph dict (React Hooks, TypeScript Generics) |
+| `FULL_PROFICIENCY_SCORES` | Sample proficiency scores list |
 
 ## Writing Tests
 
@@ -111,20 +123,32 @@ Test files are co-located next to their source files with a `.test.ts` or `.test
 ```
 frontend/src/
 ├── app/
+│   ├── page.test.tsx
+│   ├── assess/
+│   │   └── page.test.tsx
 │   ├── demo/
 │   │   ├── page.test.tsx
 │   │   ├── assess/
 │   │   │   └── page.test.tsx
 │   │   └── report/
 │   │       └── page.test.tsx
-│   └── export/
-│       └── [id]/
-│           └── page.test.tsx
+│   ├── export/
+│   │   └── [id]/
+│   │       └── page.test.tsx
+│   ├── gap-analysis/
+│   │   └── page.test.tsx
+│   └── learning-plan/
+│       └── page.test.tsx
 ├── components/
 │   ├── assessment/
 │   │   └── ChatMessage.test.tsx
+│   ├── demo/
+│   │   └── DemoOnboardingDialog.test.tsx
 │   ├── gap-analysis/
+│   │   ├── GapSummary.test.tsx
 │   │   └── RadarChart.test.tsx
+│   ├── layout/
+│   │   └── PageShell.test.tsx
 │   └── onboarding/
 │       ├── SkillBrowser.test.tsx
 │       └── role-selector.test.tsx
