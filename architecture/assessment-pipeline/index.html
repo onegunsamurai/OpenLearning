@@ -1863,7 +1863,7 @@
 <ul>
 <li><strong>Max attempts</strong>: 3</li>
 <li><strong>Backoff</strong>: Exponential with jitter (<code>wait_exponential_jitter=True</code>)</li>
-<li><strong>Retryable errors</strong>: <code>APITimeoutError</code>, <code>RateLimitError</code>, <code>APIStatusError</code> (server errors)</li>
+<li><strong>Retryable errors</strong>: <code>APITimeoutError</code>, <code>RateLimitError</code>, <code>InternalServerError</code></li>
 <li><strong>Non-retryable</strong>: <code>AuthenticationError</code> and validation errors fail immediately</li>
 </ul>
 <h3 id="structured-logging">Structured Logging<a class="headerlink" href="#structured-logging" title="Permanent link">&para;</a></h3>
