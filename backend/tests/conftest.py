@@ -6,6 +6,7 @@ import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 from app.db import AssessmentResult, AssessmentSession, Base, get_db
 from app.graph.state import (
@@ -24,7 +25,11 @@ from app.routes.learning_plan import router as learning_plan_router
 
 # ── In-memory SQLite test database ──────────────────────────────────────────
 
-_test_engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+_test_engine = create_async_engine(
+    "sqlite+aiosqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 _TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
 
 

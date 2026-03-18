@@ -64,21 +64,15 @@ def _gap_analysis_payload() -> dict:
 
 class TestLearningPlanRoute:
     @pytest.mark.asyncio
-    async def test_no_gap_analysis_returns_400(self):
+    async def test_no_gap_analysis_returns_422(self):
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url="http://test"
         ) as client:
             response = await client.post(
                 "/api/learning-plan",
-                json={
-                    "gapAnalysis": {
-                        "overallReadiness": 50,
-                        "summary": "No gaps",
-                        "gaps": [],
-                    }
-                },
+                json={},
             )
-        assert response.status_code == 400
+        assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_empty_gaps_returns_400(self):
