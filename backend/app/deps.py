@@ -81,4 +81,14 @@ async def get_user_api_key(
             status_code=400,
             detail="No API key configured. Please add your Anthropic API key in Settings.",
         )
-    return decrypt_api_key(db_user.encrypted_api_key)
+    try:
+        return decrypt_api_key(db_user.encrypted_api_key)
+    except ValueError as exc:
+        # Encryption key misconfigured or stored API key is invalid/corrupted.
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "There was a problem loading your saved API key. "
+                "Please re-save your Anthropic API key in Settings."
+            ),
+        ) from exc
