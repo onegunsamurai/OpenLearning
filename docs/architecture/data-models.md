@@ -124,6 +124,9 @@ class AssessmentStartRequest(CamelModel):
     target_level: str = "mid"
     role_id: str | None = None  # Validated: must be in list_domains() or None
 
+class AssessmentRespondRequest(CamelModel):
+    response: str
+
 class AssessmentStartResponse(CamelModel):
     session_id: str
     question: str

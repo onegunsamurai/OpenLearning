@@ -146,9 +146,10 @@ OpenLearning/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                 # Next.js App Router pages
-│   │   ├── components/          # UI components (shadcn/ui based)
+│   │   ├── components/
+│   │   │   ├── providers/       # React context providers (auth)
+│   │   │   └── ui/              # UI primitives (shadcn/ui)
 │   │   ├── hooks/               # Custom React hooks (useAuth, useAssessmentChat, etc.)
-│   │   ├── providers/           # React context providers (auth)
 │   │   └── lib/                 # Types, Zustand store, auth store, API client, generated types
 │   ├── Dockerfile               # Frontend container image
 │   ├── .dockerignore            # Docker build exclusions

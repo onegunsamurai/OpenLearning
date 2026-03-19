@@ -80,6 +80,8 @@ The core loop generates questions, evaluates responses, updates the knowledge gr
 | `evaluate_response` | `response_evaluator.evaluate_response` | Evaluates accuracy, depth, and demonstrated Bloom level |
 | `update_graph` | `knowledge_mapper.update_knowledge_graph` | Updates knowledge graph node with weighted confidence |
 
+> The assessment loop also uses routing nodes (`handle_deeper`, `handle_pivot`) and probe nodes (`probe_question`, `await_probe_response`) described in Phase 3 below.
+
 ### Question Generation
 
 The question generator receives:
@@ -173,7 +175,7 @@ The starting Bloom level for the new topic is determined by the calibrated level
 
 ### Gap Analysis
 
-**Source**: `backend/app/agents/gap_analyzer.py`
+**Source**: `backend/app/agents/gap_analyzer.py` → `analyze_gaps()`
 
 Pure Python (no LLM call). Compares the current knowledge graph against the target graph:
 
@@ -182,7 +184,7 @@ Pure Python (no LLM call). Compares the current knowledge graph against the targ
 
 ### Learning Plan Generation
 
-**Source**: `backend/app/agents/plan_generator.py`
+**Source**: `backend/app/agents/plan_generator.py` → `generate_plan()`
 
 Claude generates a phased learning plan from the gap nodes:
 
