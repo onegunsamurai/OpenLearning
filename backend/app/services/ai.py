@@ -7,7 +7,13 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar, Token
 
-from anthropic import APITimeoutError, InternalServerError, RateLimitError
+from anthropic import (
+    APIConnectionError,
+    APITimeoutError,
+    AuthenticationError,
+    InternalServerError,
+    RateLimitError,
+)
 from langchain_anthropic import ChatAnthropic
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel
@@ -122,3 +128,32 @@ async def ainvoke_structured(
             },
         )
         raise
+
+
+def classify_anthropic_error(exc: Exception) -> tuple[int, str, dict[str, str]] | None:
+    """Map an Anthropic SDK exception to (status_code, user_message, headers).
+
+    Returns None if the exception is not a recognised Anthropic error.
+    """
+    if isinstance(exc, AuthenticationError):
+        return (
+            401,
+            "Your API key is invalid or has been revoked. Please update it in settings.",
+            {},
+        )
+    if isinstance(exc, RateLimitError):
+        retry_after = getattr(getattr(exc, "response", None), "headers", {}).get(
+            "retry-after", "30"
+        )
+        return (
+            429,
+            "Rate limit reached. Please wait a moment and try again.",
+            {"Retry-After": retry_after},
+        )
+    if isinstance(exc, APITimeoutError):
+        return (504, "The AI service timed out. Please try again.", {})
+    if isinstance(exc, APIConnectionError):
+        return (502, "Unable to reach the AI service. Please try again shortly.", {})
+    if isinstance(exc, InternalServerError):
+        return (502, "The AI service encountered an error. Please try again.", {})
+    return None

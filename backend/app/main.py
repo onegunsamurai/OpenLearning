@@ -8,7 +8,9 @@ warnings.filterwarnings("ignore", message="Deserializing unregistered type")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from starlette.requests import Request
 
 from app.config import get_settings
 from app.db import init_db
@@ -55,3 +57,37 @@ app.include_router(roles.router, prefix="/api")
 app.include_router(gap_analysis.router, prefix="/api")
 app.include_router(learning_plan.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
+
+
+def register_anthropic_error_handlers(application: FastAPI) -> None:
+    """Register global exception handlers for Anthropic SDK errors."""
+    from anthropic import (
+        APIConnectionError,
+        APITimeoutError,
+        AuthenticationError,
+        InternalServerError,
+        RateLimitError,
+    )
+
+    from app.services.ai import classify_anthropic_error
+
+    async def _handler(_request: Request, exc: Exception) -> JSONResponse:
+        result = classify_anthropic_error(exc)
+        if not result:
+            return JSONResponse(
+                status_code=500, content={"detail": "An unexpected error occurred."}
+            )
+        status, detail, headers = result
+        return JSONResponse(status_code=status, content={"detail": detail}, headers=headers)
+
+    for exc_type in (
+        AuthenticationError,
+        RateLimitError,
+        APIConnectionError,
+        APITimeoutError,
+        InternalServerError,
+    ):
+        application.add_exception_handler(exc_type, _handler)
+
+
+register_anthropic_error_handlers(app)

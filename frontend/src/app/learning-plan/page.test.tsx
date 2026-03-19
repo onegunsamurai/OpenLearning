@@ -42,6 +42,15 @@ vi.mock("@/components/learning-plan/PlanTimeline", () => ({
 }));
 vi.mock("@/components/layout/PageShell", () => ({
   PageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  useApiKeySetupContext: () => ({ openApiKeySetup: vi.fn() }),
+}));
+vi.mock("@/components/error/api-error-display", () => ({
+  ApiErrorDisplay: ({ error, onRetry }: { error: Error; onRetry?: () => void }) => (
+    <div data-testid="api-error-display">
+      <span>{error.message}</span>
+      {onRetry && <button onClick={onRetry}>Retry</button>}
+    </div>
+  ),
 }));
 
 vi.mock("@/lib/store", () => ({
@@ -55,11 +64,15 @@ vi.mock("@/lib/store", () => ({
   }),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    learningPlan: (...args: unknown[]) => mockLearningPlanApi(...args),
-  },
-}));
+vi.mock("@/lib/api", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ApiError: mod.ApiError,
+    api: {
+      learningPlan: (...args: unknown[]) => mockLearningPlanApi(...args),
+    },
+  };
+});
 
 vi.mock("@/lib/auth-store", () => ({
   useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
@@ -196,13 +209,11 @@ describe("LearningPlanPage", () => {
       expect(screen.getByText("First")).toBeInTheDocument();
     });
 
-    mockLearningPlanApi.mockRejectedValueOnce(new Error("ignored"));
+    mockLearningPlanApi.mockRejectedValueOnce(new Error("Second failure"));
     await user.click(screen.getByText("Retry"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Failed again. Please try later.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Second failure")).toBeInTheDocument();
     });
   });
 

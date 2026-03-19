@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { ProficiencyScore } from "@/lib/types";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 export interface ChatMessage {
   id: string;
@@ -89,7 +89,15 @@ export function useAssessmentChat({
         const response = await api.assessmentRespond(sessionId, text);
 
         if (!response.ok) {
-          throw new Error(`Assessment request failed: ${response.status}`);
+          const body = await response
+            .json()
+            .catch(() => ({ detail: "Request failed" }));
+          const retryAfter = response.headers?.get("Retry-After");
+          throw new ApiError(
+            body.detail ?? `Assessment request failed: ${response.status}`,
+            response.status,
+            retryAfter ? parseInt(retryAfter, 10) : undefined
+          );
         }
 
         const reader = response.body?.getReader();
@@ -132,6 +140,21 @@ export function useAssessmentChat({
                   // ignore malformed meta
                 }
                 continue;
+              }
+              if (data.startsWith("[ERROR]")) {
+                try {
+                  const errorData = JSON.parse(data.slice(7));
+                  throw new ApiError(
+                    errorData.detail ?? "An error occurred",
+                    errorData.status ?? 500,
+                    errorData.retryAfter
+                      ? parseInt(String(errorData.retryAfter), 10)
+                      : undefined
+                  );
+                } catch (e) {
+                  if (e instanceof ApiError) throw e;
+                  throw new ApiError("An error occurred during assessment", 500);
+                }
               }
               if (data === "[ASSESSMENT_COMPLETE]") {
                 // Assessment done — fetch scores from report

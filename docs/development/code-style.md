@@ -62,15 +62,30 @@ The frontend uses [ESLint](https://eslint.org/) with the Next.js configuration.
 
 ```javascript
 import { defineConfig, globalIgnores } from "eslint/config";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
-export default defineConfig([
-  globalIgnores([".next/", "out/", "build/", "next-env.d.ts", "src/lib/generated/"]),
-  { extends: [nextVitals, nextTs] },
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
+    },
+  },
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "src/lib/generated/**",
+  ]),
 ]);
+
+export default eslintConfig;
 ```
 
 ### Commands

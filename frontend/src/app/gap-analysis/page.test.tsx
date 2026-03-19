@@ -46,6 +46,15 @@ vi.mock("@/components/gap-analysis/GapSummary", () => ({
 }));
 vi.mock("@/components/layout/PageShell", () => ({
   PageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  useApiKeySetupContext: () => ({ openApiKeySetup: vi.fn() }),
+}));
+vi.mock("@/components/error/api-error-display", () => ({
+  ApiErrorDisplay: ({ error, onRetry }: { error: Error; onRetry?: () => void }) => (
+    <div data-testid="api-error-display">
+      <span>{error.message}</span>
+      {onRetry && <button onClick={onRetry}>Retry</button>}
+    </div>
+  ),
 }));
 
 vi.mock("@/lib/store", () => ({
@@ -57,11 +66,15 @@ vi.mock("@/lib/store", () => ({
   }),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    gapAnalysis: (...args: unknown[]) => mockGapAnalysisApi(...args),
-  },
-}));
+vi.mock("@/lib/api", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ApiError: mod.ApiError,
+    api: {
+      gapAnalysis: (...args: unknown[]) => mockGapAnalysisApi(...args),
+    },
+  };
+});
 
 vi.mock("@/lib/auth-store", () => ({
   useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
@@ -184,13 +197,11 @@ describe("GapAnalysisPage", () => {
       expect(screen.getByText("First failure")).toBeInTheDocument();
     });
 
-    mockGapAnalysisApi.mockRejectedValueOnce(new Error("second"));
+    mockGapAnalysisApi.mockRejectedValueOnce(new Error("Second failure"));
     await user.click(screen.getByText("Retry"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Failed again. Please try later.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Second failure")).toBeInTheDocument();
     });
   });
 

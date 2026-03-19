@@ -351,7 +351,7 @@ Submit an answer and receive the next question (or completion).
 | `[ASSESSMENT_COMPLETE]` | — | Pipeline finished; scores follow |
 | _(fenced JSON)_ | `ProficiencyScoreOut[]` JSON array | Proficiency scores wrapped in markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
 | `[DONE]` | — | Stream complete |
-| `[ERROR]` | Error message string | An internal error occurred |
+| `[ERROR]` + JSON | `{"status": 429, "detail": "Rate limit reached.", "retryAfter": "30"}` | Structured error with status code, message, and optional retry-after |
 
 **Response** (400 — no API key configured):
 
@@ -559,6 +559,24 @@ Generate a personalized learning plan from gap analysis.
 ```json
 {"detail": "No API key configured. Please add your Anthropic API key in Settings."}
 ```
+
+## Anthropic Error Responses
+
+When the backend encounters an Anthropic SDK exception, it maps it to a structured HTTP error:
+
+| Anthropic Exception | HTTP Status | Message |
+|---------------------|-------------|---------|
+| `AuthenticationError` | 401 | Your API key is invalid or has been revoked. |
+| `RateLimitError` | 429 | Rate limit reached. (`Retry-After` header included) |
+| `APIConnectionError` | 502 | Unable to reach the AI service. |
+| `APITimeoutError` | 504 | The AI service timed out. |
+| `InternalServerError` | 502 | The AI service encountered an error. |
+
+Applies to `/assessment/start`, `/assessment/{id}/respond`, `/gap-analysis`, `/learning-plan`. For SSE streams, errors arrive as `data: [ERROR]{json}\n\n` instead of HTTP status codes.
+
+**Source**: `backend/app/main.py:61-92`, `backend/app/services/ai.py:133-159`
+
+---
 
 ## Assessment Flow
 

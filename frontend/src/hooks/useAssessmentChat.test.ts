@@ -1,17 +1,21 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 
-// Mock the api module
-vi.mock("@/lib/api", () => ({
-  api: {
-    assessmentStart: vi.fn(),
-    assessmentRespond: vi.fn(),
-    assessmentReport: vi.fn(),
-  },
-}));
+// Mock the api module — use importOriginal to get the real ApiError class
+vi.mock("@/lib/api", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ApiError: mod.ApiError,
+    api: {
+      assessmentStart: vi.fn(),
+      assessmentRespond: vi.fn(),
+      assessmentReport: vi.fn(),
+    },
+  };
+});
 
 import { useAssessmentChat } from "./useAssessmentChat";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 const mockedApi = vi.mocked(api);
 
@@ -410,18 +414,62 @@ describe("useAssessmentChat", () => {
       expect(result.current.messages[2].content).toBe("content");
     });
 
-    it("handles response not ok", async () => {
+    it("handles response not ok with ApiError", async () => {
       const { result } = await setupWithSession();
 
       mockedApi.assessmentRespond.mockResolvedValueOnce({
         ok: false,
-        status: 500,
-      } as Response);
+        status: 401,
+        headers: new Headers(),
+        json: () =>
+          Promise.resolve({
+            detail: "Your API key is invalid or has been revoked.",
+          }),
+      } as unknown as Response);
 
       await act(() => result.current.sendMessage("answer"));
 
       expect(result.current.status).toBe("error");
-      expect(result.current.error?.message).toContain("500");
+      expect(result.current.error).toBeInstanceOf(ApiError);
+      expect((result.current.error as InstanceType<typeof ApiError>).status).toBe(401);
+    });
+
+    it("parses [ERROR] SSE event with structured JSON", async () => {
+      const { result } = await setupWithSession();
+
+      const errorPayload = JSON.stringify({
+        status: 429,
+        detail: "Rate limit reached",
+        retryAfter: "30",
+      });
+
+      mockedApi.assessmentRespond.mockResolvedValueOnce(
+        createSSEResponse([`data: [ERROR]${errorPayload}\n`])
+      );
+
+      await act(() => result.current.sendMessage("answer"));
+
+      expect(result.current.status).toBe("error");
+      expect(result.current.error).toBeInstanceOf(ApiError);
+      expect((result.current.error as InstanceType<typeof ApiError>).status).toBe(429);
+    });
+
+    it("parses [ERROR] SSE event with auth error", async () => {
+      const { result } = await setupWithSession();
+
+      const errorPayload = JSON.stringify({
+        status: 401,
+        detail: "Your API key is invalid",
+      });
+
+      mockedApi.assessmentRespond.mockResolvedValueOnce(
+        createSSEResponse([`data: [ERROR]${errorPayload}\n`])
+      );
+
+      await act(() => result.current.sendMessage("answer"));
+
+      expect(result.current.status).toBe("error");
+      expect(result.current.error?.message).toContain("API key");
     });
 
     it("handles null response body", async () => {

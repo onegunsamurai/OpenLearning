@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import uuid
 
@@ -17,7 +18,7 @@ from app.graph.state import make_initial_state
 from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
 from app.routes.export_utils import build_assessment_markdown
-from app.services.ai import api_key_scope
+from app.services.ai import api_key_scope, classify_anthropic_error
 
 logger = logging.getLogger("openlearning.assessment")
 
@@ -236,8 +237,6 @@ async def assessment_respond(
                     yield f"data: {question_text}\n\n"
 
                     # Send metadata
-                    import json
-
                     meta = {
                         "type": interrupt_data.get("type", "assessment"),
                         "step": interrupt_data.get("step"),
@@ -254,8 +253,6 @@ async def assessment_respond(
                     # Build and send scores
                     state_values = graph_state.values
                     scores = _build_proficiency_scores(state_values)
-                    import json
-
                     scores_json = json.dumps(
                         {"scores": [s.model_dump(by_alias=True) for s in scores]}
                     )
@@ -264,9 +261,23 @@ async def assessment_respond(
                 yield "data: [DONE]\n\n"
             except asyncio.CancelledError:
                 return
-            except Exception:
+            except Exception as exc:
                 logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
-                yield "data: [ERROR] An internal error occurred\n\n"
+                result = classify_anthropic_error(exc)
+                if result:
+                    status, detail, headers = result
+                    error_payload = json.dumps(
+                        {
+                            "status": status,
+                            "detail": detail,
+                            "retryAfter": headers.get("Retry-After"),
+                        }
+                    )
+                else:
+                    error_payload = json.dumps(
+                        {"status": 500, "detail": "An internal error occurred"}
+                    )
+                yield f"data: [ERROR]{error_payload}\n\n"
 
     return StreamingResponse(
         event_stream(),

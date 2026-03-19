@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { cn } from "@/lib/utils";
 import { Loader2, Copy, RotateCcw, Check, FileDown } from "lucide-react";
 
@@ -22,7 +23,7 @@ export default function LearningPlanPage() {
   const { login } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [activePhase, setActivePhase] = useState(1);
   const [copied, setCopied] = useState(false);
 
@@ -49,7 +50,7 @@ export default function LearningPlanPage() {
         setLearningPlan(data);
         setCurrentStep(3);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        setError(err instanceof Error ? err : new Error("Something went wrong"));
       } finally {
         setLoading(false);
       }
@@ -65,8 +66,8 @@ export default function LearningPlanPage() {
     try {
       const data = await api.learningPlan(gapAnalysis);
       setLearningPlan(data);
-    } catch {
-      setError("Failed again. Please try later.");
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed again. Please try later."));
     } finally {
       setLoading(false);
     }
@@ -115,15 +116,7 @@ export default function LearningPlanPage() {
     return (
       <PageShell currentStep={3}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive max-w-md text-center">
-            {error}
-            <button
-              onClick={handleRetry}
-              className="ml-2 underline hover:no-underline"
-            >
-              Retry
-            </button>
-          </div>
+          <ApiErrorDisplay error={error} onRetry={handleRetry} />
         </div>
       </PageShell>
     );
