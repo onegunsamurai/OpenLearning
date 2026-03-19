@@ -5,7 +5,7 @@ import hmac
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -69,10 +69,22 @@ def _verify_state(state: str, secret: str) -> str:
 
 
 def _validate_redirect(redirect: str) -> str:
-    """Ensure redirect path is safe (starts with /, no //)."""
-    if not redirect or not redirect.startswith("/") or redirect.startswith("//"):
+    """Ensure redirect is a safe relative path (no scheme, no netloc, no backslashes)."""
+    if not redirect or not redirect.startswith("/"):
         return "/"
-    return redirect
+    # Reject protocol-relative URLs, backslash tricks, and encoded variants
+    if redirect.startswith("//") or "\\" in redirect:
+        return "/"
+    parsed = urlparse(redirect)
+    if parsed.scheme or parsed.netloc:
+        return "/"
+    # Return only the path (+ query/fragment if present), stripping any injected authority
+    safe = parsed.path
+    if parsed.query:
+        safe += f"?{parsed.query}"
+    if parsed.fragment:
+        safe += f"#{parsed.fragment}"
+    return safe if safe.startswith("/") else "/"
 
 
 def _create_jwt(user: User, secret: str) -> str:

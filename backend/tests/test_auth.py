@@ -373,3 +373,27 @@ class TestApiKey:
             json={"apiKey": "sk-secret"},
         )
         assert resp.status_code == 401
+
+
+class TestValidateRedirect:
+    @pytest.mark.parametrize(
+        "input_val,expected",
+        [
+            ("/dashboard", "/dashboard"),
+            ("/", "/"),
+            ("/assess?id=1", "/assess?id=1"),
+            ("", "/"),
+            ("http://evil.com", "/"),
+            ("//evil.com", "/"),
+            ("/\\evil.com", "/"),
+            ("javascript:alert(1)", "/"),
+            (None, "/"),
+            ("relative/path", "/"),
+            ("/path#fragment", "/path#fragment"),
+            ("https://evil.com/path", "/"),
+        ],
+    )
+    def test_validate_redirect(self, input_val: str | None, expected: str) -> None:
+        from app.routes.auth import _validate_redirect
+
+        assert _validate_redirect(input_val) == expected
