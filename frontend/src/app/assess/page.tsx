@@ -15,7 +15,6 @@ import { ProficiencyScore } from "@/lib/types";
 import { useAssessmentChat } from "@/hooks/useAssessmentChat";
 import { Progress } from "@/components/ui/progress";
 import { Send, Bot } from "lucide-react";
-
 export default function AssessPage() {
   const router = useRouter();
   const {
@@ -33,6 +32,7 @@ export default function AssessPage() {
   const [assessmentDone, setAssessmentDone] = useState(false);
   const [scores, setScores] = useState<ProficiencyScore[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const needsApiKey = !!user && !user.hasApiKey;
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const onAssessmentComplete = useCallback(
@@ -62,10 +62,10 @@ export default function AssessPage() {
   const isLoading = status === "submitted" || status === "streaming";
 
   useEffect(() => {
-    if (selectedSkillIds.length > 0 && messages.length === 0 && status === "ready") {
+    if (selectedSkillIds.length > 0 && messages.length === 0 && status === "ready" && !needsApiKey) {
       initialiseChat();
     }
-  }, [selectedSkillIds.length, messages.length, status, initialiseChat]);
+  }, [selectedSkillIds.length, messages.length, status, initialiseChat, needsApiKey]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -106,7 +106,7 @@ export default function AssessPage() {
   if (selectedSkillIds.length === 0) return null;
 
   return (
-    <PageShell currentStep={1} noPadding>
+    <PageShell currentStep={1} noPadding autoPromptApiKey>
       <div className="flex h-[calc(100vh-57px)] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">

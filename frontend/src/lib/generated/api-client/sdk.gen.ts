@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, AuthLogoutApiAuthLogoutPostData, AuthLogoutApiAuthLogoutPostResponses, AuthMeApiAuthMeGetData, AuthMeApiAuthMeGetErrors, AuthMeApiAuthMeGetResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetApiKeyApiAuthApiKeyGetData, GetApiKeyApiAuthApiKeyGetErrors, GetApiKeyApiAuthApiKeyGetResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, GithubCallbackApiAuthGithubCallbackGetData, GithubCallbackApiAuthGithubCallbackGetErrors, GithubCallbackApiAuthGithubCallbackGetResponses, GithubLoginApiAuthGithubGetData, GithubLoginApiAuthGithubGetErrors, GithubLoginApiAuthGithubGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, SetApiKeyApiAuthApiKeyPostData, SetApiKeyApiAuthApiKeyPostErrors, SetApiKeyApiAuthApiKeyPostResponses } from './types.gen';
+import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, AuthLogoutApiAuthLogoutPostData, AuthLogoutApiAuthLogoutPostResponses, AuthMeApiAuthMeGetData, AuthMeApiAuthMeGetErrors, AuthMeApiAuthMeGetResponses, DeleteApiKeyApiAuthApiKeyDeleteData, DeleteApiKeyApiAuthApiKeyDeleteErrors, DeleteApiKeyApiAuthApiKeyDeleteResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetApiKeyApiAuthApiKeyGetData, GetApiKeyApiAuthApiKeyGetErrors, GetApiKeyApiAuthApiKeyGetResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, GithubCallbackApiAuthGithubCallbackGetData, GithubCallbackApiAuthGithubCallbackGetErrors, GithubCallbackApiAuthGithubCallbackGetResponses, GithubLoginApiAuthGithubGetData, GithubLoginApiAuthGithubGetErrors, GithubLoginApiAuthGithubGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, SetApiKeyApiAuthApiKeyPostData, SetApiKeyApiAuthApiKeyPostErrors, SetApiKeyApiAuthApiKeyPostResponses, ValidateKeyApiAuthValidateKeyPostData, ValidateKeyApiAuthValidateKeyPostErrors, ValidateKeyApiAuthValidateKeyPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -132,6 +132,13 @@ export const authMeApiAuthMeGet = <ThrowOnError extends boolean = false>(options
 export const authLogoutApiAuthLogoutPost = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutApiAuthLogoutPostData, ThrowOnError>) => (options?.client ?? client).post<AuthLogoutApiAuthLogoutPostResponses, unknown, ThrowOnError>({ url: '/api/auth/logout', ...options });
 
 /**
+ * Delete Api Key
+ *
+ * Remove the stored API key for the current user.
+ */
+export const deleteApiKeyApiAuthApiKeyDelete = <ThrowOnError extends boolean = false>(options?: Options<DeleteApiKeyApiAuthApiKeyDeleteData, ThrowOnError>) => (options?.client ?? client).delete<DeleteApiKeyApiAuthApiKeyDeleteResponses, DeleteApiKeyApiAuthApiKeyDeleteErrors, ThrowOnError>({ url: '/api/auth/api-key', ...options });
+
+/**
  * Get Api Key
  *
  * Return a masked preview of the stored API key.
@@ -145,6 +152,20 @@ export const getApiKeyApiAuthApiKeyGet = <ThrowOnError extends boolean = false>(
  */
 export const setApiKeyApiAuthApiKeyPost = <ThrowOnError extends boolean = false>(options: Options<SetApiKeyApiAuthApiKeyPostData, ThrowOnError>) => (options.client ?? client).post<SetApiKeyApiAuthApiKeyPostResponses, SetApiKeyApiAuthApiKeyPostErrors, ThrowOnError>({
     url: '/api/auth/api-key',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Validate Key
+ *
+ * Validate an Anthropic API key without storing it.
+ */
+export const validateKeyApiAuthValidateKeyPost = <ThrowOnError extends boolean = false>(options: Options<ValidateKeyApiAuthValidateKeyPostData, ThrowOnError>) => (options.client ?? client).post<ValidateKeyApiAuthValidateKeyPostResponses, ValidateKeyApiAuthValidateKeyPostErrors, ThrowOnError>({
+    url: '/api/auth/validate-key',
     ...options,
     headers: {
         'Content-Type': 'application/json',

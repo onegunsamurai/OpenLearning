@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
+    "anthropic>=0.40",
     "langchain-anthropic>=0.3",
     "langchain-core>=0.3",
     "langgraph>=0.2",
@@ -15,6 +16,7 @@ dependencies = [
     "pyyaml>=6.0",
     "sse-starlette>=2.2",
     "python-dotenv>=1.0",
+    "cryptography>=43.0",
     "sqlalchemy[asyncio]>=2.0",
     "aiosqlite>=0.20",
     "langgraph-checkpoint-sqlite>=2.0",

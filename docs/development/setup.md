@@ -27,7 +27,7 @@ cp backend/.env.example backend/.env
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | — | Your Anthropic API key |
+| `ANTHROPIC_API_KEY` | No | — | Fallback Anthropic API key (users provide their own via BYOK) |
 | `CORS_ORIGINS` | No | `http://localhost:3000` | Allowed CORS origins |
 | `DATABASE_URL` | No | `sqlite+aiosqlite:///./data/openlearning.db` | SQLAlchemy async database URL |
 | `LANGSMITH_API_KEY` | No | — | LangSmith API key (for tracing) |

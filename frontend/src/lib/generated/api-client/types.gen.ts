@@ -380,6 +380,16 @@ export type LearningPlanRequest = {
 };
 
 /**
+ * OkResponse
+ */
+export type OkResponse = {
+    /**
+     * Ok
+     */
+    ok: boolean;
+};
+
+/**
  * Phase
  */
 export type Phase = {
@@ -579,6 +589,20 @@ export type SkillsResponse = {
      * Categories
      */
     categories: Array<string>;
+};
+
+/**
+ * ValidateKeyResponse
+ */
+export type ValidateKeyResponse = {
+    /**
+     * Valid
+     */
+    valid: boolean;
+    /**
+     * Error
+     */
+    error?: string | null;
 };
 
 /**
@@ -983,16 +1007,35 @@ export type AuthLogoutApiAuthLogoutPostData = {
 
 export type AuthLogoutApiAuthLogoutPostResponses = {
     /**
-     * Response Auth Logout Api Auth Logout Post
-     *
      * Successful Response
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: unknown;
 };
 
-export type AuthLogoutApiAuthLogoutPostResponse = AuthLogoutApiAuthLogoutPostResponses[keyof AuthLogoutApiAuthLogoutPostResponses];
+export type DeleteApiKeyApiAuthApiKeyDeleteData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/api-key';
+};
+
+export type DeleteApiKeyApiAuthApiKeyDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteApiKeyApiAuthApiKeyDeleteError = DeleteApiKeyApiAuthApiKeyDeleteErrors[keyof DeleteApiKeyApiAuthApiKeyDeleteErrors];
+
+export type DeleteApiKeyApiAuthApiKeyDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkResponse;
+};
+
+export type DeleteApiKeyApiAuthApiKeyDeleteResponse = DeleteApiKeyApiAuthApiKeyDeleteResponses[keyof DeleteApiKeyApiAuthApiKeyDeleteResponses];
 
 export type GetApiKeyApiAuthApiKeyGetData = {
     body?: never;
@@ -1037,13 +1080,34 @@ export type SetApiKeyApiAuthApiKeyPostError = SetApiKeyApiAuthApiKeyPostErrors[k
 
 export type SetApiKeyApiAuthApiKeyPostResponses = {
     /**
-     * Response Set Api Key Api Auth Api Key Post
-     *
      * Successful Response
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: OkResponse;
 };
 
 export type SetApiKeyApiAuthApiKeyPostResponse = SetApiKeyApiAuthApiKeyPostResponses[keyof SetApiKeyApiAuthApiKeyPostResponses];
+
+export type ValidateKeyApiAuthValidateKeyPostData = {
+    body: ApiKeySetRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/validate-key';
+};
+
+export type ValidateKeyApiAuthValidateKeyPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValidateKeyApiAuthValidateKeyPostError = ValidateKeyApiAuthValidateKeyPostErrors[keyof ValidateKeyApiAuthValidateKeyPostErrors];
+
+export type ValidateKeyApiAuthValidateKeyPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: ValidateKeyResponse;
+};
+
+export type ValidateKeyApiAuthValidateKeyPostResponse = ValidateKeyApiAuthValidateKeyPostResponses[keyof ValidateKeyApiAuthValidateKeyPostResponses];

@@ -3,7 +3,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from app.deps import AuthUser, get_current_user
+from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.models.learning_plan import LearningPlan, LearningPlanRequest
 from app.prompts.plan_generator import PLAN_GENERATOR_SYSTEM_PROMPT
 from app.services.ai import get_chat_model, parse_json_response
@@ -15,6 +15,7 @@ router = APIRouter()
 async def learning_plan(
     request: LearningPlanRequest,
     user: AuthUser = Depends(get_current_user),
+    api_key: str = Depends(get_user_api_key),
 ) -> LearningPlan:
     if not request.gap_analysis or not request.gap_analysis.gaps:
         raise HTTPException(status_code=400, detail="Gap analysis data is required")
@@ -30,7 +31,7 @@ async def learning_plan(
             f"Generate a personalized learning plan addressing these gaps."
         )
 
-        model = get_chat_model()
+        model = get_chat_model(api_key=api_key)
         response = await model.ainvoke(
             [
                 SystemMessage(content=PLAN_GENERATOR_SYSTEM_PROMPT),

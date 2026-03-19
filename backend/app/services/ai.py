@@ -4,6 +4,8 @@ import json
 import logging
 import re
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar, Token
 
 from anthropic import APITimeoutError, InternalServerError, RateLimitError
 from langchain_anthropic import ChatAnthropic
@@ -14,13 +16,37 @@ from app.config import get_settings
 
 logger = logging.getLogger("openlearning.llm")
 
+_current_api_key: ContextVar[str | None] = ContextVar("_current_api_key", default=None)
 
-def get_chat_model() -> ChatAnthropic:
-    settings = get_settings()
+
+def set_current_api_key(key: str) -> Token[str | None]:
+    """Set the per-request API key in the current context. Returns a token for reset."""
+    return _current_api_key.set(key)
+
+
+def reset_current_api_key(token: Token[str | None]) -> None:
+    """Reset the contextvar to its previous value."""
+    _current_api_key.reset(token)
+
+
+@contextmanager
+def api_key_scope(key: str):
+    """Context manager to set and reset the per-request API key."""
+    token = _current_api_key.set(key)
+    try:
+        yield
+    finally:
+        _current_api_key.reset(token)
+
+
+def get_chat_model(api_key: str | None = None) -> ChatAnthropic:
+    key = api_key or _current_api_key.get() or get_settings().anthropic_api_key
+    if not key:
+        raise ValueError("No API key available")
     return ChatAnthropic(
         model="claude-sonnet-4-20250514",
         temperature=0,
-        anthropic_api_key=settings.anthropic_api_key,
+        anthropic_api_key=key,
     )
 
 

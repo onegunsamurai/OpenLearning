@@ -35,7 +35,7 @@ vi.mock("@/lib/store", () => ({
 }));
 
 vi.mock("@/lib/auth-store", () => ({
-  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
+  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: true }, isLoading: false, setUser: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -44,6 +44,16 @@ vi.mock("@/hooks/useAuth", () => ({
 
 vi.mock("@/components/layout/PageShell", () => ({
   PageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock("@/lib/api", () => ({
+  api: {
+    authMe: vi.fn().mockResolvedValue({ userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }),
+    authGetApiKey: vi.fn().mockRejectedValue(new Error("No key")),
+    authValidateKey: vi.fn(),
+    authSetApiKey: vi.fn(),
+    authDeleteApiKey: vi.fn(),
+  },
 }));
 
 import AssessPage from "./page";

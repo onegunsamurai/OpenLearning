@@ -24,11 +24,13 @@ Tests live in `backend/tests/` and use pytest with pytest-asyncio for async test
 backend/tests/
 ├── conftest.py                # Shared fixtures, DB infrastructure, seed helpers
 ├── test_agents.py             # LLM agent tests (evaluator, question gen, knowledge mapper)
+├── test_ai_service.py         # AI service contextvar and api_key threading tests
 ├── test_assessment_routes.py  # Assessment endpoint tests (start, respond, graph, report)
 ├── test_auth.py               # Auth endpoint tests (login, callback, me, logout, API key)
 ├── test_auth_guard.py         # Auth guard tests (protected route 401/403 behavior)
 ├── test_crypto.py             # Fernet encryption/decryption tests
 ├── test_db.py                 # Database tests
+├── test_deps.py               # Dependency tests (get_user_api_key)
 ├── test_export.py             # Assessment report export tests
 ├── test_gap_analysis_route.py # Gap analysis endpoint tests
 ├── test_health.py             # Health endpoint tests
@@ -60,6 +62,7 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `setup_db` | Creates in-memory SQLite tables before each test, drops after |
 | `_test_user` | An `AuthUser` with test user ID and username (module-level constant) |
 | `_override_get_current_user` | Dependency override that returns `_test_user`, bypassing real JWT auth |
+| `_override_get_user_api_key` | Dependency override returning `"sk-test-key-for-tests"`, bypassing real API key lookup |
 | `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan, and auth routers (shared across route tests) |
 | `seed_session()` | Helper to insert an `AssessmentSession` row |
 | `seed_result()` | Helper to insert an `AssessmentResult` row with sample data |
@@ -154,9 +157,11 @@ frontend/src/
 │   │   └── RadarChart.test.tsx
 │   ├── layout/
 │   │   └── PageShell.test.tsx
-│   └── onboarding/
-│       ├── SkillBrowser.test.tsx
-│       └── role-selector.test.tsx
+│   ├── onboarding/
+│   │   ├── SkillBrowser.test.tsx
+│   │   └── role-selector.test.tsx
+│   └── settings/
+│       └── api-key-setup.test.tsx
 ├── hooks/
 │   ├── useAssessmentChat.test.ts
 │   ├── useAuth.test.ts
