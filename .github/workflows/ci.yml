@@ -134,7 +134,7 @@ jobs:
 
       - name: Build Docker images
         if: steps.filter.outputs.docker == 'true'
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         with:
           files: docker-compose.yml
           set: |
