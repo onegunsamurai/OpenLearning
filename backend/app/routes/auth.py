@@ -209,9 +209,6 @@ async def github_callback(
 
     # Create JWT and set cookie
     token = _create_jwt(user, settings.jwt_secret_key)
-    # Inline sanitizer for CodeQL py/url-redirection (redundant with _validate_redirect)
-    if urlparse(redirect_path).netloc:
-        redirect_path = "/"
     response = RedirectResponse(url=f"{settings.frontend_url}{redirect_path}", status_code=302)
     secure = _is_secure(settings.frontend_url)
     response.set_cookie(
