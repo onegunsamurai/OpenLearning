@@ -132,3 +132,19 @@ class TestGetUserApiKey:
         ) as client:
             resp = await client.get("/test-key", cookies={"access_token": token})
         assert resp.status_code == 400
+
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_corrupt_key_returns_500(self, db_session: AsyncSession) -> None:
+        """Corrupted/invalid ciphertext should return 500 with a helpful message."""
+        user = User(id="dep-test-user", github_id=11111, github_username="test", avatar_url="")
+        user.encrypted_api_key = "not-valid-fernet-ciphertext"
+        db_session.add(user)
+        await db_session.commit()
+
+        token = _make_jwt()
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            resp = await client.get("/test-key", cookies={"access_token": token})
+        assert resp.status_code == 500
+        assert "re-save" in resp.json()["detail"].lower()

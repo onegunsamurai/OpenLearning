@@ -60,20 +60,27 @@ function ApiKeySetupInner({ onClose, onKeySet }: Omit<ApiKeySetupProps, "open">)
 
     try {
       const result = await api.authValidateKey(keyInput.trim());
-      if (result.valid) {
-        await api.authSetApiKey(keyInput.trim());
-        setStatus("success");
-        timerRef.current = setTimeout(() => {
-          onKeySet?.();
-          onClose();
-        }, 800);
-      } else {
+      if (!result.valid) {
         setStatus("error");
         setErrorMessage(result.error ?? "Invalid API key");
+        return;
       }
     } catch {
       setStatus("error");
       setErrorMessage("Failed to validate key");
+      return;
+    }
+
+    try {
+      await api.authSetApiKey(keyInput.trim());
+      setStatus("success");
+      timerRef.current = setTimeout(() => {
+        onKeySet?.();
+        onClose();
+      }, 800);
+    } catch {
+      setStatus("error");
+      setErrorMessage("Key is valid but failed to save. Please try again.");
     }
   };
 

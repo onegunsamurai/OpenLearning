@@ -101,6 +101,21 @@ describe("ApiKeySetup", () => {
     vi.useRealTimers();
   });
 
+  it("shows save-specific error when validation passes but save fails", async () => {
+    const user = userEvent.setup();
+    mockApi.authValidateKey.mockResolvedValue({ valid: true });
+    mockApi.authSetApiKey.mockRejectedValue(new Error("Network error"));
+
+    render(<ApiKeySetup open={true} onClose={vi.fn()} />);
+
+    await user.type(screen.getByLabelText("API key"), "sk-valid");
+    await user.click(screen.getByRole("button", { name: /Validate & Save/ }));
+
+    expect(
+      await screen.findByText("Key is valid but failed to save. Please try again.")
+    ).toBeInTheDocument();
+  });
+
   it("shows existing key preview when available", async () => {
     mockApi.authGetApiKey.mockResolvedValue({ apiKeyPreview: "sk-...1234" });
 

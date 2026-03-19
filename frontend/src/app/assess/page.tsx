@@ -106,7 +106,7 @@ export default function AssessPage() {
   if (selectedSkillIds.length === 0) return null;
 
   return (
-    <PageShell currentStep={1} noPadding autoPromptApiKey onApiKeySet={initialiseChat}>
+    <PageShell currentStep={1} noPadding autoPromptApiKey>
       <div className="flex h-[calc(100vh-57px)] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">
