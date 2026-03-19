@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
+
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
@@ -13,7 +15,7 @@ const nextConfig: NextConfig = {
   rewrites: async () => [
     {
       source: "/api/auth/:path*",
-      destination: "http://localhost:8000/api/auth/:path*",
+      destination: `${backendUrl}/api/auth/:path*`,
     },
   ],
 };
