@@ -217,6 +217,45 @@ class TestGitHubOAuth:
         assert user.avatar_url == "https://new-avatar.png"
 
     @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_github_callback_sanitizes_malicious_redirect_in_state(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        """Regression: even if a malicious URL bypasses _validate_redirect on login,
+        the inline urlparse().netloc guard in github_callback must sanitize it."""
+        from app.routes.auth import _sign_state
+
+        # Sign a malicious redirect directly into state (bypassing login-side validation)
+        state = _sign_state("https://evil.com", _TEST_JWT_SECRET)
+
+        mock_token_resp = MagicMock()
+        mock_token_resp.json.return_value = {"access_token": "gh-token-evil"}
+
+        mock_user_resp = MagicMock()
+        mock_user_resp.json.return_value = {
+            "id": 77777,
+            "login": "eviluser",
+            "avatar_url": "https://avatars.githubusercontent.com/u/77777",
+        }
+
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.return_value = mock_token_resp
+        mock_client_instance.get.return_value = mock_user_resp
+        mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_instance.__aexit__ = AsyncMock(return_value=False)
+
+        with patch("app.routes.auth.httpx.AsyncClient", return_value=mock_client_instance):
+            resp = await http_client.get(
+                f"/api/auth/github/callback?code=test-code&state={state}",
+                follow_redirects=False,
+            )
+
+        assert resp.status_code == 302
+        location = resp.headers["location"]
+        # Must redirect to safe frontend root, not to evil.com
+        assert location == f"{_TEST_FRONTEND_URL}/"
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
     async def test_github_callback_invalid_code_returns_redirect_with_error(
         self, http_client: AsyncClient, setup_db
     ) -> None:

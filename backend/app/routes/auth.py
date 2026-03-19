@@ -125,7 +125,9 @@ async def github_login(redirect: str = Query(default="/")) -> RedirectResponse:
         "state": state,
     }
     url = f"{GITHUB_AUTHORIZE_URL}?{urlencode(params)}"
-    return RedirectResponse(url=url, status_code=302)
+    # Redirect target is always the hardcoded GITHUB_AUTHORIZE_URL constant;
+    # user input only appears in the state query parameter value.
+    return RedirectResponse(url=url, status_code=302)  # codeql[py/url-redirection]
 
 
 @router.get("/github/callback")
@@ -207,6 +209,9 @@ async def github_callback(
 
     # Create JWT and set cookie
     token = _create_jwt(user, settings.jwt_secret_key)
+    # Inline sanitizer for CodeQL py/url-redirection (redundant with _validate_redirect)
+    if urlparse(redirect_path).netloc:
+        redirect_path = "/"
     response = RedirectResponse(url=f"{settings.frontend_url}{redirect_path}", status_code=302)
     secure = _is_secure(settings.frontend_url)
     response.set_cookie(
