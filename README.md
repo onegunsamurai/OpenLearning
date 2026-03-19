@@ -83,7 +83,7 @@ make docker-dev
 
 | Variable | File | Description |
 |----------|------|-------------|
-| `ANTHROPIC_API_KEY` | `backend/.env` | Anthropic API key (required) |
+| `ANTHROPIC_API_KEY` | `backend/.env` | Anthropic API key (optional: can be set through UI) |
 | `CORS_ORIGINS` | `backend/.env` | Allowed CORS origins (default: `http://localhost:3000`) |
 | `DATABASE_URL` | `backend/.env` | SQLAlchemy database URL (default: SQLite in `data/`) |
 | `LANGSMITH_API_KEY` | `backend/.env` | LangSmith API key (optional, for tracing) |
