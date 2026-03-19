@@ -1105,7 +1105,7 @@
 </tr>
 <tr>
 <td>Anthropic API key</td>
-<td><a href="https://console.anthropic.com/">Get one here</a></td>
+<td><a href="https://console.anthropic.com/">Get one here</a> (optional — users provide their own via BYOK)</td>
 </tr>
 </tbody>
 </table>
@@ -1148,7 +1148,7 @@ CORS_ORIGINS=http://localhost:3000
 <tbody>
 <tr>
 <td><code>ANTHROPIC_API_KEY</code></td>
-<td>Your Anthropic API key (required)</td>
+<td>Fallback Anthropic API key (users provide their own via BYOK)</td>
 <td>—</td>
 </tr>
 <tr>
@@ -1227,7 +1227,7 @@ make<span class="w"> </span>docker-dev
 To stop and remove all data: <code>make docker-clean</code></p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>If the backend fails to start, check that your <code>ANTHROPIC_API_KEY</code> is set correctly in <code>backend/.env</code>. The database (SQLite) is created automatically on first run in the <code>data/</code> directory.</p>
+<p>If LLM calls fail, check that a valid API key is configured — either via BYOK in the UI or as <code>ANTHROPIC_API_KEY</code> in <code>backend/.env</code>. The database (SQLite) is created automatically on first run in the <code>data/</code> directory.</p>
 </div>
 
 

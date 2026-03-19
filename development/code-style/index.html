@@ -1249,15 +1249,30 @@ make<span class="w"> </span>lint-backend
 <p>The frontend uses <a href="https://eslint.org/">ESLint</a> with the Next.js configuration.</p>
 <p><strong>Configuration</strong>: <code>frontend/eslint.config.mjs</code></p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">defineConfig</span><span class="p">,</span><span class="w"> </span><span class="nx">globalIgnores</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;eslint/config&quot;</span><span class="p">;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">dirname</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fileURLToPath</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;url&quot;</span><span class="p">;</span>
 <span class="k">import</span><span class="w"> </span><span class="nx">nextVitals</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;eslint-config-next/core-web-vitals&quot;</span><span class="p">;</span>
 <span class="k">import</span><span class="w"> </span><span class="nx">nextTs</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;eslint-config-next/typescript&quot;</span><span class="p">;</span>
 
-<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">defineConfig</span><span class="p">([</span>
-<span class="w">  </span><span class="nx">globalIgnores</span><span class="p">([</span><span class="s2">&quot;.next/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;out/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;build/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;next-env.d.ts&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;src/lib/generated/&quot;</span><span class="p">]),</span>
-<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="k">extends</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">nextVitals</span><span class="p">,</span><span class="w"> </span><span class="nx">nextTs</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">eslintConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">defineConfig</span><span class="p">([</span>
+<span class="w">  </span><span class="p">...</span><span class="nx">nextVitals</span><span class="p">,</span>
+<span class="w">  </span><span class="p">...</span><span class="nx">nextTs</span><span class="p">,</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">rules</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s2">&quot;@typescript-eslint/no-unused-vars&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;warn&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nx">argsIgnorePattern</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;^_&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">globalIgnores</span><span class="p">([</span>
+<span class="w">    </span><span class="s2">&quot;.next/**&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;out/**&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;build/**&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;next-env.d.ts&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;src/lib/generated/**&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">]),</span>
 <span class="p">]);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="nx">eslintConfig</span><span class="p">;</span>
 </code></pre></div>
 <h3 id="commands_1">Commands<a class="headerlink" href="#commands_1" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Lint frontend</span>

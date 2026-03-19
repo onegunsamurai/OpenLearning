@@ -934,6 +934,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anthropic-error-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anthropic Error Responses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#assessment-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1397,6 +1408,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#anthropic-error-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anthropic Error Responses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#assessment-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1754,9 +1776,9 @@
 <td>Stream complete</td>
 </tr>
 <tr>
-<td><code>[ERROR]</code></td>
-<td>Error message string</td>
-<td>An internal error occurred</td>
+<td><code>[ERROR]</code> + JSON</td>
+<td><code>{"status": 429, "detail": "Rate limit reached.", "retryAfter": "30"}</code></td>
+<td>Structured error with status code, message, and optional retry-after</td>
 </tr>
 </tbody>
 </table>
@@ -1918,6 +1940,47 @@
 <p><strong>Response</strong> (400 — no API key configured):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
 </code></pre></div>
+<h2 id="anthropic-error-responses">Anthropic Error Responses<a class="headerlink" href="#anthropic-error-responses" title="Permanent link">&para;</a></h2>
+<p>When the backend encounters an Anthropic SDK exception, it maps it to a structured HTTP error:</p>
+<table>
+<thead>
+<tr>
+<th>Anthropic Exception</th>
+<th>HTTP Status</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AuthenticationError</code></td>
+<td>401</td>
+<td>Your API key is invalid or has been revoked.</td>
+</tr>
+<tr>
+<td><code>RateLimitError</code></td>
+<td>429</td>
+<td>Rate limit reached. (<code>Retry-After</code> header included)</td>
+</tr>
+<tr>
+<td><code>APIConnectionError</code></td>
+<td>502</td>
+<td>Unable to reach the AI service.</td>
+</tr>
+<tr>
+<td><code>APITimeoutError</code></td>
+<td>504</td>
+<td>The AI service timed out.</td>
+</tr>
+<tr>
+<td><code>InternalServerError</code></td>
+<td>502</td>
+<td>The AI service encountered an error.</td>
+</tr>
+</tbody>
+</table>
+<p>Applies to <code>/assessment/start</code>, <code>/assessment/{id}/respond</code>, <code>/gap-analysis</code>, <code>/learning-plan</code>. For SSE streams, errors arrive as <code>data: [ERROR]{json}\n\n</code> instead of HTTP status codes.</p>
+<p><strong>Source</strong>: <code>backend/app/main.py</code> (<code>register_anthropic_error_handlers</code>), <code>backend/app/services/ai.py</code> (<code>classify_anthropic_error</code>)</p>
+<hr />
 <h2 id="assessment-flow">Assessment Flow<a class="headerlink" href="#assessment-flow" title="Permanent link">&para;</a></h2>
 <p>The full assessment flow involves multiple API calls:</p>
 <pre class="mermaid"><code>sequenceDiagram
