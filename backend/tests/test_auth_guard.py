@@ -157,7 +157,8 @@ class TestEmptyJwtSecret:
 
 @pytest.mark.asyncio
 class TestPublicRoutesAccessible:
-    async def test_health_is_public(self, client: AsyncClient) -> None:
+    @patch("app.routes.health._get_engine", return_value=_test_engine)
+    async def test_health_is_public(self, _mock_engine, client: AsyncClient) -> None:
         resp = await client.get("/api/health")
         assert resp.status_code == 200
 
