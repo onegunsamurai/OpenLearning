@@ -5,6 +5,7 @@ import hmac
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlencode
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -14,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
-from app.crypto import encrypt_api_key
+from app.crypto import decrypt_api_key, encrypt_api_key
 from app.db import User, get_db
 from app.deps import JWT_ALGORITHM, AuthUser, get_current_user
 from app.models.base import CamelModel
@@ -111,7 +112,7 @@ async def github_login(redirect: str = Query(default="/")) -> RedirectResponse:
         "scope": "read:user",
         "state": state,
     }
-    url = f"{GITHUB_AUTHORIZE_URL}?{'&'.join(f'{k}={v}' for k, v in params.items())}"
+    url = f"{GITHUB_AUTHORIZE_URL}?{urlencode(params)}"
     return RedirectResponse(url=url, status_code=302)
 
 
@@ -260,8 +261,6 @@ async def get_api_key(
     if not db_user or not db_user.encrypted_api_key:
         raise HTTPException(status_code=404, detail="No API key stored")
     # Decrypt to get last 4 chars for preview
-    from app.crypto import decrypt_api_key
-
     plaintext = decrypt_api_key(db_user.encrypted_api_key)
     preview = f"sk-...{plaintext[-4:]}" if len(plaintext) >= 4 else "sk-...****"
     return ApiKeyResponse(api_key_preview=preview)

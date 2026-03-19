@@ -7,11 +7,13 @@ graph TB
     subgraph Frontend ["Frontend (Next.js)"]
         UI[App Router Pages]
         Store[Zustand Store]
+        Auth[Auth Store]
         API_Client[API Client]
     end
 
     subgraph Backend ["Backend (FastAPI)"]
         Routes[API Routes]
+        AuthDeps[Auth Deps]
         Services[AI Services]
         Agents[LLM Agents]
         Graph[LangGraph Pipeline]
@@ -25,16 +27,21 @@ graph TB
 
     subgraph External ["External"]
         Claude[Claude API]
+        GitHub[GitHub OAuth]
     end
 
     UI --> Store
+    UI --> Auth
     Store --> API_Client
+    Auth --> API_Client
     API_Client -->|HTTP/SSE| Routes
+    Routes --> AuthDeps
     Routes --> Services
     Routes --> Graph
     Graph --> Agents
     Agents --> Services
     Services --> Claude
+    Routes -->|OAuth| GitHub
     Graph --> KB
     Routes --> SQLite
     Graph --> Checkpoints
@@ -64,6 +71,10 @@ A background cleanup task runs during the application's lifespan (started in `ma
 
 **Source**: `backend/app/services/session_cleanup.py`
 
+### Authentication
+
+Authenticated sessions are linked to users via a `user_id` foreign key. Write endpoints (assessment start, respond, gap analysis, learning plan) are protected by JWT cookie authentication. Read endpoints (graph, report, export) remain public so reports can be shared via URL.
+
 ## Tech Stack
 
 | Layer | Technology | Purpose |
@@ -78,6 +89,9 @@ A background cleanup task runs during the application's lifespan (started in `ma
 | LLM | LangChain + Anthropic Claude | Question generation, evaluation, plan generation |
 | Database | SQLAlchemy + aiosqlite (SQLite) | Session and result storage |
 | Checkpoints | LangGraph AsyncSqliteSaver | Pipeline state persistence |
+| Auth | python-jose | JWT token signing and verification |
+| OAuth | httpx | GitHub OAuth token exchange |
+| Encryption | cryptography (Fernet) | API key encryption at rest |
 
 ### Why LangGraph?
 
@@ -112,10 +126,12 @@ OpenLearning/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app, CORS, lifespan, router mounts
-│   │   ├── config.py            # Settings (API key, CORS origins)
+│   │   ├── config.py            # Settings (API key, CORS origins, GitHub OAuth, JWT, encryption)
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
-│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles) + export helpers
+│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles, auth) + export helpers
+│   │   ├── deps.py              # Auth dependencies (JWT cookie extraction, user validation)
+│   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
@@ -131,8 +147,9 @@ OpenLearning/
 │   ├── src/
 │   │   ├── app/                 # Next.js App Router pages
 │   │   ├── components/          # UI components (shadcn/ui based)
-│   │   ├── hooks/               # Custom React hooks
-│   │   └── lib/                 # Types, Zustand store, API client, generated types
+│   │   ├── hooks/               # Custom React hooks (useAuth, useAssessmentChat, etc.)
+│   │   ├── providers/           # React context providers (auth)
+│   │   └── lib/                 # Types, Zustand store, auth store, API client, generated types
 │   ├── Dockerfile               # Frontend container image
 │   ├── .dockerignore            # Docker build exclusions
 │   ├── package.json

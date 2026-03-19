@@ -180,6 +180,26 @@ class AssessmentReportResponse(CamelModel):
     proficiency_scores: list[ProficiencyScoreOut]
 ```
 
+### Auth Route Models
+
+These are defined directly in the route module (not in `models/`), following the same pattern as the assessment route models above.
+
+**Source**: `backend/app/routes/auth.py`
+
+```python
+class AuthMeResponse(CamelModel):
+    user_id: str
+    github_username: str
+    avatar_url: str
+    has_api_key: bool
+
+class ApiKeySetRequest(CamelModel):
+    api_key: str
+
+class ApiKeyResponse(CamelModel):
+    api_key_preview: str
+```
+
 ### Knowledge Base Schema
 
 These models validate YAML knowledge base files on load. They use `BaseModel` (not `CamelModel`) because they are internal, not API-facing.
@@ -441,9 +461,21 @@ class PlanOutput(BaseModel):
 
 ## Database Schema
 
-SQLite database with two tables for persisting assessment sessions and results.
+SQLite database with three tables for persisting users, assessment sessions, and results.
 
 **Source**: `backend/app/db.py`
+
+### `users`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `String(36)` PK | UUID user identifier |
+| `github_id` | `BigInteger` UNIQUE | GitHub user ID |
+| `github_username` | `String(39)` | GitHub username |
+| `avatar_url` | `String(500)` | GitHub avatar URL |
+| `encrypted_api_key` | `String(500)` NULL | Fernet-encrypted Anthropic API key |
+| `created_at` | `DateTime` | Creation timestamp |
+| `updated_at` | `DateTime` | Last update timestamp |
 
 ### `assessment_sessions`
 
@@ -454,6 +486,7 @@ SQLite database with two tables for persisting assessment sessions and results.
 | `skill_ids` | `JSON` | List of selected skill IDs |
 | `target_level` | `String(20)` | Target career level (default: "mid") |
 | `status` | `String(20)` | Session status: `"active"`, `"completed"`, or `"timed_out"` (default: `"active"`) |
+| `user_id` | `String(36)` FK NULL | References `users.id` |
 | `created_at` | `DateTime` | Creation timestamp |
 | `updated_at` | `DateTime` | Last update timestamp |
 
@@ -469,9 +502,10 @@ SQLite database with two tables for persisting assessment sessions and results.
 | `proficiency_scores` | `JSON` | Per-skill proficiency scores |
 | `completed_at` | `DateTime` | Completion timestamp |
 
-### Relationship
+### Relationships
 
-`AssessmentSession` has a one-to-one relationship with `AssessmentResult` via `session_id`.
+- `User` → `AssessmentSession`: one-to-many via `user_id`
+- `AssessmentSession` → `AssessmentResult`: one-to-one via `session_id`
 
 ### LangGraph Checkpoints
 

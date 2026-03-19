@@ -42,6 +42,12 @@ def _mock_settings():
     return Settings(jwt_secret_key=_TEST_JWT_SECRET)
 
 
+def _mock_settings_empty_secret():
+    from app.config import Settings
+
+    return Settings(jwt_secret_key="")
+
+
 _guard_app = FastAPI()
 _guard_app.include_router(assessment_router, prefix="/api")
 _guard_app.include_router(gap_analysis_router, prefix="/api")
@@ -120,6 +126,29 @@ class TestProtectedRoutesReturn401:
 
     async def test_auth_get_api_key_requires_auth(self, client: AsyncClient) -> None:
         resp = await client.get("/api/auth/api-key")
+        assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestEmptyJwtSecret:
+    """Verify that an empty JWT secret rejects forged tokens instead of accepting them."""
+
+    @patch("app.deps.get_settings", _mock_settings_empty_secret)
+    async def test_forged_token_rejected_when_secret_empty(self, client: AsyncClient) -> None:
+        """A JWT signed with an empty string must be rejected when jwt_secret_key is empty."""
+        from jose import jwt as jose_jwt
+
+        from app.deps import JWT_ALGORITHM
+
+        forged_token = jose_jwt.encode(
+            {"sub": "attacker", "username": "evil", "avatar_url": ""},
+            "",
+            algorithm=JWT_ALGORITHM,
+        )
+        resp = await client.get(
+            "/api/auth/me",
+            cookies={"access_token": forged_token},
+        )
         assert resp.status_code == 401
 
 

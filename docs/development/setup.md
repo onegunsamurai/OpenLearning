@@ -33,6 +33,13 @@ cp backend/.env.example backend/.env
 | `LANGSMITH_API_KEY` | No | — | LangSmith API key (for tracing) |
 | `LANGSMITH_PROJECT` | No | `open-learning` | LangSmith project name |
 | `LANGSMITH_TRACING` | No | `false` | Enable LangSmith tracing |
+| `GITHUB_CLIENT_ID` | No* | — | GitHub OAuth app client ID |
+| `GITHUB_CLIENT_SECRET` | No* | — | GitHub OAuth app secret |
+| `JWT_SECRET_KEY` | No* | — | JWT signing key (random 256-bit hex string) |
+| `ENCRYPTION_KEY` | No* | — | Fernet key for API key encryption |
+| `FRONTEND_URL` | No | `http://localhost:3000` | Frontend URL for OAuth redirects |
+
+*Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.
 
 ### Frontend (`frontend/.env.local`)
 

@@ -22,6 +22,132 @@ Lightweight health check with database connectivity probe.
 
 ---
 
+### GET `/api/auth/github`
+
+Redirect to GitHub OAuth authorization. Starts the login flow.
+
+**Query parameter**: `redirect` — path to redirect after login (default: `/`)
+
+**Response** (302): Redirects to GitHub's authorization page.
+
+**Response** (501 — GitHub OAuth not configured):
+
+```json
+{"detail": "GitHub OAuth is not configured"}
+```
+
+---
+
+### GET `/api/auth/github/callback`
+
+Handle the GitHub OAuth callback. Exchanges the authorization code for an access token, upserts the user in the database, and sets an httpOnly JWT cookie.
+
+**Query parameters**:
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `code` | Yes | OAuth authorization code from GitHub |
+| `state` | Yes | HMAC-signed state parameter for CSRF protection |
+
+**Response** (302): Redirects to the frontend with an `access_token` cookie set.
+
+---
+
+### GET `/api/auth/me`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Return the current user's profile.
+
+**Response**: `AuthMeResponse`
+
+```json
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "githubUsername": "octocat",
+  "avatarUrl": "https://avatars.githubusercontent.com/u/1?v=4",
+  "hasApiKey": false
+}
+```
+
+---
+
+### POST `/api/auth/logout`
+
+Clear the auth cookie.
+
+**Response** (200):
+
+```json
+{"ok": true}
+```
+
+---
+
+### POST `/api/auth/api-key`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Store an encrypted API key for the current user.
+
+**Request**: `ApiKeySetRequest`
+
+```json
+{
+  "apiKey": "sk-ant-..."
+}
+```
+
+**Response** (200):
+
+```json
+{"ok": true}
+```
+
+---
+
+### GET `/api/auth/api-key`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Return a masked preview of the stored API key.
+
+**Response**: `ApiKeyResponse`
+
+```json
+{
+  "apiKeyPreview": "sk-...ab12"
+}
+```
+
+**Response** (404 — no API key stored):
+
+```json
+{"detail": "No API key stored"}
+```
+
+---
+
+#### Auth Models
+
+```python
+class AuthMeResponse(CamelModel):
+    user_id: str
+    github_username: str
+    avatar_url: str
+    has_api_key: bool
+
+class ApiKeySetRequest(CamelModel):
+    api_key: str
+
+class ApiKeyResponse(CamelModel):
+    api_key_preview: str
+```
+
+**Source**: `backend/app/routes/auth.py`
+
+---
+
 ### GET `/api/skills`
 
 Returns the full skills taxonomy with categories.
@@ -106,6 +232,8 @@ Returns detailed information for a single role, including mapped skill IDs and p
 
 ### POST `/api/assessment/start`
 
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
 Start a new assessment session. Returns the first calibration question.
 
 **Request body**:
@@ -139,6 +267,8 @@ Start a new assessment session. Returns the first calibration question.
 ---
 
 ### POST `/api/assessment/{session_id}/respond`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
 
 Submit an answer and receive the next question (or completion).
 
@@ -253,6 +383,8 @@ Export the full assessment report as a formatted Markdown file.
 
 ### POST `/api/gap-analysis`
 
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
 Generate a gap analysis from proficiency scores.
 
 **Request**: `GapAnalysisRequest`
@@ -296,6 +428,8 @@ Priority levels: `critical` (gap > 40), `high` (gap > 25), `medium` (gap > 10), 
 ---
 
 ### POST `/api/learning-plan`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
 
 Generate a personalized learning plan from gap analysis.
 
@@ -349,8 +483,16 @@ The full assessment flow involves multiple API calls:
 ```mermaid
 sequenceDiagram
     participant Client
+    participant GitHub
     participant API
     participant LangGraph
+
+    Client->>API: GET /auth/github
+    API-->>Client: 302 → GitHub OAuth
+    Client->>GitHub: Authorize
+    GitHub-->>Client: Callback with code
+    Client->>API: GET /auth/github/callback
+    API-->>Client: Set JWT cookie, redirect
 
     Client->>API: POST /assessment/start
     API->>LangGraph: Initialize pipeline

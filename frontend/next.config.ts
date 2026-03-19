@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  rewrites: async () => [
+    {
+      source: "/api/auth/:path*",
+      destination: "http://localhost:8000/api/auth/:path*",
+    },
+  ],
 };
 
 export default nextConfig;

@@ -26,6 +26,8 @@ async def get_current_user(
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     settings = get_settings()
+    if not settings.jwt_secret_key:
+        raise HTTPException(status_code=401, detail="Authentication is not configured")
     try:
         payload = jwt.decode(access_token, settings.jwt_secret_key, algorithms=[JWT_ALGORITHM])
     except JWTError as exc:
@@ -47,6 +49,8 @@ async def get_optional_user(
     if not access_token:
         return None
     settings = get_settings()
+    if not settings.jwt_secret_key:
+        return None
     try:
         payload = jwt.decode(access_token, settings.jwt_secret_key, algorithms=[JWT_ALGORITHM])
     except JWTError:
