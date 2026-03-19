@@ -25,6 +25,7 @@ backend/tests/
 ├── conftest.py                # Shared fixtures, DB infrastructure, seed helpers
 ├── test_agents.py             # LLM agent tests (evaluator, question gen, knowledge mapper)
 ├── test_ai_service.py         # AI service contextvar and api_key threading tests
+├── test_anthropic_error_handling.py  # Anthropic SDK error classification and global handler tests
 ├── test_assessment_routes.py  # Assessment endpoint tests (start, respond, graph, report)
 ├── test_auth.py               # Auth endpoint tests (login, callback, me, logout, API key)
 ├── test_auth_guard.py         # Auth guard tests (protected route 401/403 behavior)
@@ -152,6 +153,8 @@ frontend/src/
 │   │   └── ChatMessage.test.tsx
 │   ├── demo/
 │   │   └── DemoOnboardingDialog.test.tsx
+│   ├── error/
+│   │   └── api-error-display.test.tsx
 │   ├── gap-analysis/
 │   │   ├── GapSummary.test.tsx
 │   │   └── RadarChart.test.tsx

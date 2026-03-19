@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ProficiencyScore } from "@/lib/types";
 import { useAssessmentChat } from "@/hooks/useAssessmentChat";
 import { Progress } from "@/components/ui/progress";
+import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { Send, Bot } from "lucide-react";
 export default function AssessPage() {
   const router = useRouter();
@@ -190,8 +191,21 @@ export default function AssessPage() {
 
             {/* Error */}
             {error && (
-              <div className="mx-4 mb-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                Error: {error.message}
+              <div className="mx-4 mb-2 flex justify-center">
+                <ApiErrorDisplay
+                  error={error}
+                  onRetry={() => {
+                    if (messages.length === 0) {
+                      initialiseChat();
+                    } else {
+                      const lastUserMsg = [...messages]
+                        .reverse()
+                        .find((m) => m.role === "user");
+                      if (lastUserMsg) sendMessage(lastUserMsg.content);
+                      else initialiseChat();
+                    }
+                  }}
+                />
               </div>
             )}
 

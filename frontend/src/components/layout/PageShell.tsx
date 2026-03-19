@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -9,6 +9,12 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySetup } from "@/components/settings/api-key-setup";
 import { api } from "@/lib/api";
+
+const ApiKeySetupContext = createContext<{ openApiKeySetup: () => void }>({
+  openApiKeySetup: () => {},
+});
+
+export const useApiKeySetupContext = () => useContext(ApiKeySetupContext);
 
 interface PageShellProps {
   currentStep?: number;
@@ -119,14 +125,18 @@ export function PageShell({
           </div>
         </div>
       </header>
-      <motion.main
-        className={noPadding ? "" : `mx-auto ${maxWidth} px-4 py-8 sm:px-6`}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
+      <ApiKeySetupContext.Provider
+        value={{ openApiKeySetup: () => setManualShowKeySetup(true) }}
       >
-        {children}
-      </motion.main>
+        <motion.main
+          className={noPadding ? "" : `mx-auto ${maxWidth} px-4 py-8 sm:px-6`}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.main>
+      </ApiKeySetupContext.Provider>
       <ApiKeySetup
         open={showKeySetup}
         onClose={() => {

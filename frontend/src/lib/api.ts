@@ -27,10 +27,60 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 client.setConfig({ baseUrl: API_URL, credentials: "include" });
 
-export function unwrap<T>(result: { data?: T; error?: unknown }): T {
+export function parseRetryAfter(
+  value: string | null | undefined
+): number | undefined {
+  if (!value) return undefined;
+  const n = Number(value);
+  if (!Number.isNaN(n) && n >= 0) return Math.ceil(n);
+  // HTTP-date format (RFC 7231)
+  const ms = Date.parse(value);
+  if (!Number.isNaN(ms)) {
+    const delta = Math.ceil((ms - Date.now()) / 1000);
+    return delta > 0 ? delta : undefined;
+  }
+  return undefined;
+}
+
+export class ApiError extends Error {
+  status: number;
+  retryAfter?: number;
+
+  constructor(message: string, status: number, retryAfter?: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.retryAfter = retryAfter;
+  }
+}
+
+async function throwFromResponse(
+  res: Response,
+  fallback: string
+): Promise<never> {
+  const err = await res.json().catch(() => ({ detail: fallback }));
+  const retryAfter = res.headers?.get("Retry-After");
+  throw new ApiError(
+    err.detail ?? fallback,
+    res.status,
+    parseRetryAfter(retryAfter)
+  );
+}
+
+export function unwrap<T>(result: {
+  data?: T;
+  error?: unknown;
+  response?: Response;
+}): T {
   if (result.error !== undefined) {
     const err = result.error as { detail?: string };
-    throw new Error(err?.detail ?? "Request failed");
+    const status = result.response?.status ?? 500;
+    const retryAfter = result.response?.headers?.get("Retry-After");
+    throw new ApiError(
+      err?.detail ?? "Request failed",
+      status,
+      parseRetryAfter(retryAfter)
+    );
   }
   return result.data as T;
 }
@@ -114,10 +164,7 @@ const realApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ skillIds, targetLevel, roleId: roleId ?? undefined }),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Request failed" }));
-      throw new Error(err.detail ?? `Request failed: ${res.status}`);
-    }
+    if (!res.ok) await throwFromResponse(res, "Request failed");
     return res.json();
   },
 
@@ -134,19 +181,13 @@ const realApi = {
     const res = await authFetch(
       `${API_URL}/api/assessment/${sessionId}/report`
     );
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Request failed" }));
-      throw new Error(err.detail ?? `Request failed: ${res.status}`);
-    }
+    if (!res.ok) await throwFromResponse(res, "Request failed");
     return res.json();
   },
 
   assessmentExport: async (sessionId: string): Promise<string> => {
     const res = await authFetch(`${API_URL}/api/assessment/${sessionId}/export`);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Request failed" }));
-      throw new Error(err.detail ?? `Request failed: ${res.status}`);
-    }
+    if (!res.ok) await throwFromResponse(res, "Request failed");
     return res.text();
   },
 

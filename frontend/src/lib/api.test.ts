@@ -12,7 +12,7 @@ vi.mock("@/lib/generated/api-client/client.gen", () => ({
   client: { setConfig: vi.fn() },
 }));
 
-import { unwrap, api } from "./api";
+import { unwrap, api, ApiError, parseRetryAfter } from "./api";
 import {
   getSkillsApiSkillsGet,
   gapAnalysisApiGapAnalysisPost,
@@ -33,19 +33,85 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+describe("parseRetryAfter", () => {
+  it("returns undefined for null/undefined", () => {
+    expect(parseRetryAfter(null)).toBeUndefined();
+    expect(parseRetryAfter(undefined)).toBeUndefined();
+  });
+
+  it("returns undefined for empty string", () => {
+    expect(parseRetryAfter("")).toBeUndefined();
+  });
+
+  it("parses numeric seconds string", () => {
+    expect(parseRetryAfter("30")).toBe(30);
+    expect(parseRetryAfter("0")).toBe(0);
+    expect(parseRetryAfter("1.5")).toBe(2);
+  });
+
+  it("parses HTTP-date format", () => {
+    const futureDate = new Date(Date.now() + 60_000).toUTCString();
+    const result = parseRetryAfter(futureDate);
+    expect(result).toBeGreaterThan(0);
+    expect(result).toBeLessThanOrEqual(60);
+  });
+
+  it("returns undefined for past HTTP-date", () => {
+    const pastDate = new Date(Date.now() - 60_000).toUTCString();
+    expect(parseRetryAfter(pastDate)).toBeUndefined();
+  });
+
+  it("returns undefined for invalid string", () => {
+    expect(parseRetryAfter("not-a-number-or-date")).toBeUndefined();
+  });
+
+  it("returns undefined for negative numbers", () => {
+    expect(parseRetryAfter("-5")).toBeUndefined();
+  });
+});
+
 describe("unwrap", () => {
   it("returns data on success", () => {
     expect(unwrap({ data: { id: 1 } })).toEqual({ id: 1 });
   });
 
-  it("throws error with detail message", () => {
-    expect(() => unwrap({ error: { detail: "Not found" } })).toThrow(
-      "Not found"
-    );
+  it("throws ApiError with detail message and status", () => {
+    const mockResponse = { status: 404, headers: new Headers() } as Response;
+    expect(() =>
+      unwrap({ error: { detail: "Not found" }, response: mockResponse })
+    ).toThrow("Not found");
+
+    try {
+      unwrap({ error: { detail: "Not found" }, response: mockResponse });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(404);
+    }
+  });
+
+  it("throws ApiError with Retry-After header", () => {
+    const headers = new Headers({ "Retry-After": "30" });
+    const mockResponse = { status: 429, headers } as Response;
+    try {
+      unwrap({ error: { detail: "Rate limited" }, response: mockResponse });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(429);
+      expect((e as ApiError).retryAfter).toBe(30);
+    }
   });
 
   it("throws generic message when no detail", () => {
     expect(() => unwrap({ error: {} })).toThrow("Request failed");
+  });
+
+  it("defaults to status 500 when no response", () => {
+    try {
+      unwrap({ error: { detail: "fail" } });
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(500);
+    }
   });
 });
 
@@ -96,22 +162,47 @@ describe("api.assessmentStart", () => {
     expect(callBody.targetLevel).toBeUndefined();
   });
 
-  it("throws on server error with detail", async () => {
+  it("throws ApiError on server error with detail and status", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
+      headers: new Headers(),
       json: () => Promise.resolve({ detail: "Internal error" }),
     });
 
-    await expect(api.assessmentStart(["s1"])).rejects.toThrow(
-      "Internal error"
-    );
+    try {
+      await api.assessmentStart(["s1"]);
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).message).toBe("Internal error");
+      expect((e as ApiError).status).toBe(500);
+    }
+  });
+
+  it("throws ApiError with Retry-After on 429", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 429,
+      headers: new Headers({ "Retry-After": "60" }),
+      json: () => Promise.resolve({ detail: "Rate limited" }),
+    });
+
+    try {
+      await api.assessmentStart(["s1"]);
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(429);
+      expect((e as ApiError).retryAfter).toBe(60);
+    }
   });
 
   it("throws fallback message on unparseable error JSON", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
+      headers: new Headers(),
       json: () => Promise.reject(new Error("bad json")),
     });
 
@@ -149,20 +240,29 @@ describe("api.assessmentReport", () => {
     expect(result).toEqual(report);
   });
 
-  it("throws on error with detail", async () => {
+  it("throws ApiError on error with detail and status", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
+      headers: new Headers(),
       json: () => Promise.resolve({ detail: "Not found" }),
     });
 
-    await expect(api.assessmentReport("bad")).rejects.toThrow("Not found");
+    try {
+      await api.assessmentReport("bad");
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(404);
+      expect((e as ApiError).message).toBe("Not found");
+    }
   });
 
   it("throws fallback message on unparseable error JSON", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
+      headers: new Headers(),
       json: () => Promise.reject(new Error("bad json")),
     });
 
@@ -250,20 +350,29 @@ describe("api.assessmentExport", () => {
     expect(result).toBe("# Assessment Report\n*Generated by OpenLearning*");
   });
 
-  it("throws Error with detail on non-ok response", async () => {
+  it("throws ApiError with detail on non-ok response", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 404,
+      headers: new Headers(),
       json: () => Promise.resolve({ detail: "Session not found" }),
     });
 
-    await expect(api.assessmentExport("bad-id")).rejects.toThrow("Session not found");
+    try {
+      await api.assessmentExport("bad-id");
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(404);
+      expect((e as ApiError).message).toBe("Session not found");
+    }
   });
 
   it("throws fallback message when error body is not JSON", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
+      headers: new Headers(),
       json: () => Promise.reject(new Error("bad json")),
     });
 

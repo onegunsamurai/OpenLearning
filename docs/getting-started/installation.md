@@ -6,7 +6,7 @@
 |-------------|---------|
 | Python | 3.11+ |
 | Node.js | 18+ |
-| Anthropic API key | [Get one here](https://console.anthropic.com/) |
+| Anthropic API key | [Get one here](https://console.anthropic.com/) (optional — users provide their own via BYOK) |
 
 ## Install Dependencies
 
@@ -48,7 +48,7 @@ CORS_ORIGINS=http://localhost:3000
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ANTHROPIC_API_KEY` | Your Anthropic API key (required) | — |
+| `ANTHROPIC_API_KEY` | Fallback Anthropic API key (users provide their own via BYOK) | — |
 | `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:3000` |
 | `GITHUB_CLIENT_ID` | GitHub OAuth app client ID* | — |
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth app secret* | — |
@@ -118,4 +118,4 @@ To stop containers: `make docker-down`
 To stop and remove all data: `make docker-clean`
 
 !!! tip
-    If the backend fails to start, check that your `ANTHROPIC_API_KEY` is set correctly in `backend/.env`. The database (SQLite) is created automatically on first run in the `data/` directory.
+    If LLM calls fail, check that a valid API key is configured — either via BYOK in the UI or as `ANTHROPIC_API_KEY` in `backend/.env`. The database (SQLite) is created automatically on first run in the `data/` directory.
