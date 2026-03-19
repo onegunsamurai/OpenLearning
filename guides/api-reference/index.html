@@ -777,7 +777,29 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="GET /api/auth/api-key">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE /api/auth/api-key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthvalidate-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/validate-key
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="POST /api/auth/validate-key">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1218,7 +1240,29 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="GET /api/auth/api-key">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE /api/auth/api-key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthvalidate-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/validate-key
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="POST /api/auth/validate-key">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1499,6 +1543,35 @@
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key stored&quot;</span><span class="p">}</span>
 </code></pre></div>
 <hr />
+<h3 id="delete-apiauthapi-key">DELETE <code>/api/auth/api-key</code><a class="headerlink" href="#delete-apiauthapi-key" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Remove the stored API key for the current user. Idempotent — succeeds even if no key is stored.</p>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="post-apiauthvalidate-key">POST <code>/api/auth/validate-key</code><a class="headerlink" href="#post-apiauthvalidate-key" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Validate an Anthropic API key without storing it. Calls the Anthropic API to verify the key is functional.</p>
+<p><strong>Request</strong>: <code>ApiKeySetRequest</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;apiKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sk-ant-...&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong>: <code>ValidateKeyResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;valid&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (invalid key):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;valid&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid API key&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (rate limited):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;valid&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Rate limited — key may be valid&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
 <h4 id="auth-models">Auth Models<a class="headerlink" href="#auth-models" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
@@ -1511,6 +1584,10 @@
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ApiKeyResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">api_key_preview</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ValidateKeyResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">valid</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 <p><strong>Source</strong>: <code>backend/app/routes/auth.py</code></p>
 <hr />
@@ -1577,6 +1654,7 @@
 <h3 id="post-apiassessmentstart">POST <code>/api/assessment/start</code><a class="headerlink" href="#post-apiassessmentstart" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
 </blockquote>
 <p>Start a new assessment session. Returns the first calibration question.</p>
 <p><strong>Request body</strong>:</p>
@@ -1625,10 +1703,14 @@
 <span class="w">  </span><span class="nt">&quot;totalSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
 <span class="p">}</span>
 </code></pre></div>
+<p><strong>Response</strong> (400 — no API key configured):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
+</code></pre></div>
 <hr />
 <h3 id="post-apiassessmentsession_idrespond">POST <code>/api/assessment/{session_id}/respond</code><a class="headerlink" href="#post-apiassessmentsession_idrespond" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
 </blockquote>
 <p>Submit an answer and receive the next question (or completion).</p>
 <p><strong>Request body</strong>:</p>
@@ -1678,6 +1760,9 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Response</strong> (400 — no API key configured):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
+</code></pre></div>
 <p><strong>Response</strong> (410 — session timed out):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session has timed out&quot;</span><span class="p">}</span>
 </code></pre></div>
@@ -1749,6 +1834,7 @@
 <h3 id="post-apigap-analysis">POST <code>/api/gap-analysis</code><a class="headerlink" href="#post-apigap-analysis" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
 </blockquote>
 <p>Generate a gap analysis from proficiency scores.</p>
 <p><strong>Request</strong>: <code>GapAnalysisRequest</code></p>
@@ -1782,10 +1868,14 @@
 <span class="p">}</span>
 </code></pre></div>
 <p>Priority levels: <code>critical</code> (gap &gt; 40), <code>high</code> (gap &gt; 25), <code>medium</code> (gap &gt; 10), <code>low</code> (gap &lt;= 10).</p>
+<p><strong>Response</strong> (400 — no API key configured):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
+</code></pre></div>
 <hr />
 <h3 id="post-apilearning-plan">POST <code>/api/learning-plan</code><a class="headerlink" href="#post-apilearning-plan" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
 </blockquote>
 <p>Generate a personalized learning plan from gap analysis.</p>
 <p><strong>Request</strong>: <code>LearningPlanRequest</code></p>
@@ -1824,6 +1914,9 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (400 — no API key configured):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
 </code></pre></div>
 <h2 id="assessment-flow">Assessment Flow<a class="headerlink" href="#assessment-flow" title="Permanent link">&para;</a></h2>
 <p>The full assessment flow involves multiple API calls:</p>
