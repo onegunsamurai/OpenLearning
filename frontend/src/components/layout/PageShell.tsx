@@ -3,13 +3,12 @@
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
-import { Play, LogOut, Github } from "lucide-react";
+import { LogOut, Github } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PageShellProps {
-  currentStep: number;
+  currentStep?: number;
   children: React.ReactNode;
   maxWidth?: string;
   noPadding?: boolean;
@@ -36,27 +35,17 @@ export function PageShell({
             <h1 className="font-heading text-lg font-bold tracking-tight">
               <span className="text-cyan">Open</span>Learning
             </h1>
-            {isDemo ? (
+            {isDemo && (
               <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-400">
                 Demo
               </span>
-            ) : (
-              <>
-                <span className="hidden text-xs text-muted-foreground font-mono sm:block">
-                  session resets on close
-                </span>
-                <Link
-                  href="/demo/assess"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-full bg-cyan-400 px-3.5 text-[13px] font-semibold text-[#0a0a1a] shadow-[0_0_12px_rgba(34,211,238,0.35)] transition-all duration-200 hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] hover:brightness-110"
-                >
-                  <Play className="h-3 w-3 fill-current" />
-                  Try Demo
-                </Link>
-              </>
             )}
           </div>
 
           <div className="flex items-center gap-4">
+            {currentStep !== undefined && (
+              <StepProgress currentStep={currentStep} steps={steps} />
+            )}
             {!isDemo && (
               <div className="flex items-center gap-2">
                 {isLoading ? (
@@ -94,7 +83,6 @@ export function PageShell({
                 )}
               </div>
             )}
-            <StepProgress currentStep={currentStep} steps={steps} />
           </div>
         </div>
       </header>

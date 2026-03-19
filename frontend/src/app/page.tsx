@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { Skill } from "@/lib/types";
 import { api } from "@/lib/api";
-import { ArrowRight, FlaskConical, Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 
@@ -62,7 +62,7 @@ export default function OnboardingPage() {
       !selectedSkillIds.every((id) => roleSkillIds.includes(id)));
 
   return (
-    <PageShell currentStep={0}>
+    <PageShell>
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         {/* Left: Hero */}
         <motion.div
@@ -164,14 +164,6 @@ export default function OnboardingPage() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Link
-              href="/demo/assess"
-              className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-mono text-muted-foreground transition-colors hover:text-foreground"
-              title="Try a demo with pre-loaded data (no API key needed)"
-            >
-              <FlaskConical className="h-3 w-3" />
-              Try Demo
-            </Link>
             {selectedSkillIds.length === 0 ? (
               "Select at least 1 skill to continue"
             ) : (

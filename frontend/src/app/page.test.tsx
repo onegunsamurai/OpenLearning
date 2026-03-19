@@ -56,13 +56,12 @@ describe("OnboardingPage", () => {
     expect(screen.getByText(/No signup required/i)).toBeInTheDocument();
   });
 
-  it("renders bottom bar 'Try Demo' link pointing to /demo/assess", () => {
+  it("does not render 'Try Demo' link in bottom bar", () => {
     render(<OnboardingPage />);
-    const links = screen.getAllByRole("link", { name: /Try Demo/i });
+    const links = screen.queryAllByRole("link", { name: /Try Demo/i });
     const bottomBarLink = links.find(
       (link) => link.textContent?.trim() === "Try Demo"
     );
-    expect(bottomBarLink).toBeInTheDocument();
-    expect(bottomBarLink).toHaveAttribute("href", "/demo/assess");
+    expect(bottomBarLink).toBeUndefined();
   });
 });

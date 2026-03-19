@@ -24,24 +24,24 @@ describe("PageShell", () => {
     useAuthStore.setState({ user: null, isLoading: false });
   });
 
-  it("renders 'Try Demo' link when isDemo is false", () => {
+  it("does not render 'Try Demo' link in header", () => {
     render(
       <PageShell currentStep={0}>
         <div>content</div>
       </PageShell>
     );
-    const link = screen.getByRole("link", { name: /Try Demo/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/demo/assess");
+    expect(screen.queryByRole("link", { name: /Try Demo/i })).not.toBeInTheDocument();
   });
 
-  it("does not render 'Try Demo' link when isDemo is true", () => {
+  it("hides stepper when currentStep is not provided", () => {
     render(
-      <PageShell currentStep={0} isDemo>
+      <PageShell>
         <div>content</div>
       </PageShell>
     );
-    expect(screen.queryByRole("link", { name: /Try Demo/i })).not.toBeInTheDocument();
+    // StepProgress labels should not appear when currentStep is undefined
+    expect(screen.queryByText("Skills")).not.toBeInTheDocument();
+    expect(screen.queryByText("Assess")).not.toBeInTheDocument();
   });
 
   it("renders 'Demo' badge when isDemo is true", () => {
