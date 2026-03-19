@@ -25,6 +25,9 @@ backend/tests/
 ├── conftest.py                # Shared fixtures, DB infrastructure, seed helpers
 ├── test_agents.py             # LLM agent tests (evaluator, question gen, knowledge mapper)
 ├── test_assessment_routes.py  # Assessment endpoint tests (start, respond, graph, report)
+├── test_auth.py               # Auth endpoint tests (login, callback, me, logout, API key)
+├── test_auth_guard.py         # Auth guard tests (protected route 401/403 behavior)
+├── test_crypto.py             # Fernet encryption/decryption tests
 ├── test_db.py                 # Database tests
 ├── test_export.py             # Assessment report export tests
 ├── test_gap_analysis_route.py # Gap analysis endpoint tests
@@ -55,7 +58,9 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `initial_state` | Fresh `AssessmentState` for "backend_engineering" domain |
 | `mid_assessment_state` | `AssessmentState` mid-assessment with history and calibrated_level="mid" |
 | `setup_db` | Creates in-memory SQLite tables before each test, drops after |
-| `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan routers (shared across route tests) |
+| `_test_user` | An `AuthUser` with test user ID and username (module-level constant) |
+| `_override_get_current_user` | Dependency override that returns `_test_user`, bypassing real JWT auth |
+| `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan, and auth routers (shared across route tests) |
 | `seed_session()` | Helper to insert an `AssessmentSession` row |
 | `seed_result()` | Helper to insert an `AssessmentResult` row with sample data |
 | `mock_llm_response()` | Helper returning an `AsyncMock` chat model with given response text |
@@ -154,9 +159,11 @@ frontend/src/
 │       └── role-selector.test.tsx
 ├── hooks/
 │   ├── useAssessmentChat.test.ts
+│   ├── useAuth.test.ts
 │   └── useDemoAssessmentChat.test.ts
 └── lib/
     ├── api.test.ts
+    ├── auth-store.test.ts
     ├── store.test.ts
     └── demo/
         └── demo-assessment.test.ts

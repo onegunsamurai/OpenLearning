@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 from app.db import AssessmentResult, AssessmentSession, Base, get_db
+from app.deps import AuthUser, get_current_user
 from app.graph.state import (
     AssessmentState,
     BloomLevel,
@@ -20,6 +21,7 @@ from app.graph.state import (
     make_initial_state,
 )
 from app.routes.assessment import router as assessment_router
+from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
 from app.routes.learning_plan import router as learning_plan_router
 
@@ -40,11 +42,20 @@ async def _override_get_db():
 
 # ── Shared test app with all routers ────────────────────────────────────────
 
+_test_user = AuthUser(user_id="test-user-id", github_username="testuser", avatar_url="")
+
+
+async def _override_get_current_user() -> AuthUser:
+    return _test_user
+
+
 _test_app = FastAPI()
 _test_app.include_router(assessment_router, prefix="/api")
 _test_app.include_router(gap_analysis_router, prefix="/api")
 _test_app.include_router(learning_plan_router, prefix="/api")
+_test_app.include_router(auth_router, prefix="/api/auth")
 _test_app.dependency_overrides[get_db] = _override_get_db
+_test_app.dependency_overrides[get_current_user] = _override_get_current_user
 
 _mock_graph = AsyncMock()
 _test_app.state.graph = _mock_graph

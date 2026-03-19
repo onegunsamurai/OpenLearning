@@ -1,8 +1,9 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from app.deps import AuthUser, get_current_user
 from app.models.gap_analysis import GapAnalysis, GapAnalysisRequest
 from app.prompts.gap_analyzer import GAP_ANALYZER_SYSTEM_PROMPT
 from app.services.ai import get_chat_model, parse_json_response
@@ -11,7 +12,10 @@ router = APIRouter()
 
 
 @router.post("/gap-analysis", response_model=GapAnalysis, response_model_by_alias=True)
-async def gap_analysis(request: GapAnalysisRequest) -> GapAnalysis:
+async def gap_analysis(
+    request: GapAnalysisRequest,
+    user: AuthUser = Depends(get_current_user),
+) -> GapAnalysis:
     if not request.proficiency_scores:
         raise HTTPException(status_code=400, detail="Proficiency scores are required")
 

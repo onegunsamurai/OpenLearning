@@ -5,6 +5,10 @@ import {
   learningPlanApiLearningPlanPost,
   getRolesApiRolesGet,
   getRoleApiRolesRoleIdGet,
+  authMeApiAuthMeGet,
+  authLogoutApiAuthLogoutPost,
+  setApiKeyApiAuthApiKeyPost,
+  getApiKeyApiAuthApiKeyGet,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -13,10 +17,12 @@ import type {
   ProficiencyScore,
   RoleSummary,
   RoleDetail,
+  AuthMeResponse,
+  ApiKeyResponse,
 } from "@/lib/generated/api-client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-client.setConfig({ baseUrl: API_URL });
+client.setConfig({ baseUrl: API_URL, credentials: "include" });
 
 export function unwrap<T>(result: { data?: T; error?: unknown }): T {
   if (result.error !== undefined) {
@@ -24,6 +30,11 @@ export function unwrap<T>(result: { data?: T; error?: unknown }): T {
     throw new Error(err?.detail ?? "Request failed");
   }
   return result.data as T;
+}
+
+/** Wrapper around fetch that always sends credentials (cookies). */
+function authFetch(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, { ...init, credentials: "include" });
 }
 
 export interface AssessmentStartResponse {
@@ -95,7 +106,7 @@ const realApi = {
     targetLevel?: string,
     roleId?: string | null
   ): Promise<AssessmentStartResponse> => {
-    const res = await fetch(`${API_URL}/api/assessment/start`, {
+    const res = await authFetch(`${API_URL}/api/assessment/start`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ skillIds, targetLevel, roleId: roleId ?? undefined }),
@@ -108,7 +119,7 @@ const realApi = {
   },
 
   assessmentRespond: (sessionId: string, response: string) =>
-    fetch(`${API_URL}/api/assessment/${sessionId}/respond`, {
+    authFetch(`${API_URL}/api/assessment/${sessionId}/respond`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ response }),
@@ -117,7 +128,7 @@ const realApi = {
   assessmentReport: async (
     sessionId: string
   ): Promise<AssessmentReportResponse> => {
-    const res = await fetch(
+    const res = await authFetch(
       `${API_URL}/api/assessment/${sessionId}/report`
     );
     if (!res.ok) {
@@ -128,13 +139,28 @@ const realApi = {
   },
 
   assessmentExport: async (sessionId: string): Promise<string> => {
-    const res = await fetch(`${API_URL}/api/assessment/${sessionId}/export`);
+    const res = await authFetch(`${API_URL}/api/assessment/${sessionId}/export`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Request failed" }));
       throw new Error(err.detail ?? `Request failed: ${res.status}`);
     }
     return res.text();
   },
+
+  // Auth methods
+  authMe: async (): Promise<AuthMeResponse> =>
+    unwrap(await authMeApiAuthMeGet()),
+
+  authLogout: async (): Promise<void> => {
+    await authLogoutApiAuthLogoutPost();
+  },
+
+  authSetApiKey: async (apiKey: string): Promise<void> => {
+    unwrap(await setApiKeyApiAuthApiKeyPost({ body: { apiKey } }));
+  },
+
+  authGetApiKey: async (): Promise<ApiKeyResponse> =>
+    unwrap(await getApiKeyApiAuthApiKeyGet()),
 };
 
 export const api = realApi;

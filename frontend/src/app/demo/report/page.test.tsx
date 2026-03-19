@@ -7,6 +7,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+vi.mock("@/lib/auth-store", () => ({
+  useAuthStore: () => ({ user: null, isLoading: false }),
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
+}));
+
 // Mock recharts to avoid canvas issues in jsdom
 vi.mock("recharts", () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => children,

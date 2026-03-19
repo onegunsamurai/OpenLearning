@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses } from './types.gen';
+import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, AuthLogoutApiAuthLogoutPostData, AuthLogoutApiAuthLogoutPostResponses, AuthMeApiAuthMeGetData, AuthMeApiAuthMeGetErrors, AuthMeApiAuthMeGetResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetApiKeyApiAuthApiKeyGetData, GetApiKeyApiAuthApiKeyGetErrors, GetApiKeyApiAuthApiKeyGetResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, GithubCallbackApiAuthGithubCallbackGetData, GithubCallbackApiAuthGithubCallbackGetErrors, GithubCallbackApiAuthGithubCallbackGetResponses, GithubLoginApiAuthGithubGetData, GithubLoginApiAuthGithubGetErrors, GithubLoginApiAuthGithubGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, SetApiKeyApiAuthApiKeyPostData, SetApiKeyApiAuthApiKeyPostErrors, SetApiKeyApiAuthApiKeyPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -96,6 +96,55 @@ export const gapAnalysisApiGapAnalysisPost = <ThrowOnError extends boolean = fal
  */
 export const learningPlanApiLearningPlanPost = <ThrowOnError extends boolean = false>(options: Options<LearningPlanApiLearningPlanPostData, ThrowOnError>) => (options.client ?? client).post<LearningPlanApiLearningPlanPostResponses, LearningPlanApiLearningPlanPostErrors, ThrowOnError>({
     url: '/api/learning-plan',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Github Login
+ *
+ * Redirect the user to GitHub OAuth authorization.
+ */
+export const githubLoginApiAuthGithubGet = <ThrowOnError extends boolean = false>(options?: Options<GithubLoginApiAuthGithubGetData, ThrowOnError>) => (options?.client ?? client).get<GithubLoginApiAuthGithubGetResponses, GithubLoginApiAuthGithubGetErrors, ThrowOnError>({ url: '/api/auth/github', ...options });
+
+/**
+ * Github Callback
+ *
+ * Handle the GitHub OAuth callback: exchange code, upsert user, set JWT cookie.
+ */
+export const githubCallbackApiAuthGithubCallbackGet = <ThrowOnError extends boolean = false>(options: Options<GithubCallbackApiAuthGithubCallbackGetData, ThrowOnError>) => (options.client ?? client).get<GithubCallbackApiAuthGithubCallbackGetResponses, GithubCallbackApiAuthGithubCallbackGetErrors, ThrowOnError>({ url: '/api/auth/github/callback', ...options });
+
+/**
+ * Auth Me
+ *
+ * Return the current user's profile.
+ */
+export const authMeApiAuthMeGet = <ThrowOnError extends boolean = false>(options?: Options<AuthMeApiAuthMeGetData, ThrowOnError>) => (options?.client ?? client).get<AuthMeApiAuthMeGetResponses, AuthMeApiAuthMeGetErrors, ThrowOnError>({ url: '/api/auth/me', ...options });
+
+/**
+ * Auth Logout
+ *
+ * Clear the auth cookie.
+ */
+export const authLogoutApiAuthLogoutPost = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutApiAuthLogoutPostData, ThrowOnError>) => (options?.client ?? client).post<AuthLogoutApiAuthLogoutPostResponses, unknown, ThrowOnError>({ url: '/api/auth/logout', ...options });
+
+/**
+ * Get Api Key
+ *
+ * Return a masked preview of the stored API key.
+ */
+export const getApiKeyApiAuthApiKeyGet = <ThrowOnError extends boolean = false>(options?: Options<GetApiKeyApiAuthApiKeyGetData, ThrowOnError>) => (options?.client ?? client).get<GetApiKeyApiAuthApiKeyGetResponses, GetApiKeyApiAuthApiKeyGetErrors, ThrowOnError>({ url: '/api/auth/api-key', ...options });
+
+/**
+ * Set Api Key
+ *
+ * Store an encrypted API key for the current user.
+ */
+export const setApiKeyApiAuthApiKeyPost = <ThrowOnError extends boolean = false>(options: Options<SetApiKeyApiAuthApiKeyPostData, ThrowOnError>) => (options.client ?? client).post<SetApiKeyApiAuthApiKeyPostResponses, SetApiKeyApiAuthApiKeyPostErrors, ThrowOnError>({
+    url: '/api/auth/api-key',
     ...options,
     headers: {
         'Content-Type': 'application/json',

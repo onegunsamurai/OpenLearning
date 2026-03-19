@@ -10,4 +10,6 @@ export type {
   RoleSummary,
   RoleDetail,
   RoleLevelSummary,
+  AuthMeResponse,
+  ApiKeyResponse,
 } from "@/lib/generated/api-client";

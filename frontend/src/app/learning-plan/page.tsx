@@ -7,6 +7,8 @@ import { PlanHeader } from "@/components/learning-plan/PlanHeader";
 import { PlanTimeline } from "@/components/learning-plan/PlanTimeline";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Loader2, Copy, RotateCcw, Check, FileDown } from "lucide-react";
@@ -16,10 +18,20 @@ export default function LearningPlanPage() {
   const { gapAnalysis, learningPlan, setLearningPlan, setCurrentStep, reset, assessmentSessionId } =
     useAppStore();
 
+  const { user, isLoading: authLoading } = useAuthStore();
+  const { login } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activePhase, setActivePhase] = useState(1);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      login("/learning-plan");
+      return;
+    }
+  }, [authLoading, user, login]);
 
   useEffect(() => {
     if (!gapAnalysis) {
@@ -72,6 +84,7 @@ export default function LearningPlanPage() {
     router.push("/");
   };
 
+  if (authLoading || !user) return null;
   if (!gapAnalysis) return null;
 
   if (loading) {

@@ -25,7 +25,16 @@ vi.mock("@/lib/api", () => ({
   api: {
     getSkills: vi.fn().mockResolvedValue({ skills: [], categories: [] }),
     getRoles: vi.fn().mockResolvedValue([]),
+    authMe: vi.fn().mockRejectedValue(new Error("not authenticated")),
   },
+}));
+
+vi.mock("@/lib/auth-store", () => ({
+  useAuthStore: () => ({ user: null, isLoading: false }),
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
 }));
 
 import OnboardingPage from "./page";

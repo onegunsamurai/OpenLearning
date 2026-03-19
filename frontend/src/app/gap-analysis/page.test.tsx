@@ -63,6 +63,14 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+vi.mock("@/lib/auth-store", () => ({
+  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
+}));
+
 const sampleScores: ProficiencyScore[] = [
   {
     skillId: "react",

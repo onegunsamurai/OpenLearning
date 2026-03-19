@@ -8,6 +8,8 @@ import { GapCard } from "@/components/gap-analysis/GapCard";
 import { GapSummary } from "@/components/gap-analysis/GapSummary";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { ArrowRight, Loader2 } from "lucide-react";
 
@@ -16,8 +18,18 @@ export default function GapAnalysisPage() {
   const { proficiencyScores, gapAnalysis, setGapAnalysis, setCurrentStep } =
     useAppStore();
 
+  const { user, isLoading: authLoading } = useAuthStore();
+  const { login } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      login("/gap-analysis");
+      return;
+    }
+  }, [authLoading, user, login]);
 
   useEffect(() => {
     if (proficiencyScores.length === 0) {
@@ -61,6 +73,7 @@ export default function GapAnalysisPage() {
     router.push("/learning-plan");
   };
 
+  if (authLoading || !user) return null;
   if (proficiencyScores.length === 0) return null;
 
   if (loading) {

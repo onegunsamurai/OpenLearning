@@ -37,12 +37,26 @@ Edit `backend/.env` and set your API key:
 ```
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 CORS_ORIGINS=http://localhost:3000
+
+# GitHub OAuth (required for authentication)
+# GITHUB_CLIENT_ID=your_github_oauth_app_client_id
+# GITHUB_CLIENT_SECRET=your_github_oauth_app_client_secret
+# JWT_SECRET_KEY=your_random_secret_key_here
+# ENCRYPTION_KEY=your_fernet_key_here
+# FRONTEND_URL=http://localhost:3000
 ```
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `ANTHROPIC_API_KEY` | Your Anthropic API key (required) | — |
 | `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:3000` |
+| `GITHUB_CLIENT_ID` | GitHub OAuth app client ID* | — |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth app secret* | — |
+| `JWT_SECRET_KEY` | JWT signing key (random 256-bit hex string)* | — |
+| `ENCRYPTION_KEY` | Fernet key for API key encryption* | — |
+| `FRONTEND_URL` | Frontend URL for OAuth redirects | `http://localhost:3000` |
+
+*Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.
 
 ### Frontend
 

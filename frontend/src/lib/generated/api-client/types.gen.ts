@@ -5,6 +5,26 @@ export type ClientOptions = {
 };
 
 /**
+ * ApiKeyResponse
+ */
+export type ApiKeyResponse = {
+    /**
+     * Apikeypreview
+     */
+    apiKeyPreview: string;
+};
+
+/**
+ * ApiKeySetRequest
+ */
+export type ApiKeySetRequest = {
+    /**
+     * Apikey
+     */
+    apiKey: string;
+};
+
+/**
  * AssessmentReportResponse
  */
 export type AssessmentReportResponse = {
@@ -72,6 +92,28 @@ export type AssessmentStartResponse = {
      * Totalsteps
      */
     totalSteps?: number;
+};
+
+/**
+ * AuthMeResponse
+ */
+export type AuthMeResponse = {
+    /**
+     * Userid
+     */
+    userId: string;
+    /**
+     * Githubusername
+     */
+    githubUsername: string;
+    /**
+     * Avatarurl
+     */
+    avatarUrl: string;
+    /**
+     * Hasapikey
+     */
+    hasApiKey: boolean;
 };
 
 /**
@@ -846,3 +888,162 @@ export type LearningPlanApiLearningPlanPostResponses = {
 };
 
 export type LearningPlanApiLearningPlanPostResponse = LearningPlanApiLearningPlanPostResponses[keyof LearningPlanApiLearningPlanPostResponses];
+
+export type GithubLoginApiAuthGithubGetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Redirect
+         */
+        redirect?: string;
+    };
+    url: '/api/auth/github';
+};
+
+export type GithubLoginApiAuthGithubGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GithubLoginApiAuthGithubGetError = GithubLoginApiAuthGithubGetErrors[keyof GithubLoginApiAuthGithubGetErrors];
+
+export type GithubLoginApiAuthGithubGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type GithubCallbackApiAuthGithubCallbackGetData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Code
+         */
+        code: string;
+        /**
+         * State
+         */
+        state: string;
+    };
+    url: '/api/auth/github/callback';
+};
+
+export type GithubCallbackApiAuthGithubCallbackGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GithubCallbackApiAuthGithubCallbackGetError = GithubCallbackApiAuthGithubCallbackGetErrors[keyof GithubCallbackApiAuthGithubCallbackGetErrors];
+
+export type GithubCallbackApiAuthGithubCallbackGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type AuthMeApiAuthMeGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/me';
+};
+
+export type AuthMeApiAuthMeGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AuthMeApiAuthMeGetError = AuthMeApiAuthMeGetErrors[keyof AuthMeApiAuthMeGetErrors];
+
+export type AuthMeApiAuthMeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthMeResponse;
+};
+
+export type AuthMeApiAuthMeGetResponse = AuthMeApiAuthMeGetResponses[keyof AuthMeApiAuthMeGetResponses];
+
+export type AuthLogoutApiAuthLogoutPostData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/logout';
+};
+
+export type AuthLogoutApiAuthLogoutPostResponses = {
+    /**
+     * Response Auth Logout Api Auth Logout Post
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AuthLogoutApiAuthLogoutPostResponse = AuthLogoutApiAuthLogoutPostResponses[keyof AuthLogoutApiAuthLogoutPostResponses];
+
+export type GetApiKeyApiAuthApiKeyGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/api-key';
+};
+
+export type GetApiKeyApiAuthApiKeyGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetApiKeyApiAuthApiKeyGetError = GetApiKeyApiAuthApiKeyGetErrors[keyof GetApiKeyApiAuthApiKeyGetErrors];
+
+export type GetApiKeyApiAuthApiKeyGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiKeyResponse;
+};
+
+export type GetApiKeyApiAuthApiKeyGetResponse = GetApiKeyApiAuthApiKeyGetResponses[keyof GetApiKeyApiAuthApiKeyGetResponses];
+
+export type SetApiKeyApiAuthApiKeyPostData = {
+    body: ApiKeySetRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/api-key';
+};
+
+export type SetApiKeyApiAuthApiKeyPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SetApiKeyApiAuthApiKeyPostError = SetApiKeyApiAuthApiKeyPostErrors[keyof SetApiKeyApiAuthApiKeyPostErrors];
+
+export type SetApiKeyApiAuthApiKeyPostResponses = {
+    /**
+     * Response Set Api Key Api Auth Api Key Post
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type SetApiKeyApiAuthApiKeyPostResponse = SetApiKeyApiAuthApiKeyPostResponses[keyof SetApiKeyApiAuthApiKeyPostResponses];

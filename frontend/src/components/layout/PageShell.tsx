@@ -2,8 +2,11 @@
 
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { Play, LogOut, Github } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PageShellProps {
   currentStep: number;
@@ -22,6 +25,9 @@ export function PageShell({
   isDemo = false,
   steps,
 }: PageShellProps) {
+  const { user, isLoading } = useAuthStore();
+  const { login, logout } = useAuth();
+
   return (
     <div className="grid-background min-h-screen">
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -49,7 +55,47 @@ export function PageShell({
               </>
             )}
           </div>
-          <StepProgress currentStep={currentStep} steps={steps} />
+
+          <div className="flex items-center gap-4">
+            {!isDemo && (
+              <div className="flex items-center gap-2">
+                {isLoading ? (
+                  <div className="h-8 w-24 animate-pulse rounded-full bg-muted" />
+                ) : user ? (
+                  <div className="flex items-center gap-2">
+                    {user.avatarUrl && (
+                      <Image
+                        src={user.avatarUrl}
+                        alt={user.githubUsername}
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 rounded-full border border-border"
+                      />
+                    )}
+                    <span className="hidden text-sm text-muted-foreground sm:block">
+                      {user.githubUsername}
+                    </span>
+                    <button
+                      onClick={logout}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <LogOut className="h-3 w-3" />
+                      <span className="hidden sm:inline">Sign Out</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => login(window.location.pathname)}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Github className="h-3.5 w-3.5" />
+                    Sign in with GitHub
+                  </button>
+                )}
+              </div>
+            )}
+            <StepProgress currentStep={currentStep} steps={steps} />
+          </div>
         </div>
       </header>
       <motion.main

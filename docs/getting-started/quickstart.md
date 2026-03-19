@@ -2,6 +2,10 @@
 
 This walkthrough guides you through a complete assessment cycle — from skill selection to a personalized learning plan.
 
+!!! note
+    The full assessment flow requires GitHub authentication. Click **Sign in with GitHub** in the header.
+    To explore without signing in, use **Demo Mode** — it runs with synthetic data and needs no auth.
+
 ## Step 1: Select Skills
 
 On the onboarding page, you have two options:
