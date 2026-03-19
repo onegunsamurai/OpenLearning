@@ -1730,6 +1730,9 @@
     <span class="n">target_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mid&quot;</span>
     <span class="n">role_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Validated: must be in list_domains() or None</span>
 
+<span class="k">class</span><span class="w"> </span><span class="nc">AssessmentRespondRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>
+
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">question</span><span class="p">:</span> <span class="nb">str</span>
