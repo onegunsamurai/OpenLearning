@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { LogOut, Github } from "lucide-react";
+import { LogOut, Github, Key } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
+import { ApiKeySetup } from "@/components/settings/api-key-setup";
+import { api } from "@/lib/api";
 
 interface PageShellProps {
   currentStep?: number;
@@ -14,6 +17,8 @@ interface PageShellProps {
   noPadding?: boolean;
   isDemo?: boolean;
   steps?: StepDefinition[];
+  autoPromptApiKey?: boolean;
+  onApiKeySet?: () => void;
 }
 
 export function PageShell({
@@ -23,9 +28,25 @@ export function PageShell({
   noPadding = false,
   isDemo = false,
   steps,
+  autoPromptApiKey = false,
+  onApiKeySet,
 }: PageShellProps) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading, setUser } = useAuthStore();
   const { login, logout } = useAuth();
+  const [manualShowKeySetup, setManualShowKeySetup] = useState(false);
+  const [autoPromptDismissed, setAutoPromptDismissed] = useState(false);
+
+  const shouldAutoPrompt =
+    autoPromptApiKey && !!user && !user.hasApiKey && !autoPromptDismissed;
+  const showKeySetup = manualShowKeySetup || shouldAutoPrompt;
+
+  const handleKeySet = async () => {
+    try {
+      const me = await api.authMe();
+      setUser(me);
+      onApiKeySet?.();
+    } catch { /* ignore */ }
+  };
 
   return (
     <div className="grid-background min-h-screen">
@@ -65,6 +86,18 @@ export function PageShell({
                       {user.githubUsername}
                     </span>
                     <button
+                      onClick={() => setManualShowKeySetup(true)}
+                      className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground"
+                      aria-label="API key settings"
+                    >
+                      <Key className="h-3.5 w-3.5" />
+                      <span
+                        className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                          user.hasApiKey ? "bg-emerald-500" : "bg-red-500"
+                        }`}
+                      />
+                    </button>
+                    <button
                       onClick={logout}
                       className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     >
@@ -94,6 +127,14 @@ export function PageShell({
       >
         {children}
       </motion.main>
+      <ApiKeySetup
+        open={showKeySetup}
+        onClose={() => {
+          setManualShowKeySetup(false);
+          setAutoPromptDismissed(true);
+        }}
+        onKeySet={handleKeySet}
+      />
     </div>
   );
 }

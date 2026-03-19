@@ -12,11 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import PlainTextResponse, StreamingResponse
 
 from app.db import AssessmentResult, AssessmentSession, get_db
-from app.deps import AuthUser, get_current_user
+from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.graph.state import make_initial_state
 from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
 from app.routes.export_utils import build_assessment_markdown
+from app.services.ai import api_key_scope
 
 logger = logging.getLogger("openlearning.assessment")
 
@@ -121,6 +122,7 @@ async def assessment_start(
     req: Request,
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    api_key: str = Depends(get_user_api_key),
 ) -> AssessmentStartResponse:
     if not request.skill_ids:
         raise HTTPException(status_code=400, detail="At least one skill is required")
@@ -159,7 +161,8 @@ async def assessment_start(
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
 
-    await graph.ainvoke(initial_state, config)
+    with api_key_scope(api_key):
+        await graph.ainvoke(initial_state, config)
 
     # The graph will be interrupted. Get the interrupt value.
     graph_state = await graph.aget_state(config)
@@ -194,6 +197,7 @@ async def assessment_respond(
     req: Request,
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    api_key: str = Depends(get_user_api_key),
 ) -> StreamingResponse:
     thread_id = await _get_thread_id(session_id, db)
 
@@ -209,57 +213,60 @@ async def assessment_respond(
     config = {"configurable": {"thread_id": thread_id}}
 
     async def event_stream():
-        try:
-            # Resume graph with user's answer
-            await graph.ainvoke(Command(resume=request.response), config)
+        with api_key_scope(api_key):
+            try:
+                # Resume graph with user's answer
+                await graph.ainvoke(Command(resume=request.response), config)
 
-            # Check new state
-            graph_state = await graph.aget_state(config)
+                # Check new state
+                graph_state = await graph.aget_state(config)
 
-            # Check if pipeline completed (no more interrupts)
-            has_interrupt = False
-            interrupt_data = None
-            for task in graph_state.tasks or []:
-                if hasattr(task, "interrupts") and task.interrupts:
-                    has_interrupt = True
-                    interrupt_data = task.interrupts[0].value
-                    break
+                # Check if pipeline completed (no more interrupts)
+                has_interrupt = False
+                interrupt_data = None
+                for task in graph_state.tasks or []:
+                    if hasattr(task, "interrupts") and task.interrupts:
+                        has_interrupt = True
+                        interrupt_data = task.interrupts[0].value
+                        break
 
-            if has_interrupt and interrupt_data:
-                question_text = interrupt_data["question"]["text"]
-                # Stream the question text
-                yield f"data: {question_text}\n\n"
+                if has_interrupt and interrupt_data:
+                    question_text = interrupt_data["question"]["text"]
+                    # Stream the question text
+                    yield f"data: {question_text}\n\n"
 
-                # Send metadata
-                import json
+                    # Send metadata
+                    import json
 
-                meta = {
-                    "type": interrupt_data.get("type", "assessment"),
-                    "step": interrupt_data.get("step"),
-                    "total_steps": interrupt_data.get("total_steps"),
-                    "topics_evaluated": interrupt_data.get("topics_evaluated"),
-                    "total_questions": interrupt_data.get("total_questions"),
-                    "max_questions": interrupt_data.get("max_questions"),
-                }
-                yield f"data: [META]{json.dumps(meta)}\n\n"
-            else:
-                # Pipeline completed — send completion marker
-                yield "data: [ASSESSMENT_COMPLETE]\n\n"
+                    meta = {
+                        "type": interrupt_data.get("type", "assessment"),
+                        "step": interrupt_data.get("step"),
+                        "total_steps": interrupt_data.get("total_steps"),
+                        "topics_evaluated": interrupt_data.get("topics_evaluated"),
+                        "total_questions": interrupt_data.get("total_questions"),
+                        "max_questions": interrupt_data.get("max_questions"),
+                    }
+                    yield f"data: [META]{json.dumps(meta)}\n\n"
+                else:
+                    # Pipeline completed — send completion marker
+                    yield "data: [ASSESSMENT_COMPLETE]\n\n"
 
-                # Build and send scores
-                state_values = graph_state.values
-                scores = _build_proficiency_scores(state_values)
-                import json
+                    # Build and send scores
+                    state_values = graph_state.values
+                    scores = _build_proficiency_scores(state_values)
+                    import json
 
-                scores_json = json.dumps({"scores": [s.model_dump(by_alias=True) for s in scores]})
-                yield f"data: ```json\n{scores_json}\n```\n\n"
+                    scores_json = json.dumps(
+                        {"scores": [s.model_dump(by_alias=True) for s in scores]}
+                    )
+                    yield f"data: ```json\n{scores_json}\n```\n\n"
 
-            yield "data: [DONE]\n\n"
-        except asyncio.CancelledError:
-            return
-        except Exception:
-            logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
-            yield "data: [ERROR] An internal error occurred\n\n"
+                yield "data: [DONE]\n\n"
+            except asyncio.CancelledError:
+                return
+            except Exception:
+                logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
+                yield "data: [ERROR] An internal error occurred\n\n"
 
     return StreamingResponse(
         event_stream(),

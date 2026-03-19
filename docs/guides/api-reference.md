@@ -128,6 +128,54 @@ Return a masked preview of the stored API key.
 
 ---
 
+### DELETE `/api/auth/api-key`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Remove the stored API key for the current user. Idempotent — succeeds even if no key is stored.
+
+**Response** (200):
+
+```json
+{"ok": true}
+```
+
+---
+
+### POST `/api/auth/validate-key`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Validate an Anthropic API key without storing it. Calls the Anthropic API to verify the key is functional.
+
+**Request**: `ApiKeySetRequest`
+
+```json
+{
+  "apiKey": "sk-ant-..."
+}
+```
+
+**Response**: `ValidateKeyResponse`
+
+```json
+{"valid": true, "error": null}
+```
+
+**Response** (invalid key):
+
+```json
+{"valid": false, "error": "Invalid API key"}
+```
+
+**Response** (rate limited):
+
+```json
+{"valid": false, "error": "Rate limited — key may be valid"}
+```
+
+---
+
 #### Auth Models
 
 ```python
@@ -142,6 +190,10 @@ class ApiKeySetRequest(CamelModel):
 
 class ApiKeyResponse(CamelModel):
     api_key_preview: str
+
+class ValidateKeyResponse(CamelModel):
+    valid: bool
+    error: str | None = None
 ```
 
 **Source**: `backend/app/routes/auth.py`
@@ -233,6 +285,8 @@ Returns detailed information for a single role, including mapped skill IDs and p
 ### POST `/api/assessment/start`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
+>
+> **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
 
 Start a new assessment session. Returns the first calibration question.
 
@@ -264,11 +318,19 @@ Start a new assessment session. Returns the first calibration question.
 }
 ```
 
+**Response** (400 — no API key configured):
+
+```json
+{"detail": "No API key configured. Please add your Anthropic API key in Settings."}
+```
+
 ---
 
 ### POST `/api/assessment/{session_id}/respond`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
+>
+> **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
 
 Submit an answer and receive the next question (or completion).
 
@@ -290,6 +352,12 @@ Submit an answer and receive the next question (or completion).
 | _(fenced JSON)_ | `ProficiencyScoreOut[]` JSON array | Proficiency scores wrapped in markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
 | `[DONE]` | — | Stream complete |
 | `[ERROR]` | Error message string | An internal error occurred |
+
+**Response** (400 — no API key configured):
+
+```json
+{"detail": "No API key configured. Please add your Anthropic API key in Settings."}
+```
 
 **Response** (410 — session timed out):
 
@@ -384,6 +452,8 @@ Export the full assessment report as a formatted Markdown file.
 ### POST `/api/gap-analysis`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
+>
+> **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
 
 Generate a gap analysis from proficiency scores.
 
@@ -425,11 +495,19 @@ Generate a gap analysis from proficiency scores.
 
 Priority levels: `critical` (gap > 40), `high` (gap > 25), `medium` (gap > 10), `low` (gap <= 10).
 
+**Response** (400 — no API key configured):
+
+```json
+{"detail": "No API key configured. Please add your Anthropic API key in Settings."}
+```
+
 ---
 
 ### POST `/api/learning-plan`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
+>
+> **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
 
 Generate a personalized learning plan from gap analysis.
 
@@ -474,6 +552,12 @@ Generate a personalized learning plan from gap analysis.
     }
   ]
 }
+```
+
+**Response** (400 — no API key configured):
+
+```json
+{"detail": "No API key configured. Please add your Anthropic API key in Settings."}
 ```
 
 ## Assessment Flow

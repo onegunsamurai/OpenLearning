@@ -201,6 +201,10 @@ class ApiKeySetRequest(CamelModel):
 
 class ApiKeyResponse(CamelModel):
     api_key_preview: str
+
+class ValidateKeyResponse(CamelModel):
+    valid: bool
+    error: str | None = None
 ```
 
 ### Knowledge Base Schema

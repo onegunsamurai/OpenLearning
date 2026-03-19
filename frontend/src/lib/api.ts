@@ -9,6 +9,8 @@ import {
   authLogoutApiAuthLogoutPost,
   setApiKeyApiAuthApiKeyPost,
   getApiKeyApiAuthApiKeyGet,
+  deleteApiKeyApiAuthApiKeyDelete,
+  validateKeyApiAuthValidateKeyPost,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -19,6 +21,7 @@ import type {
   RoleDetail,
   AuthMeResponse,
   ApiKeyResponse,
+  ValidateKeyResponse,
 } from "@/lib/generated/api-client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -161,6 +164,13 @@ const realApi = {
 
   authGetApiKey: async (): Promise<ApiKeyResponse> =>
     unwrap(await getApiKeyApiAuthApiKeyGet()),
+
+  authDeleteApiKey: async (): Promise<void> => {
+    unwrap(await deleteApiKeyApiAuthApiKeyDelete());
+  },
+
+  authValidateKey: async (apiKey: string): Promise<ValidateKeyResponse> =>
+    unwrap(await validateKeyApiAuthValidateKeyPost({ body: { apiKey } })),
 };
 
 export const api = realApi;

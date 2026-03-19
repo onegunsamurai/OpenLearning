@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthMeResponse } from "@/lib/types";
 
@@ -10,6 +11,19 @@ vi.mock("@/hooks/useAuth", () => ({
     login: vi.fn(),
     logout: vi.fn(),
   }),
+}));
+
+// Mock api module
+vi.mock("@/lib/api", () => ({
+  api: {
+    authMe: vi.fn().mockResolvedValue({
+      userId: "user-1",
+      githubUsername: "testuser",
+      avatarUrl: "https://github.com/avatar.png",
+      hasApiKey: false,
+    }),
+    authGetApiKey: vi.fn().mockRejectedValue(new Error("No key")),
+  },
 }));
 
 const mockUser: AuthMeResponse = {
@@ -96,5 +110,78 @@ describe("PageShell", () => {
       </PageShell>
     );
     expect(screen.queryByText("Sign in with GitHub")).not.toBeInTheDocument();
+  });
+
+  it("shows red dot when user has no API key", () => {
+    useAuthStore.setState({ user: mockUser, isLoading: false });
+    const { container } = render(
+      <PageShell currentStep={0}>
+        <div>content</div>
+      </PageShell>
+    );
+    const keyButton = screen.getByLabelText("API key settings");
+    expect(keyButton).toBeInTheDocument();
+    const dot = container.querySelector(".bg-red-500");
+    expect(dot).toBeInTheDocument();
+  });
+
+  it("shows green dot when user has API key", () => {
+    useAuthStore.setState({
+      user: { ...mockUser, hasApiKey: true },
+      isLoading: false,
+    });
+    const { container } = render(
+      <PageShell currentStep={0}>
+        <div>content</div>
+      </PageShell>
+    );
+    const dot = container.querySelector(".bg-emerald-500");
+    expect(dot).toBeInTheDocument();
+  });
+
+  it("opens API key setup dialog when key icon is clicked", async () => {
+    const user = userEvent.setup();
+    useAuthStore.setState({ user: mockUser, isLoading: false });
+    render(
+      <PageShell currentStep={0}>
+        <div>content</div>
+      </PageShell>
+    );
+
+    await user.click(screen.getByLabelText("API key settings"));
+    expect(screen.getByText("Set Up Your API Key")).toBeInTheDocument();
+  });
+
+  it("auto-opens API key dialog when autoPromptApiKey is true and user has no key", () => {
+    useAuthStore.setState({ user: mockUser, isLoading: false });
+    render(
+      <PageShell autoPromptApiKey>
+        <div>content</div>
+      </PageShell>
+    );
+    expect(screen.getByText("Set Up Your API Key")).toBeInTheDocument();
+  });
+
+  it("does not auto-open API key dialog when user already has key", () => {
+    useAuthStore.setState({
+      user: { ...mockUser, hasApiKey: true },
+      isLoading: false,
+    });
+    render(
+      <PageShell autoPromptApiKey>
+        <div>content</div>
+      </PageShell>
+    );
+    expect(screen.queryByText("Set Up Your API Key")).not.toBeInTheDocument();
+  });
+
+  it("does not auto-open API key dialog when autoPromptApiKey is false", () => {
+    useAuthStore.setState({ user: mockUser, isLoading: false });
+    render(
+      <PageShell>
+        <div>content</div>
+      </PageShell>
+    );
+    expect(screen.queryByText("Set Up Your API Key")).not.toBeInTheDocument();
   });
 });

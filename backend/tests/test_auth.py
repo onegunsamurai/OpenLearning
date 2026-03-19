@@ -436,3 +436,149 @@ class TestValidateRedirect:
         from app.routes.auth import _validate_redirect
 
         assert _validate_redirect(input_val) == expected
+
+
+@pytest.mark.asyncio
+class TestDeleteApiKey:
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.crypto.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_delete_api_key_removes_key(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_user(db_session)
+        from app.crypto import encrypt_api_key
+
+        user.encrypted_api_key = encrypt_api_key("sk-test-key")
+        await db_session.commit()
+
+        token = _make_jwt(user_id=user.id)
+        resp = await http_client.delete(
+            "/api/auth/api-key",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["ok"] is True
+
+        # Verify key was removed
+        await db_session.refresh(user)
+        assert user.encrypted_api_key is None
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_delete_api_key_no_key_still_succeeds(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_user(db_session)
+        token = _make_jwt(user_id=user.id)
+        resp = await http_client.delete(
+            "/api/auth/api-key",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["ok"] is True
+
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_delete_api_key_unauthenticated_returns_401(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.delete("/api/auth/api-key")
+        assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestValidateKey:
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_validate_key_valid(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        await _seed_user(db_session)
+        token = _make_jwt()
+        mock_models = AsyncMock()
+        mock_models.list = AsyncMock(return_value=MagicMock())
+        mock_client_instance = AsyncMock()
+        mock_client_instance.models = mock_models
+
+        with patch("anthropic.AsyncAnthropic", return_value=mock_client_instance):
+            resp = await http_client.post(
+                "/api/auth/validate-key",
+                json={"apiKey": "sk-valid-key"},
+                cookies={"access_token": token},
+            )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is True
+        assert data["error"] is None
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_validate_key_invalid(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        import anthropic
+
+        await _seed_user(db_session)
+        token = _make_jwt()
+        mock_models = AsyncMock()
+        mock_models.list = AsyncMock(
+            side_effect=anthropic.AuthenticationError(
+                message="invalid key",
+                response=MagicMock(status_code=401),
+                body=None,
+            )
+        )
+        mock_client_instance = AsyncMock()
+        mock_client_instance.models = mock_models
+
+        with patch("anthropic.AsyncAnthropic", return_value=mock_client_instance):
+            resp = await http_client.post(
+                "/api/auth/validate-key",
+                json={"apiKey": "sk-invalid-key"},
+                cookies={"access_token": token},
+            )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is False
+        assert data["error"] == "Invalid API key"
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_validate_key_rate_limited(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        import anthropic
+
+        await _seed_user(db_session)
+        token = _make_jwt()
+        mock_models = AsyncMock()
+        mock_models.list = AsyncMock(
+            side_effect=anthropic.RateLimitError(
+                message="rate limited",
+                response=MagicMock(status_code=429),
+                body=None,
+            )
+        )
+        mock_client_instance = AsyncMock()
+        mock_client_instance.models = mock_models
+
+        with patch("anthropic.AsyncAnthropic", return_value=mock_client_instance):
+            resp = await http_client.post(
+                "/api/auth/validate-key",
+                json={"apiKey": "sk-maybe-valid"},
+                cookies={"access_token": token},
+            )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is False
+        assert "Rate limited" in data["error"]
+
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_validate_key_unauthenticated_returns_401(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/validate-key",
+            json={"apiKey": "sk-some-key"},
+        )
+        assert resp.status_code == 401

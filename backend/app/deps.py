@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from fastapi import Cookie, HTTPException
+from fastapi import Cookie, Depends, HTTPException
 from jose import JWTError, jwt
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.crypto import decrypt_api_key
+from app.db import User, get_db
 
 JWT_ALGORITHM = "HS256"
 
@@ -63,3 +67,18 @@ async def get_optional_user(
         github_username=payload.get("username", ""),
         avatar_url=payload.get("avatar_url", ""),
     )
+
+
+async def get_user_api_key(
+    user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """Return the decrypted API key for the current user. Raises 400 if not configured."""
+    result = await db.execute(select(User).where(User.id == user.user_id))
+    db_user = result.scalar_one_or_none()
+    if not db_user or not db_user.encrypted_api_key:
+        raise HTTPException(
+            status_code=400,
+            detail="No API key configured. Please add your Anthropic API key in Settings.",
+        )
+    return decrypt_api_key(db_user.encrypted_api_key)

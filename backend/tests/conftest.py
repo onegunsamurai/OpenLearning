@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import StaticPool
 
 from app.db import AssessmentResult, AssessmentSession, Base, get_db
-from app.deps import AuthUser, get_current_user
+from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.graph.state import (
     AssessmentState,
     BloomLevel,
@@ -49,6 +49,10 @@ async def _override_get_current_user() -> AuthUser:
     return _test_user
 
 
+async def _override_get_user_api_key() -> str:
+    return "sk-test-key-for-tests"
+
+
 _test_app = FastAPI()
 _test_app.include_router(assessment_router, prefix="/api")
 _test_app.include_router(gap_analysis_router, prefix="/api")
@@ -56,6 +60,7 @@ _test_app.include_router(learning_plan_router, prefix="/api")
 _test_app.include_router(auth_router, prefix="/api/auth")
 _test_app.dependency_overrides[get_db] = _override_get_db
 _test_app.dependency_overrides[get_current_user] = _override_get_current_user
+_test_app.dependency_overrides[get_user_api_key] = _override_get_user_api_key
 
 _mock_graph = AsyncMock()
 _test_app.state.graph = _mock_graph

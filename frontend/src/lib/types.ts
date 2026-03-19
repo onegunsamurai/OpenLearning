@@ -12,4 +12,5 @@ export type {
   RoleLevelSummary,
   AuthMeResponse,
   ApiKeyResponse,
+  ValidateKeyResponse,
 } from "@/lib/generated/api-client";

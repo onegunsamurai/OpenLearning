@@ -48,6 +48,15 @@ class ApiKeyResponse(CamelModel):
     api_key_preview: str
 
 
+class OkResponse(CamelModel):
+    ok: bool
+
+
+class ValidateKeyResponse(CamelModel):
+    valid: bool
+    error: str | None = None
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 
@@ -248,12 +257,12 @@ async def auth_logout() -> JSONResponse:
     return resp
 
 
-@router.post("/api-key")
+@router.post("/api-key", response_model=OkResponse, response_model_by_alias=True)
 async def set_api_key(
     request: ApiKeySetRequest,
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> OkResponse:
     """Store an encrypted API key for the current user."""
     result = await db.execute(select(User).where(User.id == user.user_id))
     db_user = result.scalar_one_or_none()
@@ -261,7 +270,7 @@ async def set_api_key(
         raise HTTPException(status_code=404, detail="User not found")
     db_user.encrypted_api_key = encrypt_api_key(request.api_key)
     await db.commit()
-    return {"ok": True}
+    return OkResponse(ok=True)
 
 
 @router.get("/api-key", response_model=ApiKeyResponse, response_model_by_alias=True)
@@ -278,3 +287,38 @@ async def get_api_key(
     plaintext = decrypt_api_key(db_user.encrypted_api_key)
     preview = f"sk-...{plaintext[-4:]}" if len(plaintext) >= 4 else "sk-...****"
     return ApiKeyResponse(api_key_preview=preview)
+
+
+@router.delete("/api-key", response_model=OkResponse, response_model_by_alias=True)
+async def delete_api_key(
+    user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> OkResponse:
+    """Remove the stored API key for the current user."""
+    result = await db.execute(select(User).where(User.id == user.user_id))
+    db_user = result.scalar_one_or_none()
+    if db_user:
+        db_user.encrypted_api_key = None
+        await db.commit()
+    return OkResponse(ok=True)
+
+
+@router.post("/validate-key", response_model=ValidateKeyResponse, response_model_by_alias=True)
+async def validate_key(
+    request: ApiKeySetRequest,
+    user: AuthUser = Depends(get_current_user),
+) -> ValidateKeyResponse:
+    """Validate an Anthropic API key without storing it."""
+    import anthropic
+
+    try:
+        client = anthropic.AsyncAnthropic(api_key=request.api_key)
+        await client.models.list(limit=1)
+        return ValidateKeyResponse(valid=True)
+    except anthropic.AuthenticationError:
+        return ValidateKeyResponse(valid=False, error="Invalid API key")
+    except anthropic.RateLimitError:
+        return ValidateKeyResponse(valid=False, error="Rate limited — key may be valid")
+    except Exception:
+        logger.exception("Key validation failed")
+        return ValidateKeyResponse(valid=False, error="Validation failed")

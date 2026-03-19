@@ -62,7 +62,7 @@ export default function OnboardingPage() {
       !selectedSkillIds.every((id) => roleSkillIds.includes(id)));
 
   return (
-    <PageShell>
+    <PageShell autoPromptApiKey>
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         {/* Left: Hero */}
         <motion.div
