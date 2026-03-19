@@ -235,7 +235,8 @@ describe("api.assessmentExport", () => {
     await api.assessmentExport("sess-123");
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/assessment/sess-123/export")
+      expect.stringContaining("/api/assessment/sess-123/export"),
+      expect.objectContaining({ credentials: "include" })
     );
   });
 

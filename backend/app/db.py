@@ -4,7 +4,7 @@ import os
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, func
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, String, func
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -15,6 +15,24 @@ class Base(DeclarativeBase):
     pass
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    github_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
+    github_username: Mapped[str] = mapped_column(String(39), nullable=False)
+    avatar_url: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    encrypted_api_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    sessions: Mapped[list[AssessmentSession]] = relationship(back_populates="user")
+
+
 class AssessmentSession(Base):
     __tablename__ = "assessment_sessions"
 
@@ -23,6 +41,7 @@ class AssessmentSession(Base):
     skill_ids: Mapped[list] = mapped_column(JSON, nullable=False)
     target_level: Mapped[str] = mapped_column(String(20), nullable=False, default="mid")
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -30,6 +49,7 @@ class AssessmentSession(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    user: Mapped[User | None] = relationship(back_populates="sessions")
     result: Mapped[AssessmentResult | None] = relationship(back_populates="session")
 
 

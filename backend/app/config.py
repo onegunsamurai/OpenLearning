@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     langsmith_project: str = "open-learning"
     langsmith_tracing: bool = False
     database_url: str = "sqlite+aiosqlite:///./data/openlearning.db"
+    github_client_id: str = ""
+    github_client_secret: str = ""
+    jwt_secret_key: str = ""
+    encryption_key: str = ""
+    frontend_url: str = "http://localhost:3000"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

@@ -34,6 +34,18 @@ vi.mock("@/lib/store", () => ({
   }),
 }));
 
+vi.mock("@/lib/auth-store", () => ({
+  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
+}));
+
+vi.mock("@/components/layout/PageShell", () => ({
+  PageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
 import AssessPage from "./page";
 
 beforeEach(() => {

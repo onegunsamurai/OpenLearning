@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+from fastapi import Cookie, HTTPException
+from jose import JWTError, jwt
+
+from app.config import get_settings
+
+JWT_ALGORITHM = "HS256"
+
+
+class AuthUser:
+    """Lightweight user identity extracted from a JWT. Not a Pydantic model."""
+
+    __slots__ = ("avatar_url", "github_username", "user_id")
+
+    def __init__(self, user_id: str, github_username: str, avatar_url: str) -> None:
+        self.user_id = user_id
+        self.github_username = github_username
+        self.avatar_url = avatar_url
+
+
+async def get_current_user(
+    access_token: str | None = Cookie(default=None),
+) -> AuthUser:
+    """Decode the JWT cookie and return an AuthUser. Raises 401 if missing or invalid."""
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    settings = get_settings()
+    try:
+        payload = jwt.decode(access_token, settings.jwt_secret_key, algorithms=[JWT_ALGORITHM])
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from exc
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token claims")
+    return AuthUser(
+        user_id=user_id,
+        github_username=payload.get("username", ""),
+        avatar_url=payload.get("avatar_url", ""),
+    )
+
+
+async def get_optional_user(
+    access_token: str | None = Cookie(default=None),
+) -> AuthUser | None:
+    """Like get_current_user but returns None instead of raising 401."""
+    if not access_token:
+        return None
+    settings = get_settings()
+    try:
+        payload = jwt.decode(access_token, settings.jwt_secret_key, algorithms=[JWT_ALGORITHM])
+    except JWTError:
+        return None
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    return AuthUser(
+        user_id=user_id,
+        github_username=payload.get("username", ""),
+        avatar_url=payload.get("avatar_url", ""),
+    )

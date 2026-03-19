@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import PlainTextResponse, StreamingResponse
 
 from app.db import AssessmentResult, AssessmentSession, get_db
+from app.deps import AuthUser, get_current_user
 from app.graph.state import make_initial_state
 from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
 from app.models.base import CamelModel
@@ -116,7 +117,10 @@ async def _get_thread_id(session_id: str, db: AsyncSession) -> str:
     "/assessment/start", response_model=AssessmentStartResponse, response_model_by_alias=True
 )
 async def assessment_start(
-    request: AssessmentStartRequest, req: Request, db: AsyncSession = Depends(get_db)
+    request: AssessmentStartRequest,
+    req: Request,
+    user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ) -> AssessmentStartResponse:
     if not request.skill_ids:
         raise HTTPException(status_code=400, detail="At least one skill is required")
@@ -138,6 +142,7 @@ async def assessment_start(
             skill_ids=request.skill_ids,
             target_level=request.target_level,
             status="active",
+            user_id=user.user_id,
         )
     )
     await db.commit()
@@ -187,6 +192,7 @@ async def assessment_respond(
     session_id: str,
     request: AssessmentRespondRequest,
     req: Request,
+    user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> StreamingResponse:
     thread_id = await _get_thread_id(session_id, db)

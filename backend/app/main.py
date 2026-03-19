@@ -13,7 +13,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.config import get_settings
 from app.db import init_db
 from app.graph.pipeline import compile_graph
-from app.routes import assessment, gap_analysis, health, learning_plan, roles, skills
+from app.routes import assessment, auth, gap_analysis, health, learning_plan, roles, skills
 from app.services.session_cleanup import cleanup_stale_sessions
 
 settings = get_settings()
@@ -54,3 +54,4 @@ app.include_router(assessment.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(gap_analysis.router, prefix="/api")
 app.include_router(learning_plan.router, prefix="/api")
+app.include_router(auth.router, prefix="/api/auth")

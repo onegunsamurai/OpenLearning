@@ -9,6 +9,8 @@ import { TypingIndicator } from "@/components/assessment/TypingIndicator";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/useAuth";
 import { ProficiencyScore } from "@/lib/types";
 import { useAssessmentChat } from "@/hooks/useAssessmentChat";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +26,9 @@ export default function AssessPage() {
     targetLevel,
     selectedRoleId,
   } = useAppStore();
+
+  const { user, isLoading: authLoading } = useAuthStore();
+  const { login } = useAuth();
 
   const [assessmentDone, setAssessmentDone] = useState(false);
   const [scores, setScores] = useState<ProficiencyScore[]>([]);
@@ -63,6 +68,12 @@ export default function AssessPage() {
   }, [selectedSkillIds.length, messages.length, status, initialiseChat]);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      login("/assess");
+    }
+  }, [authLoading, user, login]);
+
+  useEffect(() => {
     if (selectedSkillIds.length === 0) {
       router.push("/");
     }
@@ -91,6 +102,7 @@ export default function AssessPage() {
     }
   };
 
+  if (authLoading || !user) return null;
   if (selectedSkillIds.length === 0) return null;
 
   return (
