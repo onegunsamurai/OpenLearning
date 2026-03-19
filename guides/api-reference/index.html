@@ -714,6 +714,89 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get-apiauthgithub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/github
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthgithubcallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/github/callback
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/me
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthlogout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/logout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/api-key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/api-key
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GET /api/auth/api-key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiskills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1072,6 +1155,89 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get-apiauthgithub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/github
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthgithubcallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/github/callback
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/me
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthlogout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/logout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/api-key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiauthapi-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/auth/api-key
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GET /api/auth/api-key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiskills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1251,6 +1417,103 @@
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;degraded&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;database&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unreachable&quot;</span><span class="p">}</span>
 </code></pre></div>
 <hr />
+<h3 id="get-apiauthgithub">GET <code>/api/auth/github</code><a class="headerlink" href="#get-apiauthgithub" title="Permanent link">&para;</a></h3>
+<p>Redirect to GitHub OAuth authorization. Starts the login flow.</p>
+<p><strong>Query parameter</strong>: <code>redirect</code> — path to redirect after login (default: <code>/</code>)</p>
+<p><strong>Response</strong> (302): Redirects to GitHub's authorization page.</p>
+<p><strong>Response</strong> (501 — GitHub OAuth not configured):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GitHub OAuth is not configured&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="get-apiauthgithubcallback">GET <code>/api/auth/github/callback</code><a class="headerlink" href="#get-apiauthgithubcallback" title="Permanent link">&para;</a></h3>
+<p>Handle the GitHub OAuth callback. Exchanges the authorization code for an access token, upserts the user in the database, and sets an httpOnly JWT cookie.</p>
+<p><strong>Query parameters</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code</code></td>
+<td>Yes</td>
+<td>OAuth authorization code from GitHub</td>
+</tr>
+<tr>
+<td><code>state</code></td>
+<td>Yes</td>
+<td>HMAC-signed state parameter for CSRF protection</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response</strong> (302): Redirects to the frontend with an <code>access_token</code> cookie set.</p>
+<hr />
+<h3 id="get-apiauthme">GET <code>/api/auth/me</code><a class="headerlink" href="#get-apiauthme" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Return the current user's profile.</p>
+<p><strong>Response</strong>: <code>AuthMeResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;userId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;githubUsername&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;octocat&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;avatarUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://avatars.githubusercontent.com/u/1?v=4&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;hasApiKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="post-apiauthlogout">POST <code>/api/auth/logout</code><a class="headerlink" href="#post-apiauthlogout" title="Permanent link">&para;</a></h3>
+<p>Clear the auth cookie.</p>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="post-apiauthapi-key">POST <code>/api/auth/api-key</code><a class="headerlink" href="#post-apiauthapi-key" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Store an encrypted API key for the current user.</p>
+<p><strong>Request</strong>: <code>ApiKeySetRequest</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;apiKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sk-ant-...&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="get-apiauthapi-key">GET <code>/api/auth/api-key</code><a class="headerlink" href="#get-apiauthapi-key" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Return a masked preview of the stored API key.</p>
+<p><strong>Response</strong>: <code>ApiKeyResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;apiKeyPreview&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sk-...ab12&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (404 — no API key stored):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key stored&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h4 id="auth-models">Auth Models<a class="headerlink" href="#auth-models" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">github_username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">avatar_url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">has_api_key</span><span class="p">:</span> <span class="nb">bool</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiKeySetRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiKeyResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">api_key_preview</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<p><strong>Source</strong>: <code>backend/app/routes/auth.py</code></p>
+<hr />
 <h3 id="get-apiskills">GET <code>/api/skills</code><a class="headerlink" href="#get-apiskills" title="Permanent link">&para;</a></h3>
 <p>Returns the full skills taxonomy with categories.</p>
 <p><strong>Response</strong>: <code>SkillsResponse</code></p>
@@ -1312,6 +1575,9 @@
 </code></pre></div>
 <hr />
 <h3 id="post-apiassessmentstart">POST <code>/api/assessment/start</code><a class="headerlink" href="#post-apiassessmentstart" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
 <p>Start a new assessment session. Returns the first calibration question.</p>
 <p><strong>Request body</strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1361,6 +1627,9 @@
 </code></pre></div>
 <hr />
 <h3 id="post-apiassessmentsession_idrespond">POST <code>/api/assessment/{session_id}/respond</code><a class="headerlink" href="#post-apiassessmentsession_idrespond" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
 <p>Submit an answer and receive the next question (or completion).</p>
 <p><strong>Request body</strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1478,6 +1747,9 @@
 </code></pre></div>
 <hr />
 <h3 id="post-apigap-analysis">POST <code>/api/gap-analysis</code><a class="headerlink" href="#post-apigap-analysis" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
 <p>Generate a gap analysis from proficiency scores.</p>
 <p><strong>Request</strong>: <code>GapAnalysisRequest</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1512,6 +1784,9 @@
 <p>Priority levels: <code>critical</code> (gap &gt; 40), <code>high</code> (gap &gt; 25), <code>medium</code> (gap &gt; 10), <code>low</code> (gap &lt;= 10).</p>
 <hr />
 <h3 id="post-apilearning-plan">POST <code>/api/learning-plan</code><a class="headerlink" href="#post-apilearning-plan" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
 <p>Generate a personalized learning plan from gap analysis.</p>
 <p><strong>Request</strong>: <code>LearningPlanRequest</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -1554,8 +1829,16 @@
 <p>The full assessment flow involves multiple API calls:</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
+    participant GitHub
     participant API
     participant LangGraph
+
+    Client-&gt;&gt;API: GET /auth/github
+    API--&gt;&gt;Client: 302 → GitHub OAuth
+    Client-&gt;&gt;GitHub: Authorize
+    GitHub--&gt;&gt;Client: Callback with code
+    Client-&gt;&gt;API: GET /auth/github/callback
+    API--&gt;&gt;Client: Set JWT cookie, redirect
 
     Client-&gt;&gt;API: POST /assessment/start
     API-&gt;&gt;LangGraph: Initialize pipeline

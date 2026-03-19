@@ -1229,8 +1229,39 @@ make<span class="w"> </span>install
 <td><code>false</code></td>
 <td>Enable LangSmith tracing</td>
 </tr>
+<tr>
+<td><code>GITHUB_CLIENT_ID</code></td>
+<td>No*</td>
+<td>—</td>
+<td>GitHub OAuth app client ID</td>
+</tr>
+<tr>
+<td><code>GITHUB_CLIENT_SECRET</code></td>
+<td>No*</td>
+<td>—</td>
+<td>GitHub OAuth app secret</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET_KEY</code></td>
+<td>No*</td>
+<td>—</td>
+<td>JWT signing key (random 256-bit hex string)</td>
+</tr>
+<tr>
+<td><code>ENCRYPTION_KEY</code></td>
+<td>No*</td>
+<td>—</td>
+<td>Fernet key for API key encryption</td>
+</tr>
+<tr>
+<td><code>FRONTEND_URL</code></td>
+<td>No</td>
+<td><code>http://localhost:3000</code></td>
+<td>Frontend URL for OAuth redirects</td>
+</tr>
 </tbody>
 </table>
+<p>*Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.</p>
 <h3 id="frontend-frontendenvlocal">Frontend (<code>frontend/.env.local</code>)<a class="headerlink" href="#frontend-frontendenvlocal" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>cp<span class="w"> </span>frontend/.env.example<span class="w"> </span>frontend/.env.local
 </code></pre></div>

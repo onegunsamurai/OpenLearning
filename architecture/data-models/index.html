@@ -652,6 +652,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auth-route-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Route Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#knowledge-base-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -869,6 +880,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#assessment_sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -891,10 +913,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#relationship" class="md-nav__link">
+  <a href="#relationships" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relationship
+        Relationships
       
     </span>
   </a>
@@ -1300,6 +1322,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auth-route-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Route Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#knowledge-base-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1517,6 +1550,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#assessment_sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1539,10 +1583,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#relationship" class="md-nav__link">
+  <a href="#relationships" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relationship
+        Relationships
       
     </span>
   </a>
@@ -1740,6 +1784,21 @@
     <span class="n">gap_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GapNodeOut</span><span class="p">]</span>
     <span class="n">learning_plan</span><span class="p">:</span> <span class="n">LearningPlanOut</span>
     <span class="n">proficiency_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProficiencyScoreOut</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="auth-route-models">Auth Route Models<a class="headerlink" href="#auth-route-models" title="Permanent link">&para;</a></h3>
+<p>These are defined directly in the route module (not in <code>models/</code>), following the same pattern as the assessment route models above.</p>
+<p><strong>Source</strong>: <code>backend/app/routes/auth.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">github_username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">avatar_url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">has_api_key</span><span class="p">:</span> <span class="nb">bool</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiKeySetRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiKeyResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">api_key_preview</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <h3 id="knowledge-base-schema">Knowledge Base Schema<a class="headerlink" href="#knowledge-base-schema" title="Permanent link">&para;</a></h3>
 <p>These models validate YAML knowledge base files on load. They use <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal, not API-facing.</p>
@@ -1962,8 +2021,55 @@
     <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanPhaseOutput</span><span class="p">]</span>
 </code></pre></div>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite database with two tables for persisting assessment sessions and results.</p>
+<p>SQLite database with three tables for persisting users, assessment sessions, and results.</p>
 <p><strong>Source</strong>: <code>backend/app/db.py</code></p>
+<h3 id="users"><code>users</code><a class="headerlink" href="#users" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>String(36)</code> PK</td>
+<td>UUID user identifier</td>
+</tr>
+<tr>
+<td><code>github_id</code></td>
+<td><code>BigInteger</code> UNIQUE</td>
+<td>GitHub user ID</td>
+</tr>
+<tr>
+<td><code>github_username</code></td>
+<td><code>String(39)</code></td>
+<td>GitHub username</td>
+</tr>
+<tr>
+<td><code>avatar_url</code></td>
+<td><code>String(500)</code></td>
+<td>GitHub avatar URL</td>
+</tr>
+<tr>
+<td><code>encrypted_api_key</code></td>
+<td><code>String(500)</code> NULL</td>
+<td>Fernet-encrypted Anthropic API key</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>DateTime</code></td>
+<td>Creation timestamp</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>DateTime</code></td>
+<td>Last update timestamp</td>
+</tr>
+</tbody>
+</table>
 <h3 id="assessment_sessions"><code>assessment_sessions</code><a class="headerlink" href="#assessment_sessions" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1998,6 +2104,11 @@
 <td><code>status</code></td>
 <td><code>String(20)</code></td>
 <td>Session status: <code>"active"</code>, <code>"completed"</code>, or <code>"timed_out"</code> (default: <code>"active"</code>)</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>String(36)</code> FK NULL</td>
+<td>References <code>users.id</code></td>
 </tr>
 <tr>
 <td><code>created_at</code></td>
@@ -2058,8 +2169,11 @@
 </tr>
 </tbody>
 </table>
-<h3 id="relationship">Relationship<a class="headerlink" href="#relationship" title="Permanent link">&para;</a></h3>
-<p><code>AssessmentSession</code> has a one-to-one relationship with <code>AssessmentResult</code> via <code>session_id</code>.</p>
+<h3 id="relationships">Relationships<a class="headerlink" href="#relationships" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>User</code> → <code>AssessmentSession</code>: one-to-many via <code>user_id</code></li>
+<li><code>AssessmentSession</code> → <code>AssessmentResult</code>: one-to-one via <code>session_id</code></li>
+</ul>
 <h3 id="langgraph-checkpoints">LangGraph Checkpoints<a class="headerlink" href="#langgraph-checkpoints" title="Permanent link">&para;</a></h3>
 <p>Pipeline state is persisted separately via <code>AsyncSqliteSaver</code> in <code>data/checkpoints.db</code>. This is managed by LangGraph and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.</p>
 

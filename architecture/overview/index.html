@@ -551,6 +551,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1000,6 +1011,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1081,11 +1103,13 @@
     subgraph Frontend ["Frontend (Next.js)"]
         UI[App Router Pages]
         Store[Zustand Store]
+        Auth[Auth Store]
         API_Client[API Client]
     end
 
     subgraph Backend ["Backend (FastAPI)"]
         Routes[API Routes]
+        AuthDeps[Auth Deps]
         Services[AI Services]
         Agents[LLM Agents]
         Graph[LangGraph Pipeline]
@@ -1099,16 +1123,21 @@
 
     subgraph External ["External"]
         Claude[Claude API]
+        GitHub[GitHub OAuth]
     end
 
     UI --&gt; Store
+    UI --&gt; Auth
     Store --&gt; API_Client
+    Auth --&gt; API_Client
     API_Client --&gt;|HTTP/SSE| Routes
+    Routes --&gt; AuthDeps
     Routes --&gt; Services
     Routes --&gt; Graph
     Graph --&gt; Agents
     Agents --&gt; Services
     Services --&gt; Claude
+    Routes --&gt;|OAuth| GitHub
     Graph --&gt; KB
     Routes --&gt; SQLite
     Graph --&gt; Checkpoints</code></pre>
@@ -1129,6 +1158,8 @@
 <h3 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h3>
 <p>A background cleanup task runs during the application's lifespan (started in <code>main.py</code>). Every 5 minutes it checks for active sessions whose <code>updated_at</code> timestamp is older than 30 minutes and marks them as <code>timed_out</code>. This prevents abandoned sessions from accumulating indefinitely. Timed-out sessions return a <code>410 Gone</code> response if the client attempts to continue them.</p>
 <p><strong>Source</strong>: <code>backend/app/services/session_cleanup.py</code></p>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>Authenticated sessions are linked to users via a <code>user_id</code> foreign key. Write endpoints (assessment start, respond, gap analysis, learning plan) are protected by JWT cookie authentication. Read endpoints (graph, report, export) remain public so reports can be shared via URL.</p>
 <h2 id="tech-stack">Tech Stack<a class="headerlink" href="#tech-stack" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1188,6 +1219,21 @@
 <td>Checkpoints</td>
 <td>LangGraph AsyncSqliteSaver</td>
 <td>Pipeline state persistence</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>python-jose</td>
+<td>JWT token signing and verification</td>
+</tr>
+<tr>
+<td>OAuth</td>
+<td>httpx</td>
+<td>GitHub OAuth token exchange</td>
+</tr>
+<tr>
+<td>Encryption</td>
+<td>cryptography (Fernet)</td>
+<td>API key encryption at rest</td>
 </tr>
 </tbody>
 </table>
@@ -1249,10 +1295,12 @@
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app, CORS, lifespan, router mounts
-│   │   ├── config.py            # Settings (API key, CORS origins)
+│   │   ├── config.py            # Settings (API key, CORS origins, GitHub OAuth, JWT, encryption)
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
-│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles) + export helpers
+│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles, auth) + export helpers
+│   │   ├── deps.py              # Auth dependencies (JWT cookie extraction, user validation)
+│   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
@@ -1268,8 +1316,9 @@
 │   ├── src/
 │   │   ├── app/                 # Next.js App Router pages
 │   │   ├── components/          # UI components (shadcn/ui based)
-│   │   ├── hooks/               # Custom React hooks
-│   │   └── lib/                 # Types, Zustand store, API client, generated types
+│   │   ├── hooks/               # Custom React hooks (useAuth, useAssessmentChat, etc.)
+│   │   ├── providers/           # React context providers (auth)
+│   │   └── lib/                 # Types, Zustand store, auth store, API client, generated types
 │   ├── Dockerfile               # Frontend container image
 │   ├── .dockerignore            # Docker build exclusions
 │   ├── package.json

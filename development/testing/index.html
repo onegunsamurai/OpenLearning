@@ -1371,6 +1371,9 @@ make<span class="w"> </span>check
 ├── conftest.py                # Shared fixtures, DB infrastructure, seed helpers
 ├── test_agents.py             # LLM agent tests (evaluator, question gen, knowledge mapper)
 ├── test_assessment_routes.py  # Assessment endpoint tests (start, respond, graph, report)
+├── test_auth.py               # Auth endpoint tests (login, callback, me, logout, API key)
+├── test_auth_guard.py         # Auth guard tests (protected route 401/403 behavior)
+├── test_crypto.py             # Fernet encryption/decryption tests
 ├── test_db.py                 # Database tests
 ├── test_export.py             # Assessment report export tests
 ├── test_gap_analysis_route.py # Gap analysis endpoint tests
@@ -1426,8 +1429,16 @@ make<span class="w"> </span>check
 <td>Creates in-memory SQLite tables before each test, drops after</td>
 </tr>
 <tr>
+<td><code>_test_user</code></td>
+<td>An <code>AuthUser</code> with test user ID and username (module-level constant)</td>
+</tr>
+<tr>
+<td><code>_override_get_current_user</code></td>
+<td>Dependency override that returns <code>_test_user</code>, bypassing real JWT auth</td>
+</tr>
+<tr>
 <td><code>_test_app</code></td>
-<td>FastAPI app with assessment, gap_analysis, learning_plan routers (shared across route tests)</td>
+<td>FastAPI app with assessment, gap_analysis, learning_plan, and auth routers (shared across route tests)</td>
 </tr>
 <tr>
 <td><code>seed_session()</code></td>
@@ -1524,9 +1535,11 @@ make<span class="w"> </span>test-frontend
 │       └── role-selector.test.tsx
 ├── hooks/
 │   ├── useAssessmentChat.test.ts
+│   ├── useAuth.test.ts
 │   └── useDemoAssessmentChat.test.ts
 └── lib/
     ├── api.test.ts
+    ├── auth-store.test.ts
     ├── store.test.ts
     └── demo/
         └── demo-assessment.test.ts

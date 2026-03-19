@@ -1129,6 +1129,13 @@ make<span class="w"> </span>install
 <p>Edit <code>backend/.env</code> and set your API key:</p>
 <div class="highlight"><pre><span></span><code>ANTHROPIC_API_KEY=your_anthropic_api_key_here
 CORS_ORIGINS=http://localhost:3000
+
+# GitHub OAuth (required for authentication)
+# GITHUB_CLIENT_ID=your_github_oauth_app_client_id
+# GITHUB_CLIENT_SECRET=your_github_oauth_app_client_secret
+# JWT_SECRET_KEY=your_random_secret_key_here
+# ENCRYPTION_KEY=your_fernet_key_here
+# FRONTEND_URL=http://localhost:3000
 </code></pre></div>
 <table>
 <thead>
@@ -1149,8 +1156,34 @@ CORS_ORIGINS=http://localhost:3000
 <td>Allowed CORS origins</td>
 <td><code>http://localhost:3000</code></td>
 </tr>
+<tr>
+<td><code>GITHUB_CLIENT_ID</code></td>
+<td>GitHub OAuth app client ID*</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>GITHUB_CLIENT_SECRET</code></td>
+<td>GitHub OAuth app secret*</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET_KEY</code></td>
+<td>JWT signing key (random 256-bit hex string)*</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>ENCRYPTION_KEY</code></td>
+<td>Fernet key for API key encryption*</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>FRONTEND_URL</code></td>
+<td>Frontend URL for OAuth redirects</td>
+<td><code>http://localhost:3000</code></td>
+</tr>
 </tbody>
 </table>
+<p>*Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.</p>
 <h3 id="frontend">Frontend<a class="headerlink" href="#frontend" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>cp<span class="w"> </span>frontend/.env.example<span class="w"> </span>frontend/.env.local
 </code></pre></div>
