@@ -32,7 +32,7 @@ describe("ApiKeySetup", () => {
     render(<ApiKeySetup open={true} onClose={vi.fn()} />);
 
     expect(screen.getByText("Set Up Your API Key")).toBeInTheDocument();
-    expect(screen.getByText(/console.anthropic.com/)).toBeInTheDocument();
+    expect(screen.getByText(/console\.anthropic\.com/)).toBeInTheDocument();
     expect(screen.getByLabelText("API key")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Validate & Save/ })).toBeInTheDocument();
   });
