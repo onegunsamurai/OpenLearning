@@ -12,7 +12,7 @@ vi.mock("@/lib/generated/api-client/client.gen", () => ({
   client: { setConfig: vi.fn() },
 }));
 
-import { unwrap, api, ApiError } from "./api";
+import { unwrap, api, ApiError, parseRetryAfter } from "./api";
 import {
   getSkillsApiSkillsGet,
   gapAnalysisApiGapAnalysisPost,
@@ -31,6 +31,43 @@ afterAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe("parseRetryAfter", () => {
+  it("returns undefined for null/undefined", () => {
+    expect(parseRetryAfter(null)).toBeUndefined();
+    expect(parseRetryAfter(undefined)).toBeUndefined();
+  });
+
+  it("returns undefined for empty string", () => {
+    expect(parseRetryAfter("")).toBeUndefined();
+  });
+
+  it("parses numeric seconds string", () => {
+    expect(parseRetryAfter("30")).toBe(30);
+    expect(parseRetryAfter("0")).toBe(0);
+    expect(parseRetryAfter("1.5")).toBe(2);
+  });
+
+  it("parses HTTP-date format", () => {
+    const futureDate = new Date(Date.now() + 60_000).toUTCString();
+    const result = parseRetryAfter(futureDate);
+    expect(result).toBeGreaterThan(0);
+    expect(result).toBeLessThanOrEqual(60);
+  });
+
+  it("returns undefined for past HTTP-date", () => {
+    const pastDate = new Date(Date.now() - 60_000).toUTCString();
+    expect(parseRetryAfter(pastDate)).toBeUndefined();
+  });
+
+  it("returns undefined for invalid string", () => {
+    expect(parseRetryAfter("not-a-number-or-date")).toBeUndefined();
+  });
+
+  it("returns undefined for negative numbers", () => {
+    expect(parseRetryAfter("-5")).toBeUndefined();
+  });
 });
 
 describe("unwrap", () => {

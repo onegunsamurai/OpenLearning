@@ -6,6 +6,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const mod = await importOriginal<typeof import("@/lib/api")>();
   return {
     ApiError: mod.ApiError,
+    parseRetryAfter: mod.parseRetryAfter,
     api: {
       assessmentStart: vi.fn(),
       assessmentRespond: vi.fn(),
@@ -513,6 +514,29 @@ describe("useAssessmentChat", () => {
 
       // Only data: lines contribute to content
       expect(result.current.messages[2].content).toBe("HelloWorld");
+    });
+
+    it("buffers incomplete lines split across chunks", async () => {
+      const { result } = await setupWithSession();
+
+      // Simulate a data line split across two chunks:
+      // chunk 1 ends mid-line, chunk 2 completes it
+      mockedApi.assessmentRespond.mockResolvedValueOnce(
+        createSSEResponse([
+          "data: Hello \n",
+          "data: [ERROR]{\"status\":4",        // incomplete line
+          "29,\"detail\":\"Rate limited\"}\n",  // completes the line
+        ])
+      );
+
+      await act(() => result.current.sendMessage("answer"));
+
+      expect(result.current.status).toBe("error");
+      expect(result.current.error).toBeInstanceOf(ApiError);
+      expect(
+        (result.current.error as InstanceType<typeof ApiError>).status
+      ).toBe(429);
+      expect(result.current.error?.message).toBe("Rate limited");
     });
 
     it("exposes sessionId in return value after init", async () => {

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { ProficiencyScore } from "@/lib/types";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, parseRetryAfter } from "@/lib/api";
 
 export interface ChatMessage {
   id: string;
@@ -92,11 +92,10 @@ export function useAssessmentChat({
           const body = await response
             .json()
             .catch(() => ({ detail: "Request failed" }));
-          const retryAfter = response.headers?.get("Retry-After");
           throw new ApiError(
             body.detail ?? `Assessment request failed: ${response.status}`,
             response.status,
-            retryAfter ? parseInt(retryAfter, 10) : undefined
+            parseRetryAfter(response.headers?.get("Retry-After"))
           );
         }
 
@@ -108,6 +107,7 @@ export function useAssessmentChat({
         setStatus("streaming");
         const decoder = new TextDecoder();
         let accumulated = "";
+        let buffer = "";
 
         setMessages((prev) => [
           ...prev,
@@ -118,8 +118,9 @@ export function useAssessmentChat({
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
 
           for (const line of lines) {
             if (line.startsWith("data: ")) {
@@ -147,9 +148,7 @@ export function useAssessmentChat({
                   throw new ApiError(
                     errorData.detail ?? "An error occurred",
                     errorData.status ?? 500,
-                    errorData.retryAfter
-                      ? parseInt(String(errorData.retryAfter), 10)
-                      : undefined
+                    parseRetryAfter(String(errorData.retryAfter ?? ""))
                   );
                 } catch (e) {
                   if (e instanceof ApiError) throw e;

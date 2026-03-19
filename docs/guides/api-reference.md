@@ -574,7 +574,7 @@ When the backend encounters an Anthropic SDK exception, it maps it to a structur
 
 Applies to `/assessment/start`, `/assessment/{id}/respond`, `/gap-analysis`, `/learning-plan`. For SSE streams, errors arrive as `data: [ERROR]{json}\n\n` instead of HTTP status codes.
 
-**Source**: `backend/app/main.py:61-92`, `backend/app/services/ai.py:133-159`
+**Source**: `backend/app/main.py` (`register_anthropic_error_handlers`), `backend/app/services/ai.py` (`classify_anthropic_error`)
 
 ---
 

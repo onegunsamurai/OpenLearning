@@ -27,6 +27,21 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 client.setConfig({ baseUrl: API_URL, credentials: "include" });
 
+export function parseRetryAfter(
+  value: string | null | undefined
+): number | undefined {
+  if (!value) return undefined;
+  const n = Number(value);
+  if (!Number.isNaN(n) && n >= 0) return Math.ceil(n);
+  // HTTP-date format (RFC 7231)
+  const ms = Date.parse(value);
+  if (!Number.isNaN(ms)) {
+    const delta = Math.ceil((ms - Date.now()) / 1000);
+    return delta > 0 ? delta : undefined;
+  }
+  return undefined;
+}
+
 export class ApiError extends Error {
   status: number;
   retryAfter?: number;
@@ -48,7 +63,7 @@ async function throwFromResponse(
   throw new ApiError(
     err.detail ?? fallback,
     res.status,
-    retryAfter ? parseInt(retryAfter, 10) : undefined
+    parseRetryAfter(retryAfter)
   );
 }
 
@@ -64,7 +79,7 @@ export function unwrap<T>(result: {
     throw new ApiError(
       err?.detail ?? "Request failed",
       status,
-      retryAfter ? parseInt(retryAfter, 10) : undefined
+      parseRetryAfter(retryAfter)
     );
   }
   return result.data as T;
