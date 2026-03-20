@@ -11,8 +11,6 @@ FROM base AS production
 
 COPY app/ app/
 
-RUN mkdir -p data
-
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

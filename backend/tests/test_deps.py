@@ -10,21 +10,18 @@ from cryptography.fernet import Fernet
 from fastapi import Depends, FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool
 
 from app.db import Base, User, get_db
 from app.deps import get_user_api_key
+from tests.conftest import _test_db_url
 
-# ── Test database setup ────────────────────────────────────────────────────
+# ── Test database setup ────────────────────────────────────────────────
 
-_test_engine = create_async_engine(
-    "sqlite+aiosqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+_test_engine = create_async_engine(_test_db_url, poolclass=NullPool)
 _TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
 
-# ── Test settings ──────────────────────────────────────────────────────────
+# ── Test settings ──────────────────────────────────────────────────────
 
 _TEST_JWT_SECRET = "test-jwt-secret-for-deps"
 _TEST_ENCRYPTION_KEY = Fernet.generate_key().decode()
@@ -44,7 +41,7 @@ async def _override_get_db():
         yield session
 
 
-# ── App + fixtures ─────────────────────────────────────────────────────────
+# ── App + fixtures ─────────────────────────────────────────────────────
 
 _test_app = FastAPI()
 _test_app.dependency_overrides[get_db] = _override_get_db
@@ -58,6 +55,7 @@ async def _test_key_route(api_key: str = Depends(get_user_api_key)) -> dict:
 @pytest_asyncio.fixture
 async def setup_db():
     async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with _test_engine.begin() as conn:
@@ -88,7 +86,7 @@ def _make_jwt(user_id: str = "dep-test-user") -> str:
     return jwt.encode(claims, _TEST_JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
-# ── Tests ──────────────────────────────────────────────────────────────────
+# ── Tests ──────────────────────────────────────────────────────────────
 
 
 @pytest.mark.asyncio

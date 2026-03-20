@@ -7,7 +7,7 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool
 
 from app.db import Base, get_db
 from app.routes.assessment import router as assessment_router
@@ -17,14 +17,11 @@ from app.routes.health import router as health_router
 from app.routes.learning_plan import router as learning_plan_router
 from app.routes.roles import router as roles_router
 from app.routes.skills import router as skills_router
+from tests.conftest import _test_db_url
 
-# ── Separate test app WITHOUT get_current_user override ────────────────────
+# ── Separate test app WITHOUT get_current_user override ────────────────
 
-_test_engine = create_async_engine(
-    "sqlite+aiosqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+_test_engine = create_async_engine(_test_db_url, poolclass=NullPool)
 _TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
 
 
@@ -66,6 +63,7 @@ _guard_app.state.graph = _mock_graph
 @pytest_asyncio.fixture
 async def setup_db():
     async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with _test_engine.begin() as conn:
@@ -78,7 +76,7 @@ def client(setup_db) -> AsyncClient:
     return AsyncClient(transport=transport, base_url="http://test")
 
 
-# ── Protected routes should return 401 without auth ────────────────────────
+# ── Protected routes should return 401 without auth ────────────────────
 
 
 @pytest.mark.asyncio
@@ -152,7 +150,7 @@ class TestEmptyJwtSecret:
         assert resp.status_code == 401
 
 
-# ── Public routes should remain accessible ─────────────────────────────────
+# ── Public routes should remain accessible ─────────────────────────────
 
 
 @pytest.mark.asyncio

@@ -1,15 +1,15 @@
 import asyncio
 import contextlib
-import os
 import warnings
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse, urlunparse
 
 warnings.filterwarnings("ignore", message="Deserializing unregistered type")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from starlette.requests import Request
 
 from app.config import get_settings
@@ -24,9 +24,10 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    os.makedirs("data", exist_ok=True)
+    checkpoint_url = urlunparse(urlparse(settings.database_url)._replace(scheme="postgresql"))
     cleanup_task = asyncio.create_task(cleanup_stale_sessions())
-    async with AsyncSqliteSaver.from_conn_string("./data/checkpoints.db") as checkpointer:
+    async with AsyncPostgresSaver.from_conn_string(checkpoint_url) as checkpointer:
+        await checkpointer.setup()
         app.state.graph = compile_graph(checkpointer)
         yield
     cleanup_task.cancel()

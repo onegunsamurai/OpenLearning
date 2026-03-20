@@ -8,15 +8,18 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.db import AssessmentSession, Base
+from tests.conftest import _test_db_url
 
 
 @pytest_asyncio.fixture
 async def db_session():
-    """Create an in-memory SQLite database and yield a session."""
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
+    """Create a PostgreSQL test database and yield a session."""
+    engine = create_async_engine(_test_db_url, echo=False, poolclass=NullPool)
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     factory = async_sessionmaker(engine, expire_on_commit=False)

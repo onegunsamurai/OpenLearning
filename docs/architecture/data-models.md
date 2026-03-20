@@ -468,7 +468,7 @@ class PlanOutput(BaseModel):
 
 ## Database Schema
 
-SQLite database with three tables for persisting users, assessment sessions, and results.
+PostgreSQL database with three tables for persisting users, assessment sessions, and results.
 
 **Source**: `backend/app/db.py`
 
@@ -490,7 +490,7 @@ SQLite database with three tables for persisting users, assessment sessions, and
 |--------|------|-------------|
 | `session_id` | `String(36)` PK | UUID session identifier |
 | `thread_id` | `String(36)` UNIQUE | LangGraph thread identifier |
-| `skill_ids` | `JSON` | List of selected skill IDs |
+| `skill_ids` | `JSONB` | List of selected skill IDs |
 | `target_level` | `String(20)` | Target career level (default: "mid") |
 | `status` | `String(20)` | Session status: `"active"`, `"completed"`, or `"timed_out"` (default: `"active"`) |
 | `user_id` | `String(36)` FK NULL | References `users.id` |
@@ -503,10 +503,10 @@ SQLite database with three tables for persisting users, assessment sessions, and
 |--------|------|-------------|
 | `id` | `Integer` PK | Auto-incrementing ID |
 | `session_id` | `String(36)` FK | References `assessment_sessions.session_id` |
-| `knowledge_graph` | `JSON` | Final knowledge graph snapshot |
-| `gap_nodes` | `JSON` | Identified knowledge gaps |
-| `learning_plan` | `JSON` | Generated learning plan |
-| `proficiency_scores` | `JSON` | Per-skill proficiency scores |
+| `knowledge_graph` | `JSONB` | Final knowledge graph snapshot |
+| `gap_nodes` | `JSONB` | Identified knowledge gaps |
+| `learning_plan` | `JSONB` | Generated learning plan |
+| `proficiency_scores` | `JSONB` | Per-skill proficiency scores |
 | `completed_at` | `DateTime` | Completion timestamp |
 
 ### Relationships
@@ -516,4 +516,4 @@ SQLite database with three tables for persisting users, assessment sessions, and
 
 ### LangGraph Checkpoints
 
-Pipeline state is persisted separately via `AsyncSqliteSaver` in `data/checkpoints.db`. This is managed by LangGraph and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.
+Pipeline state is persisted in the same PostgreSQL database via `AsyncPostgresSaver`. LangGraph manages its own checkpoint tables and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.
