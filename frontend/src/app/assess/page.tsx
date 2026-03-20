@@ -108,7 +108,7 @@ export default function AssessPage() {
 
   return (
     <PageShell currentStep={1} noPadding autoPromptApiKey>
-      <div className="flex h-[calc(100dvh-var(--header-h))] flex-col">
+      <div className="flex h-[calc(100dvh - var(--header-h))] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">
           <h2 className="font-heading text-lg font-semibold">
