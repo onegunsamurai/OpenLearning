@@ -77,7 +77,7 @@ export default function DemoAssessPage() {
 
   return (
     <PageShell currentStep={0} noPadding isDemo steps={DEMO_STEPS}>
-      <div className="flex h-[calc(100vh-57px)] flex-col">
+      <div className="flex h-[calc(100dvh_-_var(--header-h))] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">
           <h2 className="font-heading text-lg font-semibold">

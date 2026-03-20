@@ -51,7 +51,7 @@ export function SkillBrowser({
           className="pl-9 bg-secondary border-border"
         />
       </div>
-      <div className="space-y-5 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-5 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2">
         {groupedByCategory.map((group, gi) => (
           <motion.div
             key={group.category}

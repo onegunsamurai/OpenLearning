@@ -22,13 +22,13 @@ interface StepProgressProps {
 
 export function StepProgress({ currentStep, steps = defaultSteps }: StepProgressProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {steps.map((step, index) => (
-        <div key={step.label} className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div key={step.label} className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <motion.div
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full text-xs font-mono font-semibold transition-colors",
+                "flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full text-[10px] sm:text-xs font-mono font-semibold transition-colors",
                 index < currentStep
                   ? "bg-cyan text-background"
                   : index === currentStep
@@ -53,7 +53,7 @@ export function StepProgress({ currentStep, steps = defaultSteps }: StepProgress
             </span>
           </div>
           {index < steps.length - 1 && (
-            <div className="relative h-[2px] w-8 bg-border sm:w-12">
+            <div className="relative h-[2px] w-4 sm:w-8 md:w-12 bg-border">
               {index < currentStep && (
                 <motion.div
                   className="absolute inset-0 bg-cyan"

@@ -51,6 +51,7 @@
 }
 
 :root {
+  --header-h: 57px;
   --radius: 0.625rem;
   --background: #0a0b0d;
   --foreground: #e4e4e7;

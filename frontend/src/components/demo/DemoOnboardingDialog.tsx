@@ -20,7 +20,7 @@ export function DemoOnboardingDialog({
 }: DemoOnboardingDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onDismiss()}>
-      <DialogContent className="max-w-md p-8">
+      <DialogContent className="max-w-md p-6 sm:p-8">
         <DialogTitle className="text-xl">
           You&apos;re in Demo Mode
         </DialogTitle>
