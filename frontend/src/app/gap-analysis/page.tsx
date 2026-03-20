@@ -87,7 +87,7 @@ export default function GapAnalysisPage() {
           </p>
           {/* Skeleton */}
           <div className="w-full max-w-4xl grid gap-6 lg:grid-cols-2 mt-8">
-            <div className="h-[350px] rounded-xl bg-card border border-border animate-pulse" />
+            <div className="h-[250px] sm:h-[350px] rounded-xl bg-card border border-border animate-pulse" />
             <div className="space-y-4">
               {[...Array(4)].map((_, i) => (
                 <div

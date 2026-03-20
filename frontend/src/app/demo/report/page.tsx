@@ -81,7 +81,7 @@ export default function DemoReportPage() {
             <h3 className="font-heading text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
               Proficiency Scores
             </h3>
-            <div className="grid gap-2 sm:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
               {DEMO_PROFICIENCY_SCORES.map((s) => (
                 <div key={s.skillId} className="text-center">
                   <div className="text-lg font-mono font-bold text-cyan">{s.score}%</div>

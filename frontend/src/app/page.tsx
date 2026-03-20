@@ -63,7 +63,7 @@ export default function OnboardingPage() {
 
   return (
     <PageShell autoPromptApiKey>
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className="grid gap-10 pb-24 lg:grid-cols-2 lg:gap-16">
         {/* Left: Hero */}
         <motion.div
           className="flex flex-col justify-center"
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
             Discover your{" "}
             <span className="text-gradient">skill gaps</span>
           </h2>
