@@ -27,6 +27,21 @@ export const metadata: Metadata = {
   title: "OpenLearning — AI-Powered Learning Engineer",
   description:
     "Identify skill gaps and generate personalized learning plans powered by AI.",
+  metadataBase: new URL("https://openlearning.dev"),
+  openGraph: {
+    title: "OpenLearning — AI-Powered Learning Engineer",
+    description:
+      "Identify skill gaps and generate personalized learning plans powered by AI.",
+    url: "https://openlearning.dev",
+    siteName: "OpenLearning",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OpenLearning — AI-Powered Learning Engineer",
+    description:
+      "Identify skill gaps and generate personalized learning plans powered by AI.",
+  },
 };
 
 export default function RootLayout({

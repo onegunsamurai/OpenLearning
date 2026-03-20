@@ -10,7 +10,7 @@ Most learning platforms treat assessment as a static quiz. OpenLearning uses a L
 
 ## Features
 
-- **Onboarding** — Paste a job description to auto-extract skills, or browse and select manually
+- **Onboarding** — Browse roles or select skills manually
 - **Skill Assessment** — Adaptive AI interview with calibration, Bloom-level targeting, and knowledge graph construction
 - **Gap Analysis** — Radar chart visualization comparing current vs target proficiency with priority-ranked gaps
 - **Learning Plan** — Phased, structured learning plan with theory, quiz, and lab modules
@@ -85,7 +85,12 @@ make docker-dev
 |----------|------|-------------|
 | `ANTHROPIC_API_KEY` | `backend/.env` | Anthropic API key (optional: can be set through UI) |
 | `CORS_ORIGINS` | `backend/.env` | Allowed CORS origins (default: `http://localhost:3000`) |
-| `DATABASE_URL` | `backend/.env` | SQLAlchemy database URL (default: SQLite in `data/`) |
+| `DATABASE_URL` | `backend/.env` | SQLAlchemy database URL (PostgreSQL via `asyncpg`) |
+| `GITHUB_CLIENT_ID` | `backend/.env` | GitHub OAuth app client ID (optional, for auth) |
+| `GITHUB_CLIENT_SECRET` | `backend/.env` | GitHub OAuth app client secret (optional, for auth) |
+| `JWT_SECRET_KEY` | `backend/.env` | Secret key for signing JWT tokens (optional, for auth) |
+| `ENCRYPTION_KEY` | `backend/.env` | Fernet key for encrypting stored API keys (optional, for auth) |
+| `FRONTEND_URL` | `backend/.env` | Frontend URL for OAuth redirects (default: `http://localhost:3000`) |
 | `LANGSMITH_API_KEY` | `backend/.env` | LangSmith API key (optional, for tracing) |
 | `LANGSMITH_PROJECT` | `backend/.env` | LangSmith project name (default: `open-learning`) |
 | `LANGSMITH_TRACING` | `backend/.env` | Enable LangSmith tracing (default: `false`) |
@@ -94,10 +99,34 @@ make docker-dev
 To stop containers: `make docker-down`
 To stop and remove all data: `make docker-clean`
 
+### Deployment (Vercel + Railway)
+
+The app is deployed at **[openlearning.dev](https://openlearning.dev)** with the frontend on Vercel and the backend on Railway, using path-based routing so everything is served from a single origin.
+
+**Frontend (Vercel)**
+
+1. Import the repo into Vercel, set root directory to `frontend`
+2. Set environment variables:
+   - `NEXT_PUBLIC_API_URL` = `""` (empty string — relative API URLs)
+   - `BACKEND_URL` = `https://<railway-service>.up.railway.app` (server-side only, used by `next.config.ts` rewrites)
+3. Add `openlearning.dev` as a custom domain
+
+**Backend (Railway)**
+
+1. Create a Railway project with a **PostgreSQL plugin**
+2. Add a service from the GitHub repo, set root directory to `backend`
+3. Set environment variables:
+   - `DATABASE_URL` = `postgresql+asyncpg://${{PGUSER}}:${{PGPASSWORD}}@${{PGHOST}}:${{PGPORT}}/${{PGDATABASE}}`
+   - `CORS_ORIGINS` = `["https://openlearning.dev"]`
+   - `FRONTEND_URL` = `https://openlearning.dev`
+   - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — from a GitHub OAuth App with callback URL `https://openlearning.dev/api/auth/github/callback`
+   - `JWT_SECRET_KEY` — generate with `openssl rand -hex 32`
+   - `ENCRYPTION_KEY` — generate a Fernet key
+
 ## Tech Stack
 
 - **Backend**: Python FastAPI + LangGraph + LangChain + Anthropic Claude
-- **Database**: SQLAlchemy + aiosqlite (SQLite)
+- **Database**: SQLAlchemy + asyncpg (PostgreSQL)
 - **Frontend**: Next.js 16 (App Router), TypeScript
 - **Styling**: Tailwind CSS v4 + Radix UI + shadcn/ui
 - **State**: Zustand (sessionStorage persistence)
@@ -136,7 +165,10 @@ OpenLearning/
 │   ├── .dockerignore            # Docker build exclusions
 │   └── package.json
 ├── scripts/
-│   └── generate-api.sh          # OpenAPI → TypeScript types
+│   ├── export-openapi.py        # Export OpenAPI spec from FastAPI app
+│   ├── generate-api.sh          # OpenAPI → TypeScript types
+│   ├── forbid-env-files.sh      # Pre-commit hook: block .env file commits
+│   └── lint-frontend-staged.sh  # Pre-commit hook: lint staged frontend files
 ├── docker-compose.yml           # Production-like Docker Compose config
 ├── docker-compose.dev.yml       # Development Docker Compose overrides
 └── Makefile
@@ -148,13 +180,23 @@ OpenLearning/
 |--------|-----------------------------------|------------------------------------|
 | GET    | /api/health                       | Health check with DB probe         |
 | GET    | /api/skills                       | List all skills and categories     |
-| POST   | /api/parse-jd                     | Extract skills from job desc       |
+| GET    | /api/roles                        | List available roles               |
+| GET    | /api/roles/{role_id}              | Get role details and skills        |
 | POST   | /api/assessment/start             | Start assessment session           |
 | POST   | /api/assessment/{id}/respond      | Submit answer (SSE streaming)      |
 | GET    | /api/assessment/{id}/graph        | Get current knowledge graph        |
 | GET    | /api/assessment/{id}/report       | Get full assessment report         |
+| GET    | /api/assessment/{id}/export       | Export assessment report           |
 | POST   | /api/gap-analysis                 | Generate gap analysis              |
 | POST   | /api/learning-plan                | Generate learning plan             |
+| GET    | /api/auth/github                  | Initiate GitHub OAuth login        |
+| GET    | /api/auth/github/callback         | GitHub OAuth callback              |
+| GET    | /api/auth/me                      | Get current user info              |
+| POST   | /api/auth/logout                  | Log out (clear session)            |
+| POST   | /api/auth/api-key                 | Store encrypted API key            |
+| GET    | /api/auth/api-key                 | Check if API key is stored         |
+| DELETE | /api/auth/api-key                 | Delete stored API key              |
+| POST   | /api/auth/validate-key            | Validate an API key                |
 
 ### Type Generation
 

@@ -17,6 +17,12 @@ line-length = 100
 select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF"]
 ignore = ["E501", "B008", "RUF012"]
 
+[tool.ruff.lint.per-file-ignores]
+"app/main.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
 [tool.ruff.format]
 quote-style = "double"
 ```
