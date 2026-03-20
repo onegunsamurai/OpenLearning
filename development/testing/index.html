@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1365,6 +1365,10 @@ make<span class="w"> </span><span class="nb">test</span>
 <span class="c1"># Run all checks (lint + typecheck + test)</span>
 make<span class="w"> </span>check
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">TEST_DATABASE_URL</p>
+<p>Backend tests require a running PostgreSQL instance. Set <code>TEST_DATABASE_URL</code> to point to a test database (e.g., <code>postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning_test</code>). In CI, this is configured automatically in the workflow.</p>
+</div>
 <h2 id="test-structure">Test Structure<a class="headerlink" href="#test-structure" title="Permanent link">&para;</a></h2>
 <p>Tests live in <code>backend/tests/</code> and use pytest with pytest-asyncio for async test support.</p>
 <div class="highlight"><pre><span></span><code>backend/tests/
@@ -1429,7 +1433,7 @@ make<span class="w"> </span>check
 </tr>
 <tr>
 <td><code>setup_db</code></td>
-<td>Creates in-memory SQLite tables before each test, drops after</td>
+<td>Creates PostgreSQL test tables before each test, drops after</td>
 </tr>
 <tr>
 <td><code>_test_user</code></td>

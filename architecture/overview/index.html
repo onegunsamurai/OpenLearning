@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1117,8 +1117,7 @@
     end
 
     subgraph Storage ["Storage"]
-        SQLite[(SQLite DB)]
-        Checkpoints[(Checkpoints DB)]
+        PostgreSQL[(PostgreSQL DB)]
     end
 
     subgraph External ["External"]
@@ -1139,8 +1138,8 @@
     Services --&gt; Claude
     Routes --&gt;|OAuth| GitHub
     Graph --&gt; KB
-    Routes --&gt; SQLite
-    Graph --&gt; Checkpoints</code></pre>
+    Routes --&gt; PostgreSQL
+    Graph --&gt; PostgreSQL</code></pre>
 <h2 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">&para;</a></h2>
 <p>The platform follows a linear pipeline from onboarding to learning plan:</p>
 <pre class="mermaid"><code>graph LR
@@ -1212,12 +1211,12 @@
 </tr>
 <tr>
 <td>Database</td>
-<td>SQLAlchemy + aiosqlite (SQLite)</td>
+<td>SQLAlchemy + asyncpg (PostgreSQL)</td>
 <td>Session and result storage</td>
 </tr>
 <tr>
 <td>Checkpoints</td>
-<td>LangGraph AsyncSqliteSaver</td>
+<td>LangGraph AsyncPostgresSaver</td>
 <td>Pipeline state persistence</td>
 </tr>
 <tr>
@@ -1245,7 +1244,7 @@
 <li><strong>Conditional routing</strong> — Dynamic branching based on evaluation results</li>
 <li><strong>Checkpointing</strong> — Resume from any point in the assessment</li>
 </ul>
-<p>LangGraph's <code>interrupt()</code> mechanism and <code>AsyncSqliteSaver</code> checkpointer handle all of these natively.</p>
+<p>LangGraph's <code>interrupt()</code> mechanism and <code>AsyncPostgresSaver</code> checkpointer handle all of these natively.</p>
 <h3 id="why-bloom-taxonomy">Why Bloom Taxonomy?<a class="headerlink" href="#why-bloom-taxonomy" title="Permanent link">&para;</a></h3>
 <p><a href="https://en.wikipedia.org/wiki/Bloom%27s_taxonomy">Bloom's taxonomy</a> provides a structured framework for measuring understanding depth:</p>
 <table>
@@ -1305,7 +1304,7 @@
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
-│   │   ├── data/                # Skills taxonomy definitions
+│   │   ├── data/                # Skills taxonomy (skills_taxonomy.py)
 │   │   └── prompts/             # System prompts for Claude (calibration, eval, etc.)
 │   ├── tests/                   # pytest test suite
 │   ├── Dockerfile               # Backend container image

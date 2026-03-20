@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1818,7 +1818,7 @@
 <span class="w">  </span><span class="nt">&quot;max_questions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span>
 <span class="p">}</span>
 </code></pre></div></p>
-<p>The pipeline state is persisted to SQLite via <code>AsyncSqliteSaver</code>, so assessments survive server restarts.</p>
+<p>The pipeline state is persisted to PostgreSQL via <code>AsyncPostgresSaver</code>, so assessments survive server restarts.</p>
 <h2 id="llm-integration">LLM Integration<a class="headerlink" href="#llm-integration" title="Permanent link">&para;</a></h2>
 <p>All agent LLM calls go through a shared integration layer that provides structured output, automatic retry, and observability.</p>
 <p><strong>Source</strong>: <code>backend/app/services/ai.py</code>, <code>backend/app/agents/schemas.py</code></p>

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -2028,7 +2028,7 @@
     <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanPhaseOutput</span><span class="p">]</span>
 </code></pre></div>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
-<p>SQLite database with three tables for persisting users, assessment sessions, and results.</p>
+<p>PostgreSQL database with three tables for persisting users, assessment sessions, and results.</p>
 <p><strong>Source</strong>: <code>backend/app/db.py</code></p>
 <h3 id="users"><code>users</code><a class="headerlink" href="#users" title="Permanent link">&para;</a></h3>
 <table>
@@ -2099,7 +2099,7 @@
 </tr>
 <tr>
 <td><code>skill_ids</code></td>
-<td><code>JSON</code></td>
+<td><code>JSONB</code></td>
 <td>List of selected skill IDs</td>
 </tr>
 <tr>
@@ -2151,22 +2151,22 @@
 </tr>
 <tr>
 <td><code>knowledge_graph</code></td>
-<td><code>JSON</code></td>
+<td><code>JSONB</code></td>
 <td>Final knowledge graph snapshot</td>
 </tr>
 <tr>
 <td><code>gap_nodes</code></td>
-<td><code>JSON</code></td>
+<td><code>JSONB</code></td>
 <td>Identified knowledge gaps</td>
 </tr>
 <tr>
 <td><code>learning_plan</code></td>
-<td><code>JSON</code></td>
+<td><code>JSONB</code></td>
 <td>Generated learning plan</td>
 </tr>
 <tr>
 <td><code>proficiency_scores</code></td>
-<td><code>JSON</code></td>
+<td><code>JSONB</code></td>
 <td>Per-skill proficiency scores</td>
 </tr>
 <tr>
@@ -2182,7 +2182,7 @@
 <li><code>AssessmentSession</code> → <code>AssessmentResult</code>: one-to-one via <code>session_id</code></li>
 </ul>
 <h3 id="langgraph-checkpoints">LangGraph Checkpoints<a class="headerlink" href="#langgraph-checkpoints" title="Permanent link">&para;</a></h3>
-<p>Pipeline state is persisted separately via <code>AsyncSqliteSaver</code> in <code>data/checkpoints.db</code>. This is managed by LangGraph and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.</p>
+<p>Pipeline state is persisted in the same PostgreSQL database via <code>AsyncPostgresSaver</code>. LangGraph manages its own checkpoint tables and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.</p>
 
 
 

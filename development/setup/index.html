@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1208,8 +1208,14 @@ make<span class="w"> </span>install
 <tr>
 <td><code>DATABASE_URL</code></td>
 <td>No</td>
-<td><code>sqlite+aiosqlite:///./data/openlearning.db</code></td>
+<td><code>postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning</code></td>
 <td>SQLAlchemy async database URL</td>
+</tr>
+<tr>
+<td><code>TEST_DATABASE_URL</code></td>
+<td>No</td>
+<td>—</td>
+<td>Database URL for tests (used by CI and <code>conftest.py</code>)</td>
 </tr>
 <tr>
 <td><code>LANGSMITH_API_KEY</code></td>
@@ -1305,6 +1311,11 @@ make<span class="w"> </span>dev-frontend<span class="w">  </span><span class="c1
 <td><code>make dev</code></td>
 <td><code>make -j2 dev-backend dev-frontend</code></td>
 <td>Start both servers concurrently</td>
+</tr>
+<tr>
+<td><code>make dev-db</code></td>
+<td><code>docker compose -f ... up db -d</code></td>
+<td>Start PostgreSQL container (port 5432 exposed)</td>
 </tr>
 <tr>
 <td><code>make dev-backend</code></td>
@@ -1463,12 +1474,12 @@ make<span class="w"> </span>generate-api
 </code></pre></div>
 <p>This generates types into <code>frontend/src/lib/generated/</code>. <strong>Do not edit these files manually</strong> — they are overwritten on each generation.</p>
 <h2 id="database">Database<a class="headerlink" href="#database" title="Permanent link">&para;</a></h2>
-<p>SQLite databases are created automatically on first run:</p>
-<ul>
-<li><code>data/openlearning.db</code> — Assessment sessions and results</li>
-<li><code>data/checkpoints.db</code> — LangGraph pipeline checkpoints</li>
-</ul>
-<p>Both are gitignored. Delete them to start fresh.</p>
+<p>The backend requires PostgreSQL. Start a local instance with Docker:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>dev-db
+</code></pre></div>
+<p>This uses both <code>docker-compose.yml</code> and <code>docker-compose.dev.yml</code> to start a PostgreSQL container with port 5432 exposed to the host, using default credentials (<code>openlearning:openlearning</code>). Tables are created automatically on first run via <code>init_db()</code>.</p>
+<p>To use your own PostgreSQL instance, set <code>DATABASE_URL</code> in <code>backend/.env</code>.</p>
+<p>For tests, set <code>TEST_DATABASE_URL</code> to point to a separate database (CI uses <code>openlearning_test</code>).</p>
 
 
 
