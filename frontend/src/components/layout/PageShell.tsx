@@ -4,6 +4,7 @@ import { useState, createContext, useContext } from "react";
 import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import { LogOut, Github, Key } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,9 +60,11 @@ export function PageShell({
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
         <div className={`mx-auto flex items-center justify-between ${maxWidth} px-4 py-3 sm:px-6`}>
           <div className="flex items-center gap-3">
-            <h1 className="font-heading text-lg font-bold tracking-tight">
-              <span className="text-cyan">Open</span>Learning
-            </h1>
+            <Link href="/">
+              <h1 className="font-heading text-lg font-bold tracking-tight">
+                <span className="text-cyan">Open</span>Learning
+              </h1>
+            </Link>
             {isDemo && (
               <span className="rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-400">
                 Demo
