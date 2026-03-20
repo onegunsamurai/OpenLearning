@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import os
 from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool
 
 from app.db import AssessmentResult, AssessmentSession, Base, get_db
 from app.deps import AuthUser, get_current_user, get_user_api_key
@@ -26,13 +27,14 @@ from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
 from app.routes.learning_plan import router as learning_plan_router
 
-# ── In-memory SQLite test database ──────────────────────────────────────────
+# ── PostgreSQL test database ──────────────────────────────────────────────
 
-_test_engine = create_async_engine(
-    "sqlite+aiosqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+_test_db_url = os.environ.get(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning_test",
 )
+
+_test_engine = create_async_engine(_test_db_url, poolclass=NullPool)
 _TestSessionFactory = async_sessionmaker(_test_engine, expire_on_commit=False)
 
 
@@ -41,7 +43,7 @@ async def _override_get_db():
         yield session
 
 
-# ── Shared test app with all routers ────────────────────────────────────────
+# ── Shared test app with all routers ────────────────────────────────────
 
 _test_user = AuthUser(user_id="test-user-id", github_username="testuser", avatar_url="")
 
@@ -68,7 +70,7 @@ _test_app.state.graph = _mock_graph
 
 register_anthropic_error_handlers(_test_app)
 
-# ── Sample data constants ───────────────────────────────────────────────────
+# ── Sample data constants ───────────────────────────────────────────────
 
 FULL_KNOWLEDGE_GRAPH = {
     "nodes": [
@@ -130,20 +132,34 @@ FULL_PROFICIENCY_SCORES = [
     }
 ]
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
+# ── Fixtures ────────────────────────────────────────────────────────────
 
 
 @pytest_asyncio.fixture
 async def setup_db():
-    """Create tables before each test, drop after."""
+    """Create tables before each test, seed test user, drop after."""
     async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    # Seed the default test user so FK constraints are satisfied
+    from app.db import User
+
+    async with _TestSessionFactory() as session:
+        session.add(
+            User(
+                id="test-user-id",
+                github_id=99999,
+                github_username="testuser",
+                avatar_url="",
+            )
+        )
+        await session.commit()
     yield
     async with _test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
 
-# ── Seed helpers ────────────────────────────────────────────────────────────
+# ── Seed helpers ────────────────────────────────────────────────────────
 
 
 async def seed_session(
@@ -185,7 +201,7 @@ async def seed_result(
     await db.commit()
 
 
-# ── Mock helpers ────────────────────────────────────────────────────────────
+# ── Mock helpers ────────────────────────────────────────────────────────
 
 
 def mock_llm_response(text: str) -> AsyncMock:
@@ -197,7 +213,7 @@ def mock_llm_response(text: str) -> AsyncMock:
     return mock_model
 
 
-# ── State fixtures (from original conftest) ─────────────────────────────────
+# ── State fixtures (from original conftest) ─────────────────────────────
 
 
 @pytest.fixture

@@ -21,8 +21,7 @@ graph TB
     end
 
     subgraph Storage ["Storage"]
-        SQLite[(SQLite DB)]
-        Checkpoints[(Checkpoints DB)]
+        PostgreSQL[(PostgreSQL DB)]
     end
 
     subgraph External ["External"]
@@ -43,8 +42,8 @@ graph TB
     Services --> Claude
     Routes -->|OAuth| GitHub
     Graph --> KB
-    Routes --> SQLite
-    Graph --> Checkpoints
+    Routes --> PostgreSQL
+    Graph --> PostgreSQL
 ```
 
 ## Data Flow
@@ -87,8 +86,8 @@ Authenticated sessions are linked to users via a `user_id` foreign key. Write en
 | Backend | FastAPI | API server, SSE streaming |
 | Pipeline | LangGraph | State machine with checkpoints and interrupts |
 | LLM | LangChain + Anthropic Claude | Question generation, evaluation, plan generation |
-| Database | SQLAlchemy + aiosqlite (SQLite) | Session and result storage |
-| Checkpoints | LangGraph AsyncSqliteSaver | Pipeline state persistence |
+| Database | SQLAlchemy + asyncpg (PostgreSQL) | Session and result storage |
+| Checkpoints | LangGraph AsyncPostgresSaver | Pipeline state persistence |
 | Auth | python-jose | JWT token signing and verification |
 | OAuth | httpx | GitHub OAuth token exchange |
 | Encryption | cryptography (Fernet) | API key encryption at rest |
@@ -102,7 +101,7 @@ The assessment pipeline requires:
 - **Conditional routing** — Dynamic branching based on evaluation results
 - **Checkpointing** — Resume from any point in the assessment
 
-LangGraph's `interrupt()` mechanism and `AsyncSqliteSaver` checkpointer handle all of these natively.
+LangGraph's `interrupt()` mechanism and `AsyncPostgresSaver` checkpointer handle all of these natively.
 
 ### Why Bloom Taxonomy?
 
@@ -136,7 +135,7 @@ OpenLearning/
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
-│   │   ├── data/                # Skills taxonomy definitions
+│   │   ├── data/                # Skills taxonomy (skills_taxonomy.py)
 │   │   └── prompts/             # System prompts for Claude (calibration, eval, etc.)
 │   ├── tests/                   # pytest test suite
 │   ├── Dockerfile               # Backend container image

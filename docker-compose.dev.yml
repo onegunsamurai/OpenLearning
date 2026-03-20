@@ -1,12 +1,32 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: openlearning
+      POSTGRES_PASSWORD: openlearning
+      POSTGRES_DB: openlearning
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "openlearning"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
       target: base
     volumes:
       - ./backend:/app
-      - backend-data:/app/data
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://openlearning:openlearning@db:5432/openlearning
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
@@ -19,3 +39,6 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       BACKEND_URL: http://backend:8000
+
+volumes:
+  postgres-data:

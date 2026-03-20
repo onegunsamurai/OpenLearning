@@ -1,7 +1,10 @@
-.PHONY: dev dev-backend dev-frontend install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
+.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
 
 dev:
 	make -j2 dev-backend dev-frontend
+
+dev-db:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up db -d
 
 dev-backend:
 	cd backend && uvicorn app.main:app --reload --port 8000

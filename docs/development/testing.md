@@ -16,6 +16,9 @@ cd backend && pytest tests/test_router.py -v
 make check
 ```
 
+!!! note "TEST_DATABASE_URL"
+    Backend tests require a running PostgreSQL instance. Set `TEST_DATABASE_URL` to point to a test database (e.g., `postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning_test`). In CI, this is configured automatically in the workflow.
+
 ## Test Structure
 
 Tests live in `backend/tests/` and use pytest with pytest-asyncio for async test support.
@@ -60,7 +63,7 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `sample_knowledge_graph` | A `KnowledgeGraph` with 2 nodes and 1 edge |
 | `initial_state` | Fresh `AssessmentState` for "backend_engineering" domain |
 | `mid_assessment_state` | `AssessmentState` mid-assessment with history and calibrated_level="mid" |
-| `setup_db` | Creates in-memory SQLite tables before each test, drops after |
+| `setup_db` | Creates PostgreSQL test tables before each test, drops after |
 | `_test_user` | An `AuthUser` with test user ID and username (module-level constant) |
 | `_override_get_current_user` | Dependency override that returns `_test_user`, bypassing real JWT auth |
 | `_override_get_user_api_key` | Dependency override returning `"sk-test-key-for-tests"`, bypassing real API key lookup |

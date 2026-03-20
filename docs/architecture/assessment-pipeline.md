@@ -240,7 +240,7 @@ Each interrupt sends metadata to the frontend. There are two shapes depending on
 }
 ```
 
-The pipeline state is persisted to SQLite via `AsyncSqliteSaver`, so assessments survive server restarts.
+The pipeline state is persisted to PostgreSQL via `AsyncPostgresSaver`, so assessments survive server restarts.
 
 ## LLM Integration
 

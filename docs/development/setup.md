@@ -29,7 +29,8 @@ cp backend/.env.example backend/.env
 |----------|----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | No | — | Fallback Anthropic API key (users provide their own via BYOK) |
 | `CORS_ORIGINS` | No | `http://localhost:3000` | Allowed CORS origins |
-| `DATABASE_URL` | No | `sqlite+aiosqlite:///./data/openlearning.db` | SQLAlchemy async database URL |
+| `DATABASE_URL` | No | `postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning` | SQLAlchemy async database URL |
+| `TEST_DATABASE_URL` | No | — | Database URL for tests (used by CI and `conftest.py`) |
 | `LANGSMITH_API_KEY` | No | — | LangSmith API key (for tracing) |
 | `LANGSMITH_PROJECT` | No | `open-learning` | LangSmith project name |
 | `LANGSMITH_TRACING` | No | `false` | Enable LangSmith tracing |
@@ -67,6 +68,7 @@ make dev-frontend  # http://localhost:3000
 | Target | Command | Description |
 |--------|---------|-------------|
 | `make dev` | `make -j2 dev-backend dev-frontend` | Start both servers concurrently |
+| `make dev-db` | `docker compose -f ... up db -d` | Start PostgreSQL container (port 5432 exposed) |
 | `make dev-backend` | `cd backend && uvicorn app.main:app --reload --port 8000` | Start backend with hot reload |
 | `make dev-frontend` | `cd frontend && npm run dev` | Start frontend dev server |
 | `make install` | `make install-backend install-frontend install-hooks` | Install all dependencies and pre-commit hooks |
@@ -119,9 +121,14 @@ This generates types into `frontend/src/lib/generated/`. **Do not edit these fil
 
 ## Database
 
-SQLite databases are created automatically on first run:
+The backend requires PostgreSQL. Start a local instance with Docker:
 
-- `data/openlearning.db` — Assessment sessions and results
-- `data/checkpoints.db` — LangGraph pipeline checkpoints
+```bash
+make dev-db
+```
 
-Both are gitignored. Delete them to start fresh.
+This uses both `docker-compose.yml` and `docker-compose.dev.yml` to start a PostgreSQL container with port 5432 exposed to the host, using default credentials (`openlearning:openlearning`). Tables are created automatically on first run via `init_db()`.
+
+To use your own PostgreSQL instance, set `DATABASE_URL` in `backend/.env`.
+
+For tests, set `TEST_DATABASE_URL` to point to a separate database (CI uses `openlearning_test`).

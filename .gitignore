@@ -42,11 +42,10 @@ __pycache__/
 backend/.venv/
 backend/.env
 
-# database files
-backend/data/
+# database
+postgres-data/
 *.db
-*.db-shm
-*.db-wal
+backend/data/
 
 .ruff_cache/
 .pytest_cache/

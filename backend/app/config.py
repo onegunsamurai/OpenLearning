@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     langsmith_api_key: str = ""
     langsmith_project: str = "open-learning"
     langsmith_tracing: bool = False
-    database_url: str = "sqlite+aiosqlite:///./data/openlearning.db"
+    database_url: str = "postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning"
     github_client_id: str = ""
     github_client_secret: str = ""
     jwt_secret_key: str = ""

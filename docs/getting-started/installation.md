@@ -118,4 +118,4 @@ To stop containers: `make docker-down`
 To stop and remove all data: `make docker-clean`
 
 !!! tip
-    If LLM calls fail, check that a valid API key is configured — either via BYOK in the UI or as `ANTHROPIC_API_KEY` in `backend/.env`. The database (SQLite) is created automatically on first run in the `data/` directory.
+    If LLM calls fail, check that a valid API key is configured — either via BYOK in the UI or as `ANTHROPIC_API_KEY` in `backend/.env`. The database requires PostgreSQL. Run `make dev-db` to start a PostgreSQL container, or configure `DATABASE_URL` to point to your own instance. Tables are created automatically on first run.
