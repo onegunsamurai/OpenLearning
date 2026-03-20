@@ -99,29 +99,6 @@ make docker-dev
 To stop containers: `make docker-down`
 To stop and remove all data: `make docker-clean`
 
-### Deployment (Vercel + Railway)
-
-The app is deployed at **[openlearning.dev](https://openlearning.dev)** with the frontend on Vercel and the backend on Railway, using path-based routing so everything is served from a single origin.
-
-**Frontend (Vercel)**
-
-1. Import the repo into Vercel, set root directory to `frontend`
-2. Set environment variables:
-   - `NEXT_PUBLIC_API_URL` = `""` (empty string — relative API URLs)
-   - `BACKEND_URL` = `https://<railway-service>.up.railway.app` (server-side only, used by `next.config.ts` rewrites)
-3. Add `openlearning.dev` as a custom domain
-
-**Backend (Railway)**
-
-1. Create a Railway project with a **PostgreSQL plugin**
-2. Add a service from the GitHub repo, set root directory to `backend`
-3. Set environment variables:
-   - `DATABASE_URL` = `postgresql+asyncpg://${{PGUSER}}:${{PGPASSWORD}}@${{PGHOST}}:${{PGPORT}}/${{PGDATABASE}}`
-   - `CORS_ORIGINS` = `["https://openlearning.dev"]`
-   - `FRONTEND_URL` = `https://openlearning.dev`
-   - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` — from a GitHub OAuth App with callback URL `https://openlearning.dev/api/auth/github/callback`
-   - `JWT_SECRET_KEY` — generate with `openssl rand -hex 32`
-   - `ENCRYPTION_KEY` — generate a Fernet key
 
 ## Tech Stack
 
