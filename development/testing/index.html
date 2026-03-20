@@ -1501,7 +1501,7 @@ make<span class="w"> </span>check
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">app.graph.router</span><span class="w"> </span><span class="kn">import</span> <span class="n">decide_branch</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">test_conclude_when_max_topics</span><span class="p">(</span><span class="n">mid_assessment_state</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_conclude_when_max_topics_reached</span><span class="p">(</span><span class="n">mid_assessment_state</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Should conclude when enough topics are evaluated.&quot;&quot;&quot;</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">mid_assessment_state</span>
     <span class="n">state</span><span class="p">[</span><span class="s2">&quot;topics_evaluated&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;t1&quot;</span><span class="p">,</span> <span class="s2">&quot;t2&quot;</span><span class="p">,</span> <span class="s2">&quot;t3&quot;</span><span class="p">,</span> <span class="s2">&quot;t4&quot;</span><span class="p">,</span> <span class="s2">&quot;t5&quot;</span><span class="p">,</span> <span class="s2">&quot;t6&quot;</span><span class="p">,</span> <span class="s2">&quot;t7&quot;</span><span class="p">,</span> <span class="s2">&quot;t8&quot;</span><span class="p">]</span>

@@ -680,6 +680,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#nodes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#decision-tree" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,6 +1317,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#nodes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#decision-tree" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1675,6 +1697,33 @@
 <h2 id="phase-3-routing">Phase 3: Routing<a class="headerlink" href="#phase-3-routing" title="Permanent link">&para;</a></h2>
 <p>After each knowledge graph update, the router determines the next action.</p>
 <p><strong>Source</strong>: <code>backend/app/graph/router.py</code></p>
+<h3 id="nodes_2">Nodes<a class="headerlink" href="#nodes_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>handle_deeper</code></td>
+<td>Advances Bloom level before generating next question on the same topic</td>
+</tr>
+<tr>
+<td><code>handle_pivot</code></td>
+<td>Marks topic as evaluated and switches to the next unevaluated topic</td>
+</tr>
+<tr>
+<td><code>probe_question</code></td>
+<td>Generates a probing follow-up question on the same topic at the same Bloom level</td>
+</tr>
+<tr>
+<td><code>await_probe_response</code></td>
+<td>Interrupts for user response to the probe question</td>
+</tr>
+</tbody>
+</table>
 <h3 id="decision-tree">Decision Tree<a class="headerlink" href="#decision-tree" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
     A{Topics &gt;= 8 OR&lt;br/&gt;Questions &gt;= 25?}

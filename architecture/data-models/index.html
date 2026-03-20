@@ -1806,6 +1806,9 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ValidateKeyResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">valid</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">error</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">OkResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">ok</span><span class="p">:</span> <span class="nb">bool</span>
 </code></pre></div>
 <h3 id="knowledge-base-schema">Knowledge Base Schema<a class="headerlink" href="#knowledge-base-schema" title="Permanent link">&para;</a></h3>
 <p>These models validate YAML knowledge base files on load. They use <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal, not API-facing.</p>
