@@ -68,7 +68,7 @@ make dev-frontend  # http://localhost:3000
 | Target | Command | Description |
 |--------|---------|-------------|
 | `make dev` | `make -j2 dev-backend dev-frontend` | Start both servers concurrently |
-| `make dev-db` | `docker compose up db -d` | Start PostgreSQL container in background |
+| `make dev-db` | `docker compose -f ... up db -d` | Start PostgreSQL container (port 5432 exposed) |
 | `make dev-backend` | `cd backend && uvicorn app.main:app --reload --port 8000` | Start backend with hot reload |
 | `make dev-frontend` | `cd frontend && npm run dev` | Start frontend dev server |
 | `make install` | `make install-backend install-frontend install-hooks` | Install all dependencies and pre-commit hooks |
@@ -127,7 +127,7 @@ The backend requires PostgreSQL. Start a local instance with Docker:
 make dev-db
 ```
 
-This runs `docker compose up db -d`, starting a PostgreSQL container on port 5432 with default credentials (`openlearning:openlearning`). Tables are created automatically on first run via `init_db()`.
+This uses both `docker-compose.yml` and `docker-compose.dev.yml` to start a PostgreSQL container with port 5432 exposed to the host, using default credentials (`openlearning:openlearning`). Tables are created automatically on first run via `init_db()`.
 
 To use your own PostgreSQL instance, set `DATABASE_URL` in `backend/.env`.
 

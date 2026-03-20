@@ -4,7 +4,7 @@ dev:
 	make -j2 dev-backend dev-frontend
 
 dev-db:
-	docker compose up db -d
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up db -d
 
 dev-backend:
 	cd backend && uvicorn app.main:app --reload --port 8000

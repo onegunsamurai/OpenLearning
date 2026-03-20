@@ -24,7 +24,12 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    checkpoint_url = urlunparse(urlparse(settings.database_url)._replace(scheme="postgresql"))
+    parsed_db_url = urlparse(settings.database_url)
+    if parsed_db_url.scheme not in ("postgresql+asyncpg",):
+        raise RuntimeError(
+            f"DATABASE_URL must use the 'postgresql+asyncpg' scheme, got '{parsed_db_url.scheme}'"
+        )
+    checkpoint_url = urlunparse(parsed_db_url._replace(scheme="postgresql"))
     cleanup_task = asyncio.create_task(cleanup_stale_sessions())
     async with AsyncPostgresSaver.from_conn_string(checkpoint_url) as checkpointer:
         await checkpointer.setup()
