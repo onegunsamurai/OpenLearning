@@ -4,12 +4,20 @@ export const ogAlt = "OpenLearning — AI-Powered Learning Engineer";
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
-export async function generateOGImage(): Promise<ImageResponse> {
-  const syneBold = await fetch(
-    new URL(
+let syneBoldFontPromise: Promise<ArrayBuffer> | null = null;
+
+function loadSyneBoldFont(): Promise<ArrayBuffer> {
+  if (!syneBoldFontPromise) {
+    syneBoldFontPromise = fetch(
       "https://fonts.gstatic.com/s/syne/v22/8vIS7w4qzmVxsWxjBZRjr0FKM_0KuT6kR47NCV5Z.woff",
-    ),
-  ).then((res) => res.arrayBuffer());
+      { cache: "force-cache" },
+    ).then((res) => res.arrayBuffer());
+  }
+  return syneBoldFontPromise;
+}
+
+export async function generateOGImage(): Promise<ImageResponse> {
+  const syneBold = await loadSyneBoldFont();
 
   return new ImageResponse(
     (
