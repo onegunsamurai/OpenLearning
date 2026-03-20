@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Syne, IBM_Plex_Mono, DM_Sans } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const syne = Syne({
@@ -57,6 +58,7 @@ export default function RootLayout({
         <TooltipProvider>
           <AuthProvider>{children}</AuthProvider>
         </TooltipProvider>
+        <Analytics />
       </body>
     </html>
   );
