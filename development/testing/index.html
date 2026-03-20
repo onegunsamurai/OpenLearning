@@ -1018,6 +1018,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#other-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other Workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1315,6 +1326,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#other-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other Workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1387,6 +1409,7 @@ make<span class="w"> </span>check
 ├── test_health.py             # Health endpoint tests
 ├── test_knowledge_base.py     # Knowledge base loader and mapper tests
 ├── test_learning_plan_route.py # Learning plan endpoint tests
+├── test_main.py               # FastAPI app startup and lifespan tests
 ├── test_models_gap_learning.py # Gap/learning plan model validation tests
 ├── test_parse_json_response.py # JSON response parser edge-case tests
 ├── test_pipeline.py           # LangGraph pipeline tests
@@ -1607,13 +1630,18 @@ make<span class="w"> </span>test-frontend
 </ul>
 <h3 id="docs-build"><code>docs-build</code><a class="headerlink" href="#docs-build" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Runs only when <code>docs/**</code> or <code>mkdocs.yml</code> change</li>
+<li>Runs only on <strong>pull requests</strong>, when <code>docs/**</code> or <code>mkdocs.yml</code> change</li>
 <li><code>mkdocs build --strict</code> (validates docs build)</li>
 </ul>
 <h3 id="docker-build"><code>docker-build</code><a class="headerlink" href="#docker-build" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Runs only when <code>Dockerfile</code>, <code>docker-compose*.yml</code>, or <code>.dockerignore</code> change</li>
-<li><code>docker compose build</code> (validates Docker images build)</li>
+<li>Runs only when <code>Dockerfile</code>, <code>requirements.txt</code>, <code>package*.json</code>, <code>docker-compose*.yml</code>, or <code>.dockerignore</code> change</li>
+<li>Uses <code>docker/bake-action</code> with GHA caching (validates Docker images build)</li>
+</ul>
+<h3 id="other-workflows">Other Workflows<a class="headerlink" href="#other-workflows" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>codeql.yml</code></strong> — GitHub CodeQL security analysis (runs on its own schedule)</li>
+<li><strong><code>docs.yml</code></strong> — Deploys documentation site to GitHub Pages on pushes to <code>main</code></li>
 </ul>
 <h2 id="test-conventions">Test Conventions<a class="headerlink" href="#test-conventions" title="Permanent link">&para;</a></h2>
 <ul>

@@ -1174,6 +1174,12 @@
 <span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;F&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;I&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SIM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;RUF&quot;</span><span class="p">]</span>
 <span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E501&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;B008&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;RUF012&quot;</span><span class="p">]</span>
 
+<span class="k">[tool.ruff.lint.per-file-ignores]</span>
+<span class="s2">&quot;app/main.py&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E402&quot;</span><span class="p">]</span>
+
+<span class="k">[tool.ruff.lint.isort]</span>
+<span class="n">known-first-party</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;app&quot;</span><span class="p">]</span>
+
 <span class="k">[tool.ruff.format]</span>
 <span class="n">quote-style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;double&quot;</span>
 </code></pre></div>
