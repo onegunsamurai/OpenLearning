@@ -205,6 +205,9 @@ class ApiKeyResponse(CamelModel):
 class ValidateKeyResponse(CamelModel):
     valid: bool
     error: str | None = None
+
+class OkResponse(CamelModel):
+    ok: bool
 ```
 
 ### Knowledge Base Schema

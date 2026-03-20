@@ -83,7 +83,7 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 import pytest
 from app.graph.router import decide_branch
 
-def test_conclude_when_max_topics(mid_assessment_state):
+def test_conclude_when_max_topics_reached(mid_assessment_state):
     """Should conclude when enough topics are evaluated."""
     state = mid_assessment_state
     state["topics_evaluated"] = ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"]

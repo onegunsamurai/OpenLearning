@@ -125,6 +125,15 @@ After each knowledge graph update, the router determines the next action.
 
 **Source**: `backend/app/graph/router.py`
 
+### Nodes
+
+| Node | Description |
+|------|-------------|
+| `handle_deeper` | Advances Bloom level before generating next question on the same topic |
+| `handle_pivot` | Marks topic as evaluated and switches to the next unevaluated topic |
+| `probe_question` | Generates a probing follow-up question on the same topic at the same Bloom level |
+| `await_probe_response` | Interrupts for user response to the probe question |
+
 ### Decision Tree
 
 ```mermaid
