@@ -251,7 +251,7 @@ def compile_graph(checkpointer):
 
     Args:
         checkpointer: A LangGraph checkpointer instance (e.g.
-            ``AsyncSqliteSaver`` or ``MemorySaver``).
+            ``AsyncPostgresSaver`` or ``MemorySaver``).
     """
     graph = build_graph()
     return graph.compile(checkpointer=checkpointer)

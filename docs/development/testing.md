@@ -40,6 +40,7 @@ backend/tests/
 ├── test_health.py             # Health endpoint tests
 ├── test_knowledge_base.py     # Knowledge base loader and mapper tests
 ├── test_learning_plan_route.py # Learning plan endpoint tests
+├── test_main.py               # FastAPI app startup and lifespan tests
 ├── test_models_gap_learning.py # Gap/learning plan model validation tests
 ├── test_parse_json_response.py # JSON response parser edge-case tests
 ├── test_pipeline.py           # LangGraph pipeline tests
@@ -230,12 +231,17 @@ The CI pipeline runs five jobs:
 - Verification that no `.env` files (except `.env.example`) are committed
 
 ### `docs-build`
-- Runs only when `docs/**` or `mkdocs.yml` change
+- Runs only on **pull requests**, when `docs/**` or `mkdocs.yml` change
 - `mkdocs build --strict` (validates docs build)
 
 ### `docker-build`
-- Runs only when `Dockerfile`, `docker-compose*.yml`, or `.dockerignore` change
-- `docker compose build` (validates Docker images build)
+- Runs only when `Dockerfile`, `requirements.txt`, `package*.json`, `docker-compose*.yml`, or `.dockerignore` change
+- Uses `docker/bake-action` with GHA caching (validates Docker images build)
+
+### Other Workflows
+
+- **`codeql.yml`** — GitHub CodeQL security analysis (runs on its own schedule)
+- **`docs.yml`** — Deploys documentation site to GitHub Pages on pushes to `main`
 
 ## Test Conventions
 

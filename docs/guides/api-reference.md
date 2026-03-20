@@ -566,11 +566,11 @@ When the backend encounters an Anthropic SDK exception, it maps it to a structur
 
 | Anthropic Exception | HTTP Status | Message |
 |---------------------|-------------|---------|
-| `AuthenticationError` | 401 | Your API key is invalid or has been revoked. |
-| `RateLimitError` | 429 | Rate limit reached. (`Retry-After` header included) |
-| `APIConnectionError` | 502 | Unable to reach the AI service. |
-| `APITimeoutError` | 504 | The AI service timed out. |
-| `InternalServerError` | 502 | The AI service encountered an error. |
+| `AuthenticationError` | 401 | Your API key is invalid or has been revoked. Please update it in settings. |
+| `RateLimitError` | 429 | Rate limit reached. Please wait a moment and try again. (`Retry-After` header included) |
+| `APIConnectionError` | 502 | Unable to reach the AI service. Please try again shortly. |
+| `APITimeoutError` | 504 | The AI service timed out. Please try again. |
+| `InternalServerError` | 502 | The AI service encountered an error. Please try again. |
 
 Applies to `/assessment/start`, `/assessment/{id}/respond`, `/gap-analysis`, `/learning-plan`. For SSE streams, errors arrive as `data: [ERROR]{json}\n\n` instead of HTTP status codes.
 
