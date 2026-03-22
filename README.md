@@ -3,7 +3,7 @@
 [![CI](https://github.com/onegunsamurai/OpenLearning/actions/workflows/ci.yml/badge.svg)](https://github.com/onegunsamurai/OpenLearning/actions/workflows/ci.yml)
 [![Docs](https://github.com/onegunsamurai/OpenLearning/actions/workflows/docs.yml/badge.svg)](https://onegunsamurai.github.io/OpenLearning)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Us-5865F2?logo=discord&logoColor=white)](https://discord.gg/AVNGeYBW)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-5865F2?logo=discord&logoColor=white)](https://discord.gg/ekTFZpgPdE)
 
 AI-powered learning engineering platform. Identify skill gaps and generate personalized learning plans.
 
