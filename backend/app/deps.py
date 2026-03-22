@@ -15,11 +15,11 @@ JWT_ALGORITHM = "HS256"
 class AuthUser:
     """Lightweight user identity extracted from a JWT. Not a Pydantic model."""
 
-    __slots__ = ("avatar_url", "github_username", "user_id")
+    __slots__ = ("avatar_url", "display_name", "user_id")
 
-    def __init__(self, user_id: str, github_username: str, avatar_url: str) -> None:
+    def __init__(self, user_id: str, display_name: str, avatar_url: str) -> None:
         self.user_id = user_id
-        self.github_username = github_username
+        self.display_name = display_name
         self.avatar_url = avatar_url
 
 
@@ -41,7 +41,7 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Invalid token claims")
     return AuthUser(
         user_id=user_id,
-        github_username=payload.get("username", ""),
+        display_name=payload.get("display_name", ""),
         avatar_url=payload.get("avatar_url", ""),
     )
 
@@ -64,7 +64,7 @@ async def get_optional_user(
         return None
     return AuthUser(
         user_id=user_id,
-        github_username=payload.get("username", ""),
+        display_name=payload.get("display_name", ""),
         avatar_url=payload.get("avatar_url", ""),
     )
 

@@ -167,3 +167,12 @@ class TestPublicRoutesAccessible:
     async def test_roles_is_public(self, client: AsyncClient) -> None:
         resp = await client.get("/api/roles")
         assert resp.status_code == 200
+
+    async def test_register_is_public(self, client: AsyncClient) -> None:
+        # 422 is expected (no body), but not 401 — the route is public
+        resp = await client.post("/api/auth/register")
+        assert resp.status_code != 401
+
+    async def test_login_is_public(self, client: AsyncClient) -> None:
+        resp = await client.post("/api/auth/login")
+        assert resp.status_code != 401

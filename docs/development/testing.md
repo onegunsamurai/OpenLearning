@@ -49,7 +49,8 @@ backend/tests/
 ├── test_router.py             # Router logic tests
 ├── test_session_cleanup.py    # Session timeout cleanup tests
 ├── test_state.py              # Assessment state tests
-└── test_structured_output.py  # LLM output schema validation tests
+├── test_structured_output.py  # LLM output schema validation tests
+└── test_password.py           # Password hashing and verification tests
 ```
 
 ## Fixtures
@@ -150,8 +151,13 @@ frontend/src/
 │   │       └── page.test.tsx
 │   ├── gap-analysis/
 │   │   └── page.test.tsx
-│   └── learning-plan/
-│       └── page.test.tsx
+│   ├── learning-plan/
+│   │   └── page.test.tsx
+│   ├── login/
+│   │   └── page.test.tsx
+│   ├── opengraph-image.test.tsx
+│   ├── robots.test.ts
+│   └── sitemap.test.ts
 ├── components/
 │   ├── assessment/
 │   │   └── ChatMessage.test.tsx

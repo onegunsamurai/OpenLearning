@@ -15,4 +15,6 @@ sqlalchemy[asyncio]
 asyncpg
 python-jose[cryptography]
 cryptography
+bcrypt
+email-validator
 httpx

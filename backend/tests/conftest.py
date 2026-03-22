@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.db import AssessmentResult, AssessmentSession, Base, get_db
+from app.db import AssessmentResult, AssessmentSession, AuthMethod, Base, get_db
 from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.graph.state import (
     AssessmentState,
@@ -45,7 +45,7 @@ async def _override_get_db():
 
 # ── Shared test app with all routers ────────────────────────────────────
 
-_test_user = AuthUser(user_id="test-user-id", github_username="testuser", avatar_url="")
+_test_user = AuthUser(user_id="test-user-id", display_name="testuser", avatar_url="")
 
 
 async def _override_get_current_user() -> AuthUser:
@@ -145,12 +145,18 @@ async def setup_db():
     from app.db import User
 
     async with _TestSessionFactory() as session:
+        user = User(
+            id="test-user-id",
+            display_name="testuser",
+            avatar_url="",
+        )
+        session.add(user)
+        await session.flush()
         session.add(
-            User(
-                id="test-user-id",
-                github_id=99999,
-                github_username="testuser",
-                avatar_url="",
+            AuthMethod(
+                user_id="test-user-id",
+                provider="github",
+                provider_id="99999",
             )
         )
         await session.commit()

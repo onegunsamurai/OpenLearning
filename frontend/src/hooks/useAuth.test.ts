@@ -3,6 +3,11 @@ import { useAuth } from "./useAuth";
 import { useAuthStore } from "@/lib/auth-store";
 import type { AuthMeResponse } from "@/lib/types";
 
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 // Mock the api module
 vi.mock("@/lib/api", () => ({
   api: {
@@ -15,9 +20,10 @@ import { api } from "@/lib/api";
 
 const mockUser: AuthMeResponse = {
   userId: "user-1",
-  githubUsername: "testuser",
+  displayName: "testuser",
   avatarUrl: "https://github.com/avatar.png",
   hasApiKey: false,
+  email: null,
 };
 
 describe("useAuth", () => {
@@ -48,7 +54,18 @@ describe("useAuth", () => {
     });
   });
 
-  it("login redirects to GitHub OAuth URL", () => {
+  it("login navigates to /login page with redirect param", () => {
+    vi.mocked(api.authMe).mockResolvedValue(mockUser);
+
+    const { result } = renderHook(() => useAuth());
+    result.current.login("/assess");
+
+    expect(mockPush).toHaveBeenCalledWith(
+      `/login?redirect=${encodeURIComponent("/assess")}`
+    );
+  });
+
+  it("loginWithGithub redirects to GitHub OAuth URL", () => {
     vi.mocked(api.authMe).mockResolvedValue(mockUser);
 
     // Mock window.location
@@ -59,7 +76,7 @@ describe("useAuth", () => {
     });
 
     const { result } = renderHook(() => useAuth());
-    result.current.login("/assess");
+    result.current.loginWithGithub("/assess");
 
     expect(window.location.href).toContain("/api/auth/github?redirect=");
     expect(window.location.href).toContain(encodeURIComponent("/assess"));

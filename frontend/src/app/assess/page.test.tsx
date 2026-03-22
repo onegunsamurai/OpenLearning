@@ -35,7 +35,7 @@ vi.mock("@/lib/store", () => ({
 }));
 
 vi.mock("@/lib/auth-store", () => ({
-  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: true }, isLoading: false, setUser: vi.fn() }),
+  useAuthStore: () => ({ user: { userId: "u1", displayName: "test", avatarUrl: "", hasApiKey: true, email: null }, isLoading: false, setUser: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -48,7 +48,7 @@ vi.mock("@/components/layout/PageShell", () => ({
 
 vi.mock("@/lib/api", () => ({
   api: {
-    authMe: vi.fn().mockResolvedValue({ userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }),
+    authMe: vi.fn().mockResolvedValue({ userId: "u1", displayName: "test", avatarUrl: "", hasApiKey: false, email: null }),
     authGetApiKey: vi.fn().mockRejectedValue(new Error("No key")),
     authValidateKey: vi.fn(),
     authSetApiKey: vi.fn(),

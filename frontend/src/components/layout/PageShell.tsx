@@ -5,7 +5,7 @@ import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, Github, Key } from "lucide-react";
+import { LogOut, Key } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySetup } from "@/components/settings/api-key-setup";
@@ -82,17 +82,21 @@ export function PageShell({
                   <div className="h-8 w-24 animate-pulse rounded-full bg-muted" />
                 ) : user ? (
                   <div className="flex items-center gap-2">
-                    {user.avatarUrl && (
+                    {user.avatarUrl ? (
                       <Image
                         src={user.avatarUrl}
-                        alt={user.githubUsername}
+                        alt={user.displayName}
                         width={28}
                         height={28}
                         className="h-7 w-7 rounded-full border border-border"
                       />
+                    ) : (
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-xs font-medium">
+                        {user.displayName[0]?.toUpperCase()}
+                      </div>
                     )}
                     <span className="hidden text-sm text-muted-foreground sm:block">
-                      {user.githubUsername}
+                      {user.displayName}
                     </span>
                     <button
                       onClick={() => setManualShowKeySetup(true)}
@@ -119,8 +123,7 @@ export function PageShell({
                     onClick={() => login(window.location.pathname)}
                     className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <Github className="h-3.5 w-3.5" />
-                    Sign in with GitHub
+                    Sign in
                   </button>
                 )}
               </div>

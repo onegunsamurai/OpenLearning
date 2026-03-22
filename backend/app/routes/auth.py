@@ -11,14 +11,17 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse, RedirectResponse
 from jose import jwt
+from pydantic import EmailStr
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.crypto import decrypt_api_key, encrypt_api_key
-from app.db import User, get_db
+from app.db import AuthMethod, User, get_db
 from app.deps import JWT_ALGORITHM, AuthUser, get_current_user
 from app.models.base import CamelModel
+from app.password import hash_password, verify_password
 
 logger = logging.getLogger("openlearning.auth")
 
@@ -29,15 +32,28 @@ GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITHUB_USER_URL = "https://api.github.com/user"
 JWT_EXPIRY_DAYS = 7
 
+_DUMMY_BCRYPT_HASH = hash_password("timing-equalization-dummy")
+
 
 # ── Response models ────────────────────────────────────────────────────────
 
 
 class AuthMeResponse(CamelModel):
     user_id: str
-    github_username: str
+    display_name: str
     avatar_url: str
     has_api_key: bool
+    email: str | None = None
+
+
+class RegisterRequest(CamelModel):
+    email: EmailStr
+    password: str
+
+
+class LoginRequest(CamelModel):
+    email: EmailStr
+    password: str
 
 
 class ApiKeySetRequest(CamelModel):
@@ -101,7 +117,7 @@ def _create_jwt(user: User, secret: str) -> str:
     now = datetime.now(UTC)
     claims = {
         "sub": user.id,
-        "username": user.github_username,
+        "display_name": user.display_name,
         "avatar_url": user.avatar_url,
         "iat": now,
         "exp": now + timedelta(days=JWT_EXPIRY_DAYS),
@@ -199,36 +215,40 @@ async def github_callback(
     if not github_id:
         return RedirectResponse(url=f"{settings.frontend_url}/?error=auth_failed", status_code=302)
 
-    # Upsert user
-    result = await db.execute(select(User).where(User.github_id == github_id))
-    user = result.scalar_one_or_none()
-    if user:
-        user.github_username = github_username
+    # Upsert user via AuthMethod
+    result = await db.execute(
+        select(AuthMethod).where(
+            AuthMethod.provider == "github", AuthMethod.provider_id == str(github_id)
+        )
+    )
+    auth_method = result.scalar_one_or_none()
+    if auth_method:
+        user_result = await db.execute(select(User).where(User.id == auth_method.user_id))
+        user = user_result.scalar_one()
+        user.display_name = github_username
         user.avatar_url = avatar_url
     else:
         user = User(
             id=str(uuid.uuid4()),
-            github_id=github_id,
-            github_username=github_username,
+            display_name=github_username,
             avatar_url=avatar_url,
         )
         db.add(user)
+        await db.flush()
+        db.add(
+            AuthMethod(
+                user_id=user.id,
+                provider="github",
+                provider_id=str(github_id),
+            )
+        )
     await db.commit()
     await db.refresh(user)
 
     # Create JWT and set cookie
     token = _create_jwt(user, settings.jwt_secret_key)
     response = RedirectResponse(url=f"{settings.frontend_url}{redirect_path}", status_code=302)
-    secure = _is_secure(settings.frontend_url)
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        secure=secure,
-        path="/",
-        max_age=JWT_EXPIRY_DAYS * 24 * 60 * 60,
-    )
+    _set_auth_cookie(response, token, settings.frontend_url)
     return response
 
 
@@ -240,12 +260,25 @@ async def auth_me(
     """Return the current user's profile."""
     result = await db.execute(select(User).where(User.id == user.user_id))
     db_user = result.scalar_one_or_none()
-    has_api_key = bool(db_user and db_user.encrypted_api_key)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    has_api_key = bool(db_user.encrypted_api_key)
+
+    # Find email from auth_methods if present
+    email: str | None = None
+    am_result = await db.execute(
+        select(AuthMethod).where(AuthMethod.user_id == db_user.id, AuthMethod.provider == "email")
+    )
+    email_method = am_result.scalar_one_or_none()
+    if email_method:
+        email = email_method.provider_id
+
     return AuthMeResponse(
         user_id=user.user_id,
-        github_username=user.github_username,
+        display_name=user.display_name,
         avatar_url=user.avatar_url,
         has_api_key=has_api_key,
+        email=email,
     )
 
 
@@ -322,3 +355,105 @@ async def validate_key(
     except Exception:
         logger.exception("Key validation failed")
         return ValidateKeyResponse(valid=False, error="Validation failed")
+
+
+# ── Email/Password Auth ───────────────────────────────────────────────
+
+
+def _set_auth_cookie(
+    response: JSONResponse | RedirectResponse, token: str, frontend_url: str
+) -> None:
+    """Set the JWT auth cookie on a JSON response."""
+    secure = _is_secure(frontend_url)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=secure,
+        path="/",
+        max_age=JWT_EXPIRY_DAYS * 24 * 60 * 60,
+    )
+
+
+@router.post("/register", response_model=OkResponse, response_model_by_alias=True)
+async def register(
+    request: RegisterRequest,
+    db: AsyncSession = Depends(get_db),
+) -> JSONResponse:
+    """Register a new user with email and password."""
+    settings = get_settings()
+
+    # Validate password length
+    if len(request.password) < 8 or len(request.password) > 128:
+        raise HTTPException(status_code=400, detail="Password must be between 8 and 128 characters")
+
+    email = request.email.lower()
+
+    # Check for existing email auth method
+    result = await db.execute(
+        select(AuthMethod).where(AuthMethod.provider == "email", AuthMethod.provider_id == email)
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="An account with this email already exists")
+
+    # Create user + auth method
+    email_prefix = email.split("@")[0]
+    user = User(
+        id=str(uuid.uuid4()),
+        display_name=email_prefix,
+        avatar_url="",
+    )
+    db.add(user)
+    await db.flush()
+    db.add(
+        AuthMethod(
+            user_id=user.id,
+            provider="email",
+            provider_id=email,
+            credential=hash_password(request.password),
+        )
+    )
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409, detail="An account with this email already exists"
+        ) from None
+    await db.refresh(user)
+
+    # Set JWT cookie
+    token = _create_jwt(user, settings.jwt_secret_key)
+    response = JSONResponse(content={"ok": True})
+    _set_auth_cookie(response, token, settings.frontend_url)
+    return response
+
+
+@router.post("/login", response_model=OkResponse, response_model_by_alias=True)
+async def login(
+    request: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+) -> JSONResponse:
+    """Authenticate with email and password."""
+    settings = get_settings()
+    email = request.email.lower()
+
+    result = await db.execute(
+        select(AuthMethod).where(AuthMethod.provider == "email", AuthMethod.provider_id == email)
+    )
+    auth_method = result.scalar_one_or_none()
+    if not auth_method or not auth_method.credential:
+        verify_password("", _DUMMY_BCRYPT_HASH)
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not verify_password(request.password, auth_method.credential):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user_result = await db.execute(select(User).where(User.id == auth_method.user_id))
+    user = user_result.scalar_one()
+
+    token = _create_jwt(user, settings.jwt_secret_key)
+    response = JSONResponse(content={"ok": True})
+    _set_auth_cookie(response, token, settings.frontend_url)
+    return response

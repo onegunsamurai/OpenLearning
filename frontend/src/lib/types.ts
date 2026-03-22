@@ -13,4 +13,6 @@ export type {
   AuthMeResponse,
   ApiKeyResponse,
   ValidateKeyResponse,
+  RegisterRequest,
+  LoginRequest,
 } from "@/lib/generated/api-client";

@@ -18,9 +18,10 @@ vi.mock("@/lib/api", () => ({
   api: {
     authMe: vi.fn().mockResolvedValue({
       userId: "user-1",
-      githubUsername: "testuser",
+      displayName: "testuser",
       avatarUrl: "https://github.com/avatar.png",
       hasApiKey: false,
+      email: null,
     }),
     authGetApiKey: vi.fn().mockRejectedValue(new Error("No key")),
   },
@@ -28,9 +29,10 @@ vi.mock("@/lib/api", () => ({
 
 const mockUser: AuthMeResponse = {
   userId: "user-1",
-  githubUsername: "testuser",
+  displayName: "testuser",
   avatarUrl: "https://github.com/avatar.png",
   hasApiKey: false,
+  email: null,
 };
 
 describe("PageShell", () => {
@@ -74,7 +76,7 @@ describe("PageShell", () => {
         <div>content</div>
       </PageShell>
     );
-    expect(screen.getByText("Sign in with GitHub")).toBeInTheDocument();
+    expect(screen.getByText("Sign in")).toBeInTheDocument();
   });
 
   it("shows username when authenticated", () => {
@@ -85,7 +87,7 @@ describe("PageShell", () => {
       </PageShell>
     );
     expect(screen.getByText("testuser")).toBeInTheDocument();
-    expect(screen.queryByText("Sign in with GitHub")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sign in")).not.toBeInTheDocument();
   });
 
   it("shows loading skeleton while auth is resolving", () => {
@@ -98,7 +100,7 @@ describe("PageShell", () => {
     // The skeleton has animate-pulse class
     const skeleton = container.querySelector(".animate-pulse");
     expect(skeleton).toBeInTheDocument();
-    expect(screen.queryByText("Sign in with GitHub")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sign in")).not.toBeInTheDocument();
     expect(screen.queryByText("testuser")).not.toBeInTheDocument();
   });
 
@@ -109,7 +111,7 @@ describe("PageShell", () => {
         <div>content</div>
       </PageShell>
     );
-    expect(screen.queryByText("Sign in with GitHub")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sign in")).not.toBeInTheDocument();
   });
 
   it("shows red dot when user has no API key", () => {
