@@ -275,8 +275,8 @@ async def auth_me(
 
     return AuthMeResponse(
         user_id=user.user_id,
-        display_name=user.display_name,
-        avatar_url=user.avatar_url,
+        display_name=db_user.display_name,
+        avatar_url=db_user.avatar_url,
         has_api_key=has_api_key,
         email=email,
     )

@@ -83,7 +83,7 @@ Sets an `access_token` httpOnly cookie.
 **Response** (409 — duplicate email):
 
 ```json
-{"detail": "Email already registered"}
+{"detail": "An account with this email already exists"}
 ```
 
 **Response** (422 — invalid email format):

@@ -16,6 +16,9 @@ class TestHashPassword:
         hashed = hash_password("correct-password")
         assert verify_password("wrong-password", hashed) is False
 
+    def test_verify_malformed_hash_returns_false(self) -> None:
+        assert verify_password("password", "not-a-valid-hash") is False
+
     def test_salt_uniqueness(self) -> None:
         h1 = hash_password("same-password")
         h2 = hash_password("same-password")

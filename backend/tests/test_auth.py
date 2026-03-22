@@ -690,7 +690,6 @@ class TestRegister:
         assert resp.status_code == 422
 
     @patch("app.routes.auth.get_settings", _mock_settings)
-    @patch("app.routes.auth.get_settings", _mock_settings)
     async def test_register_password_too_long_returns_400(
         self, http_client: AsyncClient, setup_db
     ) -> None:
