@@ -11,6 +11,8 @@ import {
   getApiKeyApiAuthApiKeyGet,
   deleteApiKeyApiAuthApiKeyDelete,
   validateKeyApiAuthValidateKeyPost,
+  registerApiAuthRegisterPost,
+  loginApiAuthLoginPost,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -212,6 +214,14 @@ const realApi = {
 
   authValidateKey: async (apiKey: string): Promise<ValidateKeyResponse> =>
     unwrap(await validateKeyApiAuthValidateKeyPost({ body: { apiKey } })),
+
+  authRegister: async (email: string, password: string): Promise<void> => {
+    unwrap(await registerApiAuthRegisterPost({ body: { email, password } }));
+  },
+
+  authLogin: async (email: string, password: string): Promise<void> => {
+    unwrap(await loginApiAuthLoginPost({ body: { email, password } }));
+  },
 };
 
 export const api = realApi;

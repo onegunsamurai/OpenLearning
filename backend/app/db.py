@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -19,8 +19,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    github_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
-    github_username: Mapped[str] = mapped_column(String(39), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(100), nullable=False, default="")
     avatar_url: Mapped[str] = mapped_column(String(500), nullable=False, default="")
     encrypted_api_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -31,6 +30,26 @@ class User(Base):
     )
 
     sessions: Mapped[list[AssessmentSession]] = relationship(back_populates="user")
+    auth_methods: Mapped[list[AuthMethod]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class AuthMethod(Base):
+    __tablename__ = "auth_methods"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), nullable=False)
+    provider: Mapped[str] = mapped_column(String(20), nullable=False)
+    provider_id: Mapped[str] = mapped_column(String(320), nullable=False)
+    credential: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user: Mapped[User] = relationship(back_populates="auth_methods")
+
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_id", name="uq_auth_methods_provider_id"),
+    )
 
 
 class AssessmentSession(Base):

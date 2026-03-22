@@ -77,7 +77,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
 });
 
 vi.mock("@/lib/auth-store", () => ({
-  useAuthStore: () => ({ user: { userId: "u1", githubUsername: "test", avatarUrl: "", hasApiKey: false }, isLoading: false }),
+  useAuthStore: () => ({ user: { userId: "u1", displayName: "test", avatarUrl: "", hasApiKey: false, email: null }, isLoading: false }),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({

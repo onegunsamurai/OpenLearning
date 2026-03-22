@@ -53,6 +53,74 @@ Handle the GitHub OAuth callback. Exchanges the authorization code for an access
 
 ---
 
+### POST `/api/auth/register`
+
+Register a new account with email and password. Sets an httpOnly JWT cookie on success.
+
+**Request**: `RegisterRequest`
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response** (200):
+
+```json
+{"ok": true}
+```
+
+Sets an `access_token` httpOnly cookie.
+
+**Response** (400 — password validation failure):
+
+```json
+{"detail": "Password must be between 8 and 128 characters"}
+```
+
+**Response** (409 — duplicate email):
+
+```json
+{"detail": "An account with this email already exists"}
+```
+
+**Response** (422 — invalid email format):
+
+Standard FastAPI validation error.
+
+---
+
+### POST `/api/auth/login`
+
+Authenticate with email and password. Sets an httpOnly JWT cookie on success.
+
+**Request**: `LoginRequest`
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response** (200):
+
+```json
+{"ok": true}
+```
+
+Sets an `access_token` httpOnly cookie.
+
+**Response** (401 — invalid credentials):
+
+```json
+{"detail": "Invalid email or password"}
+```
+
+---
+
 ### GET `/api/auth/me`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
@@ -64,9 +132,10 @@ Return the current user's profile.
 ```json
 {
   "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "githubUsername": "octocat",
+  "displayName": "octocat",
   "avatarUrl": "https://avatars.githubusercontent.com/u/1?v=4",
-  "hasApiKey": false
+  "hasApiKey": false,
+  "email": null
 }
 ```
 
@@ -181,9 +250,18 @@ Validate an Anthropic API key without storing it. Calls the Anthropic API to ver
 ```python
 class AuthMeResponse(CamelModel):
     user_id: str
-    github_username: str
+    display_name: str
     avatar_url: str
     has_api_key: bool
+    email: str | None = None
+
+class RegisterRequest(CamelModel):
+    email: EmailStr
+    password: str
+
+class LoginRequest(CamelModel):
+    email: EmailStr
+    password: str
 
 class ApiKeySetRequest(CamelModel):
     api_key: str
@@ -349,7 +427,7 @@ Submit an answer and receive the next question (or completion).
 | _(plain text)_ | The question text | Next question streamed as plain text |
 | `[META]` + JSON | `{"type":"assessment","step":null,"total_steps":null,"topics_evaluated":3,"total_questions":12,"max_questions":25}` | Assessment progress metadata |
 | `[ASSESSMENT_COMPLETE]` | — | Pipeline finished; scores follow |
-| _(fenced JSON)_ | `ProficiencyScoreOut[]` JSON array | Proficiency scores wrapped in markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
+| _(fenced JSON)_ | `{"scores": ProficiencyScoreOut[]}` JSON object | Proficiency scores wrapped in a `scores` key, inside markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
 | `[DONE]` | — | Stream complete |
 | `[ERROR]` + JSON | `{"status": 429, "detail": "Rate limit reached.", "retryAfter": "30"}` | Structured error with status code, message, and optional retry-after |
 

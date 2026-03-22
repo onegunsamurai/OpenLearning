@@ -3,9 +3,10 @@ import type { AuthMeResponse } from "./types";
 
 const mockUser: AuthMeResponse = {
   userId: "user-1",
-  githubUsername: "testuser",
+  displayName: "testuser",
   avatarUrl: "https://github.com/avatar.png",
   hasApiKey: false,
+  email: null,
 };
 
 describe("useAuthStore", () => {

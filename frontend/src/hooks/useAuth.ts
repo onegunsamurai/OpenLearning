@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { api } from "@/lib/api";
 
@@ -8,6 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export function useAuth() {
   const { user, isLoading, setUser, logout: clearStore } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -24,7 +26,15 @@ export function useAuth() {
     };
   }, [setUser]);
 
-  const login = useCallback((redirectPath?: string) => {
+  const login = useCallback(
+    (redirectPath?: string) => {
+      const redirect = redirectPath ?? window.location.pathname;
+      router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+    },
+    [router]
+  );
+
+  const loginWithGithub = useCallback((redirectPath?: string) => {
     const redirect = redirectPath ?? window.location.pathname;
     window.location.href = `${API_URL}/api/auth/github?redirect=${encodeURIComponent(redirect)}`;
   }, []);
@@ -37,5 +47,5 @@ export function useAuth() {
     }
   }, [clearStore]);
 
-  return { user, isLoading, login, logout };
+  return { user, isLoading, login, loginWithGithub, logout };
 }

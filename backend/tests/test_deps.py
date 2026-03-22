@@ -12,7 +12,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.db import Base, User, get_db
+from app.db import AuthMethod, Base, User, get_db
 from app.deps import get_user_api_key
 from tests.conftest import _test_db_url
 
@@ -78,7 +78,7 @@ def _make_jwt(user_id: str = "dep-test-user") -> str:
     now = datetime.now(UTC)
     claims = {
         "sub": user_id,
-        "username": "testuser",
+        "display_name": "testuser",
         "avatar_url": "",
         "iat": now,
         "exp": now + timedelta(days=7),
@@ -96,9 +96,11 @@ class TestGetUserApiKey:
     async def test_returns_decrypted_key(self, db_session: AsyncSession) -> None:
         from app.crypto import encrypt_api_key
 
-        user = User(id="dep-test-user", github_id=11111, github_username="test", avatar_url="")
+        user = User(id="dep-test-user", display_name="test", avatar_url="")
         user.encrypted_api_key = encrypt_api_key("sk-my-secret")
         db_session.add(user)
+        await db_session.flush()
+        db_session.add(AuthMethod(user_id="dep-test-user", provider="github", provider_id="11111"))
         await db_session.commit()
 
         token = _make_jwt()
@@ -111,8 +113,10 @@ class TestGetUserApiKey:
 
     @patch("app.deps.get_settings", _mock_settings)
     async def test_no_key_returns_400(self, db_session: AsyncSession) -> None:
-        user = User(id="dep-test-user", github_id=11111, github_username="test", avatar_url="")
+        user = User(id="dep-test-user", display_name="test", avatar_url="")
         db_session.add(user)
+        await db_session.flush()
+        db_session.add(AuthMethod(user_id="dep-test-user", provider="github", provider_id="11111"))
         await db_session.commit()
 
         token = _make_jwt()
@@ -134,9 +138,11 @@ class TestGetUserApiKey:
     @patch("app.deps.get_settings", _mock_settings)
     async def test_corrupt_key_returns_500(self, db_session: AsyncSession) -> None:
         """Corrupted/invalid ciphertext should return 500 with a helpful message."""
-        user = User(id="dep-test-user", github_id=11111, github_username="test", avatar_url="")
+        user = User(id="dep-test-user", display_name="test", avatar_url="")
         user.encrypted_api_key = "not-valid-fernet-ciphertext"
         db_session.add(user)
+        await db_session.flush()
+        db_session.add(AuthMethod(user_id="dep-test-user", provider="github", provider_id="11111"))
         await db_session.commit()
 
         token = _make_jwt()

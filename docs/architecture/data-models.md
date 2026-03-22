@@ -192,9 +192,18 @@ These are defined directly in the route module (not in `models/`), following the
 ```python
 class AuthMeResponse(CamelModel):
     user_id: str
-    github_username: str
+    display_name: str
     avatar_url: str
     has_api_key: bool
+    email: str | None = None
+
+class RegisterRequest(CamelModel):
+    email: EmailStr
+    password: str
+
+class LoginRequest(CamelModel):
+    email: EmailStr
+    password: str
 
 class ApiKeySetRequest(CamelModel):
     api_key: str
@@ -471,7 +480,7 @@ class PlanOutput(BaseModel):
 
 ## Database Schema
 
-PostgreSQL database with three tables for persisting users, assessment sessions, and results.
+PostgreSQL database with four tables for persisting users, authentication methods, assessment sessions, and results.
 
 **Source**: `backend/app/db.py`
 
@@ -480,12 +489,24 @@ PostgreSQL database with three tables for persisting users, assessment sessions,
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | `String(36)` PK | UUID user identifier |
-| `github_id` | `BigInteger` UNIQUE | GitHub user ID |
-| `github_username` | `String(39)` | GitHub username |
-| `avatar_url` | `String(500)` | GitHub avatar URL |
+| `display_name` | `String(100)` | User display name |
+| `avatar_url` | `String(500)` | Avatar URL |
 | `encrypted_api_key` | `String(500)` NULL | Fernet-encrypted Anthropic API key |
 | `created_at` | `DateTime` | Creation timestamp |
 | `updated_at` | `DateTime` | Last update timestamp |
+
+### `auth_methods`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `Integer` PK | Auto-incrementing ID |
+| `user_id` | `String(36)` FK | References `users.id` |
+| `provider` | `String(20)` | Auth provider: `"github"` or `"email"` |
+| `provider_id` | `String(320)` | Provider-specific ID (GitHub user ID or email) |
+| `credential` | `String(500)` NULL | Hashed password (email provider only) |
+| `created_at` | `DateTime` | Creation timestamp |
+
+Unique constraint: `(provider, provider_id)`
 
 ### `assessment_sessions`
 
@@ -514,6 +535,7 @@ PostgreSQL database with three tables for persisting users, assessment sessions,
 
 ### Relationships
 
+- `User` → `AuthMethod`: one-to-many via `user_id` (cascade delete-orphan)
 - `User` → `AssessmentSession`: one-to-many via `user_id`
 - `AssessmentSession` → `AssessmentResult`: one-to-one via `session_id`
 

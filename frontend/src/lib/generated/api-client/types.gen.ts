@@ -103,9 +103,9 @@ export type AuthMeResponse = {
      */
     userId: string;
     /**
-     * Githubusername
+     * Displayname
      */
-    githubUsername: string;
+    displayName: string;
     /**
      * Avatarurl
      */
@@ -114,6 +114,10 @@ export type AuthMeResponse = {
      * Hasapikey
      */
     hasApiKey: boolean;
+    /**
+     * Email
+     */
+    email?: string | null;
 };
 
 /**
@@ -380,6 +384,20 @@ export type LearningPlanRequest = {
 };
 
 /**
+ * LoginRequest
+ */
+export type LoginRequest = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
  * OkResponse
  */
 export type OkResponse = {
@@ -461,6 +479,20 @@ export type ProficiencyScoreOut = {
      * Reasoning
      */
     reasoning: string;
+};
+
+/**
+ * RegisterRequest
+ */
+export type RegisterRequest = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Password
+     */
+    password: string;
 };
 
 /**
@@ -1111,3 +1143,53 @@ export type ValidateKeyApiAuthValidateKeyPostResponses = {
 };
 
 export type ValidateKeyApiAuthValidateKeyPostResponse = ValidateKeyApiAuthValidateKeyPostResponses[keyof ValidateKeyApiAuthValidateKeyPostResponses];
+
+export type RegisterApiAuthRegisterPostData = {
+    body: RegisterRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/register';
+};
+
+export type RegisterApiAuthRegisterPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegisterApiAuthRegisterPostError = RegisterApiAuthRegisterPostErrors[keyof RegisterApiAuthRegisterPostErrors];
+
+export type RegisterApiAuthRegisterPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkResponse;
+};
+
+export type RegisterApiAuthRegisterPostResponse = RegisterApiAuthRegisterPostResponses[keyof RegisterApiAuthRegisterPostResponses];
+
+export type LoginApiAuthLoginPostData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/login';
+};
+
+export type LoginApiAuthLoginPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LoginApiAuthLoginPostError = LoginApiAuthLoginPostErrors[keyof LoginApiAuthLoginPostErrors];
+
+export type LoginApiAuthLoginPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkResponse;
+};
+
+export type LoginApiAuthLoginPostResponse = LoginApiAuthLoginPostResponses[keyof LoginApiAuthLoginPostResponses];

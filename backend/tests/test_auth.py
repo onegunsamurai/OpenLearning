@@ -12,7 +12,7 @@ from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.db import Base, User, get_db
+from app.db import AuthMethod, Base, User, get_db
 from app.deps import JWT_ALGORITHM
 from app.routes.auth import router as auth_router
 from tests.conftest import _test_db_url
@@ -82,7 +82,7 @@ def http_client(setup_db) -> AsyncClient:
 
 def _make_jwt(
     user_id: str = "test-user-id",
-    username: str = "testuser",
+    display_name: str = "testuser",
     avatar_url: str = "https://github.com/avatar.png",
     expired: bool = False,
 ) -> str:
@@ -90,7 +90,7 @@ def _make_jwt(
     exp = now - timedelta(hours=1) if expired else now + timedelta(days=7)
     claims = {
         "sub": user_id,
-        "username": username,
+        "display_name": display_name,
         "avatar_url": avatar_url,
         "iat": now,
         "exp": exp,
@@ -99,15 +99,53 @@ def _make_jwt(
 
 
 async def _seed_user(
-    db: AsyncSession, user_id: str = "test-user-id", github_id: int = 12345
+    db: AsyncSession,
+    user_id: str = "test-user-id",
+    github_id: int = 12345,
+    display_name: str = "testuser",
 ) -> User:
     user = User(
         id=user_id,
-        github_id=github_id,
-        github_username="testuser",
+        display_name=display_name,
         avatar_url="https://github.com/avatar.png",
     )
     db.add(user)
+    await db.flush()
+    db.add(
+        AuthMethod(
+            user_id=user_id,
+            provider="github",
+            provider_id=str(github_id),
+        )
+    )
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+async def _seed_email_user(
+    db: AsyncSession,
+    user_id: str = "email-user-id",
+    email: str = "test@example.com",
+    password: str = "securepassword",
+) -> User:
+    from app.password import hash_password
+
+    user = User(
+        id=user_id,
+        display_name=email.split("@")[0],
+        avatar_url="",
+    )
+    db.add(user)
+    await db.flush()
+    db.add(
+        AuthMethod(
+            user_id=user_id,
+            provider="email",
+            provider_id=email,
+            credential=hash_password(password),
+        )
+    )
     await db.commit()
     await db.refresh(user)
     return user
@@ -162,13 +200,19 @@ class TestGitHubOAuth:
         assert resp.status_code == 302
         assert "access_token" in resp.cookies
 
-        # Verify user was created in DB
+        # Verify user was created in DB via AuthMethod
         from sqlalchemy import select
 
-        result = await db_session.execute(select(User).where(User.github_id == 99999))
-        user = result.scalar_one_or_none()
-        assert user is not None
-        assert user.github_username == "newuser"
+        result = await db_session.execute(
+            select(AuthMethod).where(
+                AuthMethod.provider == "github", AuthMethod.provider_id == "99999"
+            )
+        )
+        am = result.scalar_one_or_none()
+        assert am is not None
+        user_result = await db_session.execute(select(User).where(User.id == am.user_id))
+        user = user_result.scalar_one()
+        assert user.display_name == "newuser"
 
     @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
@@ -209,9 +253,15 @@ class TestGitHubOAuth:
         # Verify the existing user was updated, not duplicated
         from sqlalchemy import select
 
-        result = await db_session.execute(select(User).where(User.github_id == 88888))
-        user = result.scalar_one()
-        assert user.github_username == "updateduser"
+        result = await db_session.execute(
+            select(AuthMethod).where(
+                AuthMethod.provider == "github", AuthMethod.provider_id == "88888"
+            )
+        )
+        am = result.scalar_one()
+        user_result = await db_session.execute(select(User).where(User.id == am.user_id))
+        user = user_result.scalar_one()
+        assert user.display_name == "updateduser"
         assert user.avatar_url == "https://new-avatar.png"
 
     @patch("app.routes.auth.get_settings", _mock_settings)
@@ -294,7 +344,7 @@ class TestAuthMe:
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["githubUsername"] == "testuser"
+        assert data["displayName"] == "testuser"
         assert data["userId"] == user.id
 
     @patch("app.deps.get_settings", _mock_settings)
@@ -580,3 +630,228 @@ class TestValidateKey:
             json={"apiKey": "sk-some-key"},
         )
         assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestRegister:
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_creates_user_and_sets_cookie(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "new@example.com", "password": "securepass123"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["ok"] is True
+        assert "access_token" in resp.cookies
+
+        # Verify user + auth_method created
+        from sqlalchemy import select
+
+        result = await db_session.execute(
+            select(AuthMethod).where(
+                AuthMethod.provider == "email", AuthMethod.provider_id == "new@example.com"
+            )
+        )
+        am = result.scalar_one()
+        user_result = await db_session.execute(select(User).where(User.id == am.user_id))
+        user = user_result.scalar_one()
+        assert user.display_name == "new"
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_duplicate_email_returns_409(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        await _seed_email_user(db_session, email="dupe@example.com")
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "dupe@example.com", "password": "securepass123"},
+        )
+        assert resp.status_code == 409
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_short_password_returns_400(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "short@example.com", "password": "short"},
+        )
+        assert resp.status_code == 400
+
+    async def test_register_invalid_email_returns_422(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "not-an-email", "password": "securepass123"},
+        )
+        assert resp.status_code == 422
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_password_too_long_returns_400(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "long@example.com", "password": "a" * 129},
+        )
+        assert resp.status_code == 400
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_race_condition_integrity_error_returns_409(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        from sqlalchemy.exc import IntegrityError
+
+        with patch(
+            "sqlalchemy.ext.asyncio.AsyncSession.commit",
+            side_effect=IntegrityError("", {}, Exception()),
+        ):
+            resp = await http_client.post(
+                "/api/auth/register",
+                json={"email": "race@example.com", "password": "securepass123"},
+            )
+        assert resp.status_code == 409
+        assert "already exists" in resp.json()["detail"]
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_register_display_name_from_email_prefix(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/register",
+            json={"email": "john.doe@example.com", "password": "securepass123"},
+        )
+        assert resp.status_code == 200
+
+        from sqlalchemy import select
+
+        result = await db_session.execute(
+            select(AuthMethod).where(
+                AuthMethod.provider == "email", AuthMethod.provider_id == "john.doe@example.com"
+            )
+        )
+        am = result.scalar_one()
+        user_result = await db_session.execute(select(User).where(User.id == am.user_id))
+        user = user_result.scalar_one()
+        assert user.display_name == "john.doe"
+
+
+@pytest.mark.asyncio
+class TestEmailLogin:
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_login_valid_credentials(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        await _seed_email_user(db_session, email="login@example.com", password="mypassword")
+        resp = await http_client.post(
+            "/api/auth/login",
+            json={"email": "login@example.com", "password": "mypassword"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["ok"] is True
+        assert "access_token" in resp.cookies
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_login_wrong_password_returns_401(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        await _seed_email_user(db_session, email="login@example.com", password="mypassword")
+        resp = await http_client.post(
+            "/api/auth/login",
+            json={"email": "login@example.com", "password": "wrongpassword"},
+        )
+        assert resp.status_code == 401
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_login_nonexistent_email_returns_401(
+        self, http_client: AsyncClient, setup_db
+    ) -> None:
+        resp = await http_client.post(
+            "/api/auth/login",
+            json={"email": "nobody@example.com", "password": "anypassword"},
+        )
+        assert resp.status_code == 401
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_login_same_error_prevents_enumeration(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        await _seed_email_user(db_session, email="exists@example.com", password="mypassword")
+        # Wrong password
+        resp1 = await http_client.post(
+            "/api/auth/login",
+            json={"email": "exists@example.com", "password": "wrongpassword"},
+        )
+        # Non-existent email
+        resp2 = await http_client.post(
+            "/api/auth/login",
+            json={"email": "noone@example.com", "password": "anypassword"},
+        )
+        assert resp1.status_code == resp2.status_code == 401
+        assert resp1.json()["detail"] == resp2.json()["detail"]
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    async def test_login_github_only_user_returns_401(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        """A user who only has GitHub auth cannot log in with email."""
+        await _seed_user(db_session, user_id="gh-only-user", github_id=55555)
+        resp = await http_client.post(
+            "/api/auth/login",
+            json={"email": "gh-only@example.com", "password": "anypassword"},
+        )
+        assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestAuthMeUpdated:
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_me_returns_display_name_for_github_user(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_user(db_session)
+        token = _make_jwt(user_id=user.id)
+        resp = await http_client.get(
+            "/api/auth/me",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["displayName"] == "testuser"
+        assert data["email"] is None
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_me_returns_404_when_user_deleted(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_user(db_session)
+        token = _make_jwt(user_id=user.id)
+        # Delete user from DB
+        await db_session.delete(user)
+        await db_session.commit()
+        resp = await http_client.get(
+            "/api/auth/me",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 404
+
+    @patch("app.routes.auth.get_settings", _mock_settings)
+    @patch("app.deps.get_settings", _mock_settings)
+    async def test_me_returns_email_for_email_user(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_email_user(db_session, email="me@example.com")
+        token = _make_jwt(user_id=user.id, display_name=user.display_name, avatar_url="")
+        resp = await http_client.get(
+            "/api/auth/me",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["displayName"] == "me"
+        assert data["email"] == "me@example.com"
