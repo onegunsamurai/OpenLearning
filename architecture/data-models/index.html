@@ -891,6 +891,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auth_methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        auth_methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#assessment_sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1561,6 +1572,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auth_methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        auth_methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#assessment_sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1793,9 +1815,18 @@
 <p><strong>Source</strong>: <code>backend/app/routes/auth.py</code></p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">github_username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">avatar_url</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">has_api_key</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RegisterRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LoginRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ApiKeySetRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
@@ -2031,7 +2062,7 @@
     <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanPhaseOutput</span><span class="p">]</span>
 </code></pre></div>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL database with three tables for persisting users, assessment sessions, and results.</p>
+<p>PostgreSQL database with four tables for persisting users, authentication methods, assessment sessions, and results.</p>
 <p><strong>Source</strong>: <code>backend/app/db.py</code></p>
 <h3 id="users"><code>users</code><a class="headerlink" href="#users" title="Permanent link">&para;</a></h3>
 <table>
@@ -2049,19 +2080,14 @@
 <td>UUID user identifier</td>
 </tr>
 <tr>
-<td><code>github_id</code></td>
-<td><code>BigInteger</code> UNIQUE</td>
-<td>GitHub user ID</td>
-</tr>
-<tr>
-<td><code>github_username</code></td>
-<td><code>String(39)</code></td>
-<td>GitHub username</td>
+<td><code>display_name</code></td>
+<td><code>String(100)</code></td>
+<td>User display name</td>
 </tr>
 <tr>
 <td><code>avatar_url</code></td>
 <td><code>String(500)</code></td>
-<td>GitHub avatar URL</td>
+<td>Avatar URL</td>
 </tr>
 <tr>
 <td><code>encrypted_api_key</code></td>
@@ -2080,6 +2106,49 @@
 </tr>
 </tbody>
 </table>
+<h3 id="auth_methods"><code>auth_methods</code><a class="headerlink" href="#auth_methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>Integer</code> PK</td>
+<td>Auto-incrementing ID</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>String(36)</code> FK</td>
+<td>References <code>users.id</code></td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td><code>String(20)</code></td>
+<td>Auth provider: <code>"github"</code> or <code>"email"</code></td>
+</tr>
+<tr>
+<td><code>provider_id</code></td>
+<td><code>String(320)</code></td>
+<td>Provider-specific ID (GitHub user ID or email)</td>
+</tr>
+<tr>
+<td><code>credential</code></td>
+<td><code>String(500)</code> NULL</td>
+<td>Hashed password (email provider only)</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>DateTime</code></td>
+<td>Creation timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Unique constraint: <code>(provider, provider_id)</code></p>
 <h3 id="assessment_sessions"><code>assessment_sessions</code><a class="headerlink" href="#assessment_sessions" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2181,6 +2250,7 @@
 </table>
 <h3 id="relationships">Relationships<a class="headerlink" href="#relationships" title="Permanent link">&para;</a></h3>
 <ul>
+<li><code>User</code> → <code>AuthMethod</code>: one-to-many via <code>user_id</code> (cascade delete-orphan)</li>
 <li><code>User</code> → <code>AssessmentSession</code>: one-to-many via <code>user_id</code></li>
 <li><code>AssessmentSession</code> → <code>AssessmentResult</code>: one-to-one via <code>session_id</code></li>
 </ul>

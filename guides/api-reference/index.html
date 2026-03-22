@@ -736,6 +736,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#post-apiauthregister" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/register
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthlogin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiauthme" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1210,6 +1232,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#post-apiauthregister" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/register
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiauthlogin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/auth/login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get-apiauthme" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1517,6 +1561,43 @@
 </table>
 <p><strong>Response</strong> (302): Redirects to the frontend with an <code>access_token</code> cookie set.</p>
 <hr />
+<h3 id="post-apiauthregister">POST <code>/api/auth/register</code><a class="headerlink" href="#post-apiauthregister" title="Permanent link">&para;</a></h3>
+<p>Register a new account with email and password. Sets an httpOnly JWT cookie on success.</p>
+<p><strong>Request</strong>: <code>RegisterRequest</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user@example.com&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;securepassword&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span>
+</code></pre></div>
+<p>Sets an <code>access_token</code> httpOnly cookie.</p>
+<p><strong>Response</strong> (400 — password validation failure):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Password must be between 8 and 128 characters&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (409 — duplicate email):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;An account with this email already exists&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (422 — invalid email format):</p>
+<p>Standard FastAPI validation error.</p>
+<hr />
+<h3 id="post-apiauthlogin">POST <code>/api/auth/login</code><a class="headerlink" href="#post-apiauthlogin" title="Permanent link">&para;</a></h3>
+<p>Authenticate with email and password. Sets an httpOnly JWT cookie on success.</p>
+<p><strong>Request</strong>: <code>LoginRequest</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user@example.com&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;securepassword&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}</span>
+</code></pre></div>
+<p>Sets an <code>access_token</code> httpOnly cookie.</p>
+<p><strong>Response</strong> (401 — invalid credentials):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid email or password&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
 <h3 id="get-apiauthme">GET <code>/api/auth/me</code><a class="headerlink" href="#get-apiauthme" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
@@ -1525,9 +1606,10 @@
 <p><strong>Response</strong>: <code>AuthMeResponse</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;userId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;githubUsername&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;octocat&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;displayName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;octocat&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;avatarUrl&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://avatars.githubusercontent.com/u/1?v=4&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;hasApiKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="nt">&quot;hasApiKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <span class="p">}</span>
 </code></pre></div>
 <hr />
@@ -1597,9 +1679,18 @@
 <h4 id="auth-models">Auth Models<a class="headerlink" href="#auth-models" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">github_username</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">avatar_url</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">has_api_key</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">RegisterRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LoginRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+    <span class="n">email</span><span class="p">:</span> <span class="n">EmailStr</span>
+    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">ApiKeySetRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span>
@@ -1767,8 +1858,8 @@
 </tr>
 <tr>
 <td><em>(fenced JSON)</em></td>
-<td><code>ProficiencyScoreOut[]</code> JSON array</td>
-<td>Proficiency scores wrapped in markdown code fences (sent after <code>[ASSESSMENT_COMPLETE]</code>)</td>
+<td><code>{"scores": ProficiencyScoreOut[]}</code> JSON object</td>
+<td>Proficiency scores wrapped in a <code>scores</code> key, inside markdown code fences (sent after <code>[ASSESSMENT_COMPLETE]</code>)</td>
 </tr>
 <tr>
 <td><code>[DONE]</code></td>
