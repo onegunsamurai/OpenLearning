@@ -1759,7 +1759,7 @@
 
 <h1 id="learning-content-pipeline">Learning Content Pipeline<a class="headerlink" href="#learning-content-pipeline" title="Permanent link">&para;</a></h1>
 <p>The learning content pipeline is a LangGraph StateGraph that automatically generates personalized learning material from assessment results. It consumes the structured output of the assessment pipeline — knowledge gaps, Bloom levels, confidence scores, and evidence — and produces validated, Bloom-aligned content for each gap.</p>
-<p><strong>Source</strong>: <code>backend/app/graph/content_pipeline.py</code>, <code>backend/app/graph/content_state.py</code> <em>(planned)</em></p>
+<p><strong>Source</strong>: <code>backend/app/graph/content_pipeline.py</code>, <code>backend/app/graph/content_state.py</code>, <code>backend/app/agents/content_nodes.py</code></p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
 <p>The pipeline has <strong>7 nodes</strong> organized into four phases:</p>
 <pre class="mermaid"><code>graph TD

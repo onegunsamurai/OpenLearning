@@ -890,6 +890,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#content-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -945,6 +956,28 @@
     <span class="md-ellipsis">
       
         assessment_results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concept_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material_results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        material_results
       
     </span>
   </a>
@@ -1571,6 +1604,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#content-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1626,6 +1670,28 @@
     <span class="md-ellipsis">
       
         assessment_results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concept_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material_results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        material_results
       
     </span>
   </a>
@@ -2089,8 +2155,26 @@
     <span class="n">total_hours</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PlanPhaseOutput</span><span class="p">]</span>
 </code></pre></div>
+<h3 id="content-generation">Content Generation<a class="headerlink" href="#content-generation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ContentSectionOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># &quot;explanation&quot;, &quot;code_example&quot;, &quot;analogy&quot;, &quot;quiz&quot;</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">body</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">code_block</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ContentGeneratorOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ContentSectionOutput</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BloomValidatorOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">bloom_alignment</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># 0.0-1.0</span>
+    <span class="n">accuracy</span><span class="p">:</span> <span class="nb">float</span>           <span class="c1"># 0.0-1.0</span>
+    <span class="n">clarity</span><span class="p">:</span> <span class="nb">float</span>            <span class="c1"># 0.0-1.0</span>
+    <span class="n">evidence_alignment</span><span class="p">:</span> <span class="nb">float</span> <span class="c1"># 0.0-1.0</span>
+    <span class="n">critique</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># Actionable feedback if any score &lt; 0.75</span>
+</code></pre></div>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL database with four tables for persisting users, authentication methods, assessment sessions, and results.</p>
+<p>PostgreSQL database with six tables for persisting users, authentication methods, assessment sessions, results, concept configuration, and generated learning materials.</p>
 <p><strong>Source</strong>: <code>backend/app/db.py</code></p>
 <h3 id="users"><code>users</code><a class="headerlink" href="#users" title="Permanent link">&para;</a></h3>
 <table>
@@ -2276,6 +2360,106 @@
 </tr>
 </tbody>
 </table>
+<h3 id="concept_config"><code>concept_config</code><a class="headerlink" href="#concept_config" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>concept_id</code></td>
+<td><code>String</code> PK</td>
+<td>Concept identifier (matches taxonomy YAML)</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>String</code></td>
+<td>Knowledge domain</td>
+</tr>
+<tr>
+<td><code>irt_weight</code></td>
+<td><code>Float</code></td>
+<td>IRT difficulty weight (default: 1.0)</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td><code>String</code> NULL</td>
+<td>Optional operator notes</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>DateTime</code></td>
+<td>Last modification timestamp</td>
+</tr>
+</tbody>
+</table>
+<h3 id="material_results"><code>material_results</code><a class="headerlink" href="#material_results" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>Integer</code> PK</td>
+<td>Auto-incrementing ID</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td><code>String(36)</code> FK</td>
+<td>References <code>assessment_sessions.session_id</code></td>
+</tr>
+<tr>
+<td><code>concept_id</code></td>
+<td><code>String</code></td>
+<td>Concept the material addresses</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>String</code></td>
+<td>Knowledge domain</td>
+</tr>
+<tr>
+<td><code>bloom_score</code></td>
+<td><code>Float</code></td>
+<td>Bloom alignment score from validator</td>
+</tr>
+<tr>
+<td><code>quality_score</code></td>
+<td><code>Float</code></td>
+<td>Composite quality score</td>
+</tr>
+<tr>
+<td><code>iteration_count</code></td>
+<td><code>Integer</code></td>
+<td>Number of generation iterations</td>
+</tr>
+<tr>
+<td><code>quality_flag</code></td>
+<td><code>String</code> NULL</td>
+<td>Set if emitted without passing quality gate</td>
+</tr>
+<tr>
+<td><code>material</code></td>
+<td><code>JSONB</code></td>
+<td>Full generated learning material</td>
+</tr>
+<tr>
+<td><code>generated_at</code></td>
+<td><code>DateTime</code></td>
+<td>Creation timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Unique constraint: <code>(session_id, concept_id)</code></p>
 <h3 id="relationships">Relationships<a class="headerlink" href="#relationships" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>User</code> → <code>AuthMethod</code>: one-to-many via <code>user_id</code> (cascade delete-orphan)</li>

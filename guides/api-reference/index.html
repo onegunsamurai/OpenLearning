@@ -978,6 +978,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#get-apimaterialssession_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/materials/{session_id}
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1468,6 +1479,17 @@
     <span class="md-ellipsis">
       
         POST /api/learning-plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apimaterialssession_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/materials/{session_id}
       
     </span>
   </a>
@@ -2058,6 +2080,44 @@
 <p><strong>Response</strong> (400 — no API key configured):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
 </code></pre></div>
+<hr />
+<h3 id="get-apimaterialssession_id">GET <code>/api/materials/{session_id}</code><a class="headerlink" href="#get-apimaterialssession_id" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>Retrieve generated learning materials for a completed assessment session. Materials are generated automatically in the background when an assessment completes.</p>
+<p><strong>Path parameter</strong>: <code>session_id</code> — the assessment session UUID</p>
+<p><strong>Response</strong> (200): <code>MaterialsResponse</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;materials&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;conceptId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;backend_engineering&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;bloomScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.91</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;qualityScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;iterationCount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;qualityFlag&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;material&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;concept_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;target_bloom&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;sections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;explanation&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What HTTP does&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;code_example&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTTP Request&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;codeBlock&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">},</span>
+<span class="w">          </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quiz&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Check understanding&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">}</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;generatedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-23T12:00:00Z&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>An empty <code>materials</code> list indicates the pipeline is still running.</p>
+<p><strong>Response</strong> (404 — session not found):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session not found&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Source</strong>: <code>backend/app/routes/materials.py</code></p>
+<hr />
 <h2 id="anthropic-error-responses">Anthropic Error Responses<a class="headerlink" href="#anthropic-error-responses" title="Permanent link">&para;</a></h2>
 <p>When the backend encounters an Anthropic SDK exception, it maps it to a structured HTTP error:</p>
 <table>
