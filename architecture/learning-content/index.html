@@ -1,0 +1,2642 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AI-powered learning platform documentation">
+      
+      
+      
+        <link rel="canonical" href="https://onegunsamurai.github.io/OpenLearning/architecture/learning-content/">
+      
+      
+        <link rel="prev" href="../assessment-pipeline/">
+      
+      
+        <link rel="next" href="../data-models/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Learning Content Pipeline - OpenLearning</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#learning-content-pipeline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OpenLearning" class="md-header__button md-logo" aria-label="OpenLearning" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OpenLearning
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Learning Content Pipeline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/onegunsamurai/OpenLearning" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    onegunsamurai/OpenLearning
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OpenLearning" class="md-nav__button md-logo" aria-label="OpenLearning" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    OpenLearning
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/onegunsamurai/OpenLearning" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    onegunsamurai/OpenLearning
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../assessment-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assessment Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning Content Pipeline
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning Content Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scientific-foundations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scientific Foundations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-input-prioritization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Input &amp; Prioritization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: Input &amp; Prioritization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority Score
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-objective-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Objective Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2: Objective Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisite-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisite Ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloom-action-verbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloom Action Verbs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objective-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-content-planning-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Content Planning &amp; Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3: Content Planning &amp; Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cognitive-load-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cognitive Load Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rag-content-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAG Content Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generation-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation Prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-validation-quality-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Validation &amp; Quality Gate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4: Validation &amp; Quality Gate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloom-validator-rubric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloom Validator Rubric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validator-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validator Prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-gate-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality Gate Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Contracts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taxonomyindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaxonomyIndex
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        material_result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trigger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallelism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/knowledge-base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge Base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/code-style/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Style
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scientific-foundations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scientific Foundations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-input-prioritization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Input &amp; Prioritization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: Input &amp; Prioritization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority Score
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-objective-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Objective Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2: Objective Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisite-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisite Ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloom-action-verbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloom Action Verbs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objective-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objective Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-content-planning-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Content Planning &amp; Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3: Content Planning &amp; Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cognitive-load-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cognitive Load Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rag-content-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAG Content Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generation-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generation Prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-validation-quality-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Validation &amp; Quality Gate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4: Validation &amp; Quality Gate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nodes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bloom-validator-rubric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloom Validator Rubric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validator-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validator Prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-gate-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality Gate Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Contracts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#taxonomyindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TaxonomyIndex
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material_result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        material_result
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trigger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallelism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallelism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="learning-content-pipeline">Learning Content Pipeline<a class="headerlink" href="#learning-content-pipeline" title="Permanent link">&para;</a></h1>
+<p>The learning content pipeline is a LangGraph StateGraph that automatically generates personalized learning material from assessment results. It consumes the structured output of the assessment pipeline — knowledge gaps, Bloom levels, confidence scores, and evidence — and produces validated, Bloom-aligned content for each gap.</p>
+<p><strong>Source</strong>: <code>backend/app/graph/content_pipeline.py</code>, <code>backend/app/graph/content_state.py</code> <em>(planned)</em></p>
+<h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
+<p>The pipeline has <strong>7 nodes</strong> organized into four phases:</p>
+<pre class="mermaid"><code>graph TD
+    START([Start]) --&gt; IR[input_reader]
+    IR --&gt; GP[gap_prioritizer]
+    GP --&gt; OG[objective_generator]
+
+    OG --&gt; CP[content_planner]
+    CP --&gt; RCG[rag_content_generator]
+
+    RCG --&gt; BV[bloom_validator]
+    BV --&gt; QG{quality_gate}
+
+    QG --&gt;|"bloom &gt;= 0.75 AND&lt;br/&gt;quality &gt;= 0.70"| MW[material_writer]
+    QG --&gt;|"retry&lt;br/&gt;(iteration &lt; 3)"| CP
+    QG --&gt;|"flag&lt;br/&gt;(iteration &gt;= 3)"| MW
+
+    MW --&gt; END([End])</code></pre>
+<blockquote>
+<p>Nodes 1–3 run sequentially per session. Nodes 4–5 run in parallel across all gap nodes via <code>asyncio.gather</code>. Nodes 6–7 run per gap with a retry loop.</p>
+</blockquote>
+<h3 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>State management</td>
+<td>LangGraph StateGraph + PostgreSQL checkpointer</td>
+<td>Persists pipeline state across nodes</td>
+</tr>
+<tr>
+<td>Gap input</td>
+<td><code>AssessmentResult</code> (JSONB)</td>
+<td>Source of <code>gap_nodes</code>, knowledge graph, evidence</td>
+</tr>
+<tr>
+<td>Taxonomy lookup</td>
+<td><code>TaxonomyIndex</code> (in-memory singleton from YAML)</td>
+<td><code>bloom_target</code>, <code>target_confidence</code>, prerequisites</td>
+</tr>
+<tr>
+<td>IRT config</td>
+<td><code>concept_config</code> (PostgreSQL table)</td>
+<td>Per-concept difficulty weights</td>
+</tr>
+<tr>
+<td>Knowledge retrieval</td>
+<td>pgvector</td>
+<td>Domain knowledge for RAG generation</td>
+</tr>
+<tr>
+<td>LLM calls</td>
+<td>Claude claude-sonnet-4-6 via Anthropic API</td>
+<td>Content generation and Bloom validation</td>
+</tr>
+<tr>
+<td>Output storage</td>
+<td><code>material_result</code> (PostgreSQL JSONB)</td>
+<td>Final generated material per gap</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>This pipeline does not replace the assessment system. It is a downstream consumer of <code>AssessmentResult</code> records. The two systems share a PostgreSQL database and the domain taxonomy YAML, but operate on separate LangGraph threads.</p>
+</blockquote>
+<h2 id="scientific-foundations">Scientific Foundations<a class="headerlink" href="#scientific-foundations" title="Permanent link">&para;</a></h2>
+<p>Each node is grounded in a specific body of educational or ML research:</p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Where Used</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bloom's Taxonomy</strong> (Anderson &amp; Krathwohl, 2001)</td>
+<td>Objective Generator, Bloom Validator</td>
+<td>Action verb selection, cognitive level targeting, alignment validation</td>
+</tr>
+<tr>
+<td><strong>Knowledge Space Theory</strong> (Doignon &amp; Falmagne, 1985)</td>
+<td>Objective Generator</td>
+<td>Prerequisite topological sort via Kahn's algorithm</td>
+</tr>
+<tr>
+<td><strong>Cognitive Load Theory</strong> (Sweller, 1988)</td>
+<td>Content Planner</td>
+<td>Chunk sizing, scaffolding depth, worked example density</td>
+</tr>
+<tr>
+<td><strong>Zone of Proximal Development</strong> (Vygotsky, 1978)</td>
+<td>Content Planner</td>
+<td>Generates material one Bloom level above current, not jumping to target</td>
+</tr>
+<tr>
+<td><strong>Item Response Theory</strong> (Lord, 1980)</td>
+<td>Gap Prioritizer</td>
+<td>Difficulty weighting via <code>irt_weight</code> from <code>concept_config</code> table</td>
+</tr>
+<tr>
+<td><strong>Retrieval-Augmented Generation</strong> (Lewis et al., 2020)</td>
+<td>RAG Content Generator</td>
+<td>Vector store retrieval prevents hallucination in domain content</td>
+</tr>
+<tr>
+<td><strong>RLAIF</strong> (Bai et al., 2022)</td>
+<td>Bloom Validator</td>
+<td>LLM-as-judge quality gating with structured rubric scoring</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>The <code>priority_score</code> formula in Node 2 combines three of these frameworks into a single ranking metric: IRT (<code>irt_weight</code>), Bloom distance (ZPD), and gap analysis (<code>gap_severity</code>).</p>
+</blockquote>
+<h2 id="phase-1-input-prioritization">Phase 1: Input &amp; Prioritization<a class="headerlink" href="#phase-1-input-prioritization" title="Permanent link">&para;</a></h2>
+<h3 id="nodes">Nodes<a class="headerlink" href="#nodes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input_reader</code></td>
+<td><code>load_assessment_result</code></td>
+<td>Loads <code>AssessmentResult</code> from PostgreSQL, initializes <code>TaxonomyIndex</code>, validates <code>concept_ids</code></td>
+</tr>
+<tr>
+<td><code>gap_prioritizer</code></td>
+<td><code>prioritize_gaps</code></td>
+<td>Computes <code>priority_score</code> per gap, sorts descending</td>
+</tr>
+</tbody>
+</table>
+<h3 id="input-validation">Input Validation<a class="headerlink" href="#input-validation" title="Permanent link">&para;</a></h3>
+<p>The Input Reader loads the <code>AssessmentResult</code> for a given <code>session_id</code> and the in-memory <code>TaxonomyIndex</code> singleton (cached from domain YAML at app startup). It verifies that every <code>concept_id</code> in the result's <code>gap_nodes</code> maps to a known taxonomy entry. Mismatches raise a <code>ValueError</code> and abort the pipeline.</p>
+<h3 id="priority-score">Priority Score<a class="headerlink" href="#priority-score" title="Permanent link">&para;</a></h3>
+<p>Each gap is scored to determine processing order:</p>
+<div class="highlight"><pre><span></span><code>priority_score = gap_severity * bloom_distance * irt_weight
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Source</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gap_severity</code></td>
+<td>Assessment result</td>
+<td><code>target_confidence - current_confidence</code> (0.0–1.0)</td>
+</tr>
+<tr>
+<td><code>bloom_distance</code></td>
+<td>Taxonomy</td>
+<td><code>BLOOM_INT[target_bloom] - BLOOM_INT[current_bloom]</code> (1–5)</td>
+</tr>
+<tr>
+<td><code>irt_weight</code></td>
+<td><code>concept_config</code> table</td>
+<td>Item Response Theory difficulty weight (default 1.0)</td>
+</tr>
+</tbody>
+</table>
+<p>Gaps are sorted by <code>priority_score</code> descending. The IRT weight is loaded from the <code>concept_config</code> PostgreSQL table, with a tier-based fallback if absent: junior=0.9, mid=1.2, senior=1.5, staff=1.9.</p>
+<h2 id="phase-2-objective-generation">Phase 2: Objective Generation<a class="headerlink" href="#phase-2-objective-generation" title="Permanent link">&para;</a></h2>
+<h3 id="nodes_1">Nodes<a class="headerlink" href="#nodes_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>objective_generator</code></td>
+<td><code>generate_objectives</code></td>
+<td>Topological sort, Bloom verb selection, learning objective text generation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prerequisite-ordering">Prerequisite Ordering<a class="headerlink" href="#prerequisite-ordering" title="Permanent link">&para;</a></h3>
+<p>Gap concept IDs are topologically sorted using <strong>Kahn's algorithm</strong> based on prerequisite edges from the <code>TaxonomyIndex</code>. This ensures material for foundational concepts is always generated and presented before dependent concepts.</p>
+<h3 id="bloom-action-verbs">Bloom Action Verbs<a class="headerlink" href="#bloom-action-verbs" title="Permanent link">&para;</a></h3>
+<p>The generator selects a canonical action verb for each Bloom level. For gaps spanning multiple levels, one objective is generated <strong>per intermediate level</strong> — a learner at Remember (1) targeting Analyze (4) gets three sequential pieces of material (Understand, Apply, Analyze) rather than jumping directly to the target.</p>
+<table>
+<thead>
+<tr>
+<th>Bloom Level</th>
+<th>Int</th>
+<th>Action Verbs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remember</td>
+<td>1</td>
+<td>define, list, recall, identify, name, state</td>
+</tr>
+<tr>
+<td>Understand</td>
+<td>2</td>
+<td>explain, describe, summarize, paraphrase, classify</td>
+</tr>
+<tr>
+<td>Apply</td>
+<td>3</td>
+<td>implement, use, demonstrate, execute, solve, write</td>
+</tr>
+<tr>
+<td>Analyze</td>
+<td>4</td>
+<td>compare, differentiate, examine, deconstruct, trace</td>
+</tr>
+<tr>
+<td>Evaluate</td>
+<td>5</td>
+<td>assess, critique, justify, argue, appraise, defend</td>
+</tr>
+<tr>
+<td>Create</td>
+<td>6</td>
+<td>design, construct, formulate, architect, compose</td>
+</tr>
+</tbody>
+</table>
+<h3 id="objective-format">Objective Format<a class="headerlink" href="#objective-format" title="Permanent link">&para;</a></h3>
+<p>Each objective specifies what the learner will <strong>do</strong>, not what they will know:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;concept_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;event_loop&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;bloom_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;verb&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;explain&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;objective_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain the ordering of microtasks vs macrotasks in the JS event loop&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;prereq_concept_ids&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="phase-3-content-planning-generation">Phase 3: Content Planning &amp; Generation<a class="headerlink" href="#phase-3-content-planning-generation" title="Permanent link">&para;</a></h2>
+<h3 id="nodes_2">Nodes<a class="headerlink" href="#nodes_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content_planner</code></td>
+<td><code>plan_content</code></td>
+<td>Computes Cognitive Load Theory parameters per gap</td>
+</tr>
+<tr>
+<td><code>rag_content_generator</code></td>
+<td><code>generate_content</code></td>
+<td>Vector store retrieval + LLM generation, parallel via <code>asyncio.gather</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="cognitive-load-parameters">Cognitive Load Parameters<a class="headerlink" href="#cognitive-load-parameters" title="Permanent link">&para;</a></h3>
+<p>The Content Planner applies CLT to calibrate material difficulty. Senior and staff-level concepts receive smaller chunks and more scaffolding because their intrinsic cognitive load is higher.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Logic</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chunk_count</code></td>
+<td><code>ceil(bloom_distance * CLT_CHUNK_FACTOR[tier])</code></td>
+<td>Number of content sub-chunks</td>
+</tr>
+<tr>
+<td><code>example_count</code></td>
+<td>2 for junior/mid, 3 for senior/staff</td>
+<td>Worked examples before practice</td>
+</tr>
+<tr>
+<td><code>scaffolding_depth</code></td>
+<td><code>high</code> for senior/staff, <code>medium</code> otherwise</td>
+<td>Step-by-step guidance depth</td>
+</tr>
+<tr>
+<td><code>format_hints</code></td>
+<td>Always <code>explanation</code>. Add <code>code_example</code> if implementation-oriented. Add <code>analogy</code> if <code>bloom_distance &gt; 2</code>. Add <code>quiz</code> as final format.</td>
+<td>Content format types</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CLT chunk factors by tier:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Factor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Junior</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Mid</td>
+<td>1.2</td>
+</tr>
+<tr>
+<td>Senior</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>Staff</td>
+<td>2.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rag-content-generation">RAG Content Generation<a class="headerlink" href="#rag-content-generation" title="Permanent link">&para;</a></h3>
+<p>For each gap, the generator queries the <strong>pgvector</strong> store for the top-<code>RAG_TOP_K</code> (default 5) most relevant domain chunks using the query <code>{concept_id} {bloom_verb} {level_tier}</code>. Retrieved chunks are injected into the generation prompt alongside the learning objective, CLT parameters, and assessment evidence anchors. <strong>Claude claude-sonnet-4-6</strong> generates the content.</p>
+<p>All gaps are processed in parallel via <code>asyncio.gather</code> with a concurrency limit of <code>PARALLEL_GAP_LIMIT</code> (default 10).</p>
+<h3 id="generation-prompt">Generation Prompt<a class="headerlink" href="#generation-prompt" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>SYSTEM:
+You are an expert instructional designer and software engineer.
+You generate precise, technically accurate learning material.
+You always ground explanations in concrete code examples and real evidence.
+
+USER:
+Generate learning material for the following gap.
+
+CONCEPT: {concept_id}
+DOMAIN: {domain} / {level_tier} level
+LEARNING OBJECTIVE: {objective_text}
+TARGET BLOOM LEVEL: {target_bloom_label} ({target_bloom_int}/6)
+
+LEARNER CONTEXT (from assessment evidence):
+{evidence_anchors joined by newline}
+
+RETRIEVED DOMAIN KNOWLEDGE:
+{retrieved_chunks joined by separator}
+
+CONTENT PLAN:
+- Sections: {chunk_count}
+- Worked examples: {example_count}
+- Scaffolding depth: {scaffolding_depth}
+- Required formats: {format_hints joined by comma}
+
+{if iteration &gt; 0}
+PREVIOUS CRITIQUE (address these issues in this version):
+{critique}
+{end if}
+
+Generate the material as structured JSON matching the ContentSection schema.
+Each section must include: type, title, body, and (if code) a code_block field.
+Do not include material that falls below the target Bloom level.
+</code></pre></div>
+<h2 id="phase-4-validation-quality-gate">Phase 4: Validation &amp; Quality Gate<a class="headerlink" href="#phase-4-validation-quality-gate" title="Permanent link">&para;</a></h2>
+<h3 id="nodes_3">Nodes<a class="headerlink" href="#nodes_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bloom_validator</code></td>
+<td><code>validate_bloom_alignment</code></td>
+<td>Critic LLM scores generated material on four rubric dimensions</td>
+</tr>
+<tr>
+<td><code>quality_gate</code></td>
+<td><code>route_quality</code></td>
+<td>Conditional routing: pass, retry with feedback, or emit with flag</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bloom-validator-rubric">Bloom Validator Rubric<a class="headerlink" href="#bloom-validator-rubric" title="Permanent link">&para;</a></h3>
+<p>A separate Claude call acts as an <strong>RLAIF judge</strong>, scoring the generated material against a structured rubric:</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Role</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bloom_alignment</code></td>
+<td>Primary</td>
+<td>Does the material <strong>require</strong> the learner to operate at the target Bloom level?</td>
+</tr>
+<tr>
+<td><code>accuracy</code></td>
+<td>Secondary</td>
+<td>Is the technical content factually correct?</td>
+</tr>
+<tr>
+<td><code>clarity</code></td>
+<td>Secondary</td>
+<td>Is the material well-structured and clearly written?</td>
+</tr>
+<tr>
+<td><code>evidence_alignment</code></td>
+<td>Secondary</td>
+<td>Does the material address the specific gaps from assessment evidence?</td>
+</tr>
+</tbody>
+</table>
+<p>Scores are 0.0–1.0 per dimension. <code>bloom_score = bloom_alignment</code>. <code>quality_score = mean(accuracy, clarity, evidence_alignment)</code>.</p>
+<h3 id="validator-prompt">Validator Prompt<a class="headerlink" href="#validator-prompt" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>SYSTEM:
+You are a strict educational quality assessor. You evaluate learning material
+against Bloom&#39;s Taxonomy levels and instructional quality criteria.
+Respond ONLY with valid JSON. No preamble or explanation outside the JSON.
+
+USER:
+Evaluate the following learning material.
+
+TARGET BLOOM LEVEL: {target_bloom_label} ({target_bloom_int}/6)
+CONCEPT: {concept_id}
+LEARNING OBJECTIVE: {objective_text}
+
+MATERIAL TO EVALUATE:
+{generated_material}
+
+Score each criterion from 0.0 to 1.0.
+
+bloom_alignment: Does engaging with this material REQUIRE the learner to
+  operate at {target_bloom_label} level? (1.0 = fully requires it,
+  0.0 = requires only lower levels)
+
+accuracy: Is the technical content factually correct for the domain?
+
+clarity: Is the material clearly written and well-structured?
+
+evidence_alignment: Does the material address the specific gaps identified
+  in the learner&#39;s assessment evidence?
+
+Respond with:
+{
+  &quot;bloom_alignment&quot;: 0.0-1.0,
+  &quot;accuracy&quot;: 0.0-1.0,
+  &quot;clarity&quot;: 0.0-1.0,
+  &quot;evidence_alignment&quot;: 0.0-1.0,
+  &quot;critique&quot;: &quot;specific actionable critique if any score &lt; 0.75&quot;
+}
+</code></pre></div>
+<h3 id="quality-gate-routing">Quality Gate Routing<a class="headerlink" href="#quality-gate-routing" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>graph TD
+    A{bloom_score &gt;= 0.75 AND&lt;br/&gt;quality_score &gt;= 0.70?}
+    A --&gt;|Yes| PASS[Emit final material]
+    A --&gt;|No| B{iteration_count &lt; 3?}
+    B --&gt;|Yes| RETRY[Retry with critique feedback]
+    B --&gt;|No| FLAG["Emit with quality_flag = 'max_iterations_reached'"]</code></pre>
+<p>On <strong>retry</strong>, the validator's critique text is appended to the generation prompt, giving the generator specific feedback to address. The <code>iteration_count</code> is incremented and the pipeline routes back to the Content Planner.</p>
+<p>After <strong>3 iterations</strong> without passing, the material is emitted with <code>quality_flag = 'max_iterations_reached'</code> and flagged for human review. The material is still usable — it simply did not meet the automated quality bar.</p>
+<h2 id="state-schema">State Schema<a class="headerlink" href="#state-schema" title="Permanent link">&para;</a></h2>
+<p>The shared state flows through every node in the pipeline and is persisted via the PostgreSQL checkpointer:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LearningMaterialState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="c1"># Input</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">assessment_result</span><span class="p">:</span> <span class="n">AssessmentResult</span>
+    <span class="n">taxonomy</span><span class="p">:</span> <span class="n">TaxonomyIndex</span>
+
+    <span class="c1"># Node 2: Gap Prioritizer</span>
+    <span class="n">prioritized_gaps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PrioritizedGap</span><span class="p">]</span>
+
+    <span class="c1"># Node 3: Objective Generator</span>
+    <span class="n">objectives</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LearningObjective</span><span class="p">]</span>
+    <span class="n">prereq_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>              <span class="c1"># topologically sorted concept_ids</span>
+
+    <span class="c1"># Node 4: Content Planner</span>
+    <span class="n">content_plan</span><span class="p">:</span> <span class="n">ContentPlan</span>
+
+    <span class="c1"># Node 5: RAG Content Generator</span>
+    <span class="n">raw_content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">GeneratedContent</span><span class="p">]</span>
+
+    <span class="c1"># Node 6: Bloom Validator</span>
+    <span class="n">bloom_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">quality_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">critique</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="c1"># Node 7: Quality Gate</span>
+    <span class="n">iteration_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">final_material</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LearningMaterial</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<h2 id="data-contracts">Data Contracts<a class="headerlink" href="#data-contracts" title="Permanent link">&para;</a></h2>
+<p>The following Pydantic models define the data contracts between nodes:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PrioritizedGap</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">current_bloom</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># 1-6</span>
+    <span class="n">target_bloom</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># 1-6</span>
+    <span class="n">bloom_distance</span><span class="p">:</span> <span class="nb">int</span>       <span class="c1"># target - current</span>
+    <span class="n">gap_severity</span><span class="p">:</span> <span class="nb">float</span>       <span class="c1"># target_confidence - current_confidence</span>
+    <span class="n">irt_weight</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># from concept_config table</span>
+    <span class="n">priority_score</span><span class="p">:</span> <span class="nb">float</span>     <span class="c1"># gap_severity * bloom_distance * irt_weight</span>
+    <span class="n">evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># from assessment knowledge graph</span>
+    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># from taxonomy</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LearningObjective</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">verb</span><span class="p">:</span> <span class="nb">str</span>                 <span class="c1"># Bloom action verb for this level</span>
+    <span class="n">objective_text</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Full objective statement</span>
+    <span class="n">prereq_concept_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ContentPlan</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">target_bloom</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">chunk_count</span><span class="p">:</span> <span class="nb">int</span>          <span class="c1"># Number of sub-chunks (CLT-derived)</span>
+    <span class="n">example_count</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Worked examples before practice</span>
+    <span class="n">scaffolding_depth</span><span class="p">:</span> <span class="nb">str</span>    <span class="c1"># &#39;high&#39; | &#39;medium&#39; | &#39;low&#39;</span>
+    <span class="n">format_hints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>   <span class="c1"># e.g. [&#39;code_example&#39;, &#39;analogy&#39;, &#39;quiz&#39;]</span>
+    <span class="n">evidence_anchors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># From assessment evidence, for grounding</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneratedContent</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ContentSection</span><span class="p">]</span>
+    <span class="n">raw_prompt</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># For debugging/audit</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LearningMaterial</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">target_bloom</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">bloom_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">quality_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ContentSection</span><span class="p">]</span>
+    <span class="n">iteration_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">generated_at</span><span class="p">:</span> <span class="n">datetime</span>
+</code></pre></div>
+<h2 id="data-layer">Data Layer<a class="headerlink" href="#data-layer" title="Permanent link">&para;</a></h2>
+<p>Two new PostgreSQL tables are required. The assessment system's schema does not change — all additions are additive.</p>
+<h3 id="concept_config">concept_config<a class="headerlink" href="#concept_config" title="Permanent link">&para;</a></h3>
+<p>Stores per-concept IRT difficulty weights, editable without code deploys:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>concept_id</code></td>
+<td><code>TEXT</code> PK</td>
+<td>Concept identifier (matches taxonomy YAML)</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>TEXT</code></td>
+<td>Knowledge domain</td>
+</tr>
+<tr>
+<td><code>irt_weight</code></td>
+<td><code>FLOAT</code></td>
+<td>IRT difficulty weight (default 1.0)</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td><code>TEXT</code></td>
+<td>Optional operator notes</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>Last modification timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Initial seed values use a tier-based heuristic (junior: 0.9, mid: 1.2, senior: 1.5, staff: 1.9) and should be refined over time using real learner completion data:</p>
+<div class="highlight"><pre><span></span><code><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">concept_config</span><span class="w"> </span><span class="p">(</span><span class="n">concept_id</span><span class="p">,</span><span class="w"> </span><span class="k">domain</span><span class="p">,</span><span class="w"> </span><span class="n">irt_weight</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span>
+<span class="w">  </span><span class="p">(</span><span class="s1">&#39;event_loop&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;backend_engineering&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">4</span><span class="p">),</span>
+<span class="w">  </span><span class="p">(</span><span class="s1">&#39;promises&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;backend_engineering&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">3</span><span class="p">),</span>
+<span class="w">  </span><span class="p">(</span><span class="s1">&#39;distributed_systems&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;backend_engineering&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">5</span><span class="p">),</span>
+<span class="w">  </span><span class="p">(</span><span class="s1">&#39;system_design&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;backend_engineering&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">9</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="taxonomyindex">TaxonomyIndex<a class="headerlink" href="#taxonomyindex" title="Permanent link">&para;</a></h3>
+<p>The taxonomy YAML is loaded once at application startup as a module-level singleton initialized in the FastAPI lifespan context manager. All pipeline invocations share the same instance:</p>
+<div class="highlight"><pre><span></span><code><span class="n">BLOOM_INT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;remember&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;understand&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;apply&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s1">&#39;analyze&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;evaluate&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;create&#39;</span><span class="p">:</span> <span class="mi">6</span>
+<span class="p">}</span>
+
+<span class="n">CLT_CHUNK_FACTOR</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;junior&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;mid&#39;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span> <span class="s1">&#39;senior&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;staff&#39;</span><span class="p">:</span> <span class="mf">2.0</span>
+<span class="p">}</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TaxonomyIndex</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_concepts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_level_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">level</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">[</span><span class="s1">&#39;levels&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;concepts&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_concepts</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;concept&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">c</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="n">level</span><span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_level_map</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;concept&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">level</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bloom_target_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gap_severity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">target_confidence</span> <span class="o">-</span> <span class="n">current_confidence</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">irt_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">db_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># Falls back to tier heuristic if db_weight is None</span>
+        <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prereqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clt_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">concept_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bloom_distance</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># Returns {chunk_count, scaffolding_depth, example_count}</span>
+        <span class="o">...</span>
+</code></pre></div>
+<h3 id="material_result">material_result<a class="headerlink" href="#material_result" title="Permanent link">&para;</a></h3>
+<p>Stores final generated learning material per assessment session and concept:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>SERIAL</code> PK</td>
+<td>Auto-incrementing ID</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td><code>TEXT</code> FK</td>
+<td>References <code>assessment_session.session_id</code></td>
+</tr>
+<tr>
+<td><code>concept_id</code></td>
+<td><code>TEXT</code></td>
+<td>Concept the material addresses</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>TEXT</code></td>
+<td>Knowledge domain</td>
+</tr>
+<tr>
+<td><code>bloom_score</code></td>
+<td><code>FLOAT</code></td>
+<td>Bloom alignment score from validator</td>
+</tr>
+<tr>
+<td><code>quality_score</code></td>
+<td><code>FLOAT</code></td>
+<td>Composite quality score</td>
+</tr>
+<tr>
+<td><code>iteration_count</code></td>
+<td><code>INT</code></td>
+<td>Number of generation iterations</td>
+</tr>
+<tr>
+<td><code>quality_flag</code></td>
+<td><code>TEXT</code></td>
+<td>Set if emitted without passing quality gate</td>
+</tr>
+<tr>
+<td><code>material</code></td>
+<td><code>JSONB</code></td>
+<td>Full generated learning material (see output structure below)</td>
+</tr>
+<tr>
+<td><code>generated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>Creation timestamp</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Constraints</strong>: <code>UNIQUE (session_id, concept_id)</code>. <strong>Indexes</strong>: <code>idx_material_session(session_id)</code>, <code>idx_material_concept(concept_id, domain)</code>.</p>
+<h3 id="output-structure">Output Structure<a class="headerlink" href="#output-structure" title="Permanent link">&para;</a></h3>
+<p>Each <code>material</code> JSONB field follows this structure:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;concept_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;event_loop&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;backend_engineering&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;target_bloom&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;target_bloom_label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Understand&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;objective&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain the ordering of microtasks vs macrotasks in the JS event loop&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;sections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;explanation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What the event loop actually does&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;code_example&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Tracing execution order: setTimeout vs Promise&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;code_block&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;console.log(&#39;1&#39;); setTimeout(...); Promise.resolve()...&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quiz&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Check your understanding&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What will this code output and why?&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;code_block&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;bloom_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.91</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;quality_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;iteration_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="execution-model">Execution Model<a class="headerlink" href="#execution-model" title="Permanent link">&para;</a></h2>
+<h3 id="trigger">Trigger<a class="headerlink" href="#trigger" title="Permanent link">&para;</a></h3>
+<p>The pipeline is triggered automatically when an <code>AssessmentSession</code> transitions to <code>status = 'completed'</code>. The triggering payload contains only the <code>session_id</code> — all other data is loaded from the database.</p>
+<h3 id="parallelism">Parallelism<a class="headerlink" href="#parallelism" title="Permanent link">&para;</a></h3>
+<p>For a given session, one pipeline run is created per gap node:</p>
+<ul>
+<li><strong>Nodes 1–3</strong> (Input Reader, Gap Prioritizer, Objective Generator) — sequential per session</li>
+<li><strong>Nodes 4–5</strong> (Content Planner, RAG Content Generator) — parallel across all gaps via <code>asyncio.gather</code></li>
+<li><strong>Nodes 6–7</strong> (Bloom Validator, Quality Gate) — per gap, with retry loop</li>
+</ul>
+<p>All runs share the same <code>TaxonomyIndex</code> singleton and database connection pool.</p>
+<h3 id="failure-handling">Failure Handling<a class="headerlink" href="#failure-handling" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vector store unreachable</td>
+<td>Fallback to prompt-only generation with <code>fallback_flag</code> annotation</td>
+</tr>
+<tr>
+<td>LLM timeout / rate limit</td>
+<td>Exponential backoff, up to <code>LLM_RETRY_ATTEMPTS</code> (default 3)</td>
+</tr>
+<tr>
+<td>Quality gate exhaustion</td>
+<td>Emit with <code>quality_flag = 'max_iterations_reached'</code> after <code>MAX_ITERATIONS</code></td>
+</tr>
+<tr>
+<td>Invalid <code>concept_id</code></td>
+<td>Abort pipeline with <code>ValueError</code></td>
+</tr>
+</tbody>
+</table>
+<p>All node failures are logged to a <code>pipeline_run_log</code> table with the LangGraph <code>thread_id</code>, node name, error message, and timestamp.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>The following constants are defined in a pipeline configuration module:</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BLOOM_PASS_THRESHOLD</code></td>
+<td>0.75</td>
+<td>Minimum <code>bloom_alignment</code> score to pass quality gate</td>
+</tr>
+<tr>
+<td><code>QUALITY_PASS_THRESHOLD</code></td>
+<td>0.70</td>
+<td>Minimum composite <code>quality_score</code> to pass</td>
+</tr>
+<tr>
+<td><code>MAX_ITERATIONS</code></td>
+<td>3</td>
+<td>Maximum retry attempts before emitting with quality flag</td>
+</tr>
+<tr>
+<td><code>RAG_TOP_K</code></td>
+<td>5</td>
+<td>Number of vector store chunks to retrieve per concept</td>
+</tr>
+<tr>
+<td><code>PARALLEL_GAP_LIMIT</code></td>
+<td>10</td>
+<td>Max concurrent gap node runs per session</td>
+</tr>
+<tr>
+<td><code>LLM_RETRY_ATTEMPTS</code></td>
+<td>3</td>
+<td>LLM call retries on rate limit or timeout</td>
+</tr>
+<tr>
+<td><code>LLM_RETRY_BACKOFF_BASE</code></td>
+<td>2.0</td>
+<td>Exponential backoff base (seconds)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>These constants are separated from node logic to allow tuning without code changes.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
