@@ -106,3 +106,41 @@ class PlanOutput(BaseModel):
     summary: str = Field(description="2-3 sentence plan overview")
     total_hours: float = Field(description="Total estimated hours for the entire plan")
     phases: list[PlanPhaseOutput] = Field(description="Ordered phases of the learning plan")
+
+
+# --- Content Generation (Learning Material Pipeline) ---
+
+
+class ContentSectionOutput(BaseModel):
+    """Output schema for a single content section."""
+
+    type: str = Field(description="Section type: explanation, code_example, analogy, quiz")
+    title: str = Field(description="Section title")
+    body: str = Field(description="Section body text (markdown)")
+    code_block: str | None = Field(default=None, description="Code block content if applicable")
+    answer: str | None = Field(default=None, description="Answer for quiz sections")
+
+
+class ContentGeneratorOutput(BaseModel):
+    """Output schema for learning content generation."""
+
+    sections: list[ContentSectionOutput] = Field(description="Generated content sections")
+
+
+class BloomValidatorOutput(BaseModel):
+    """Output schema for Bloom taxonomy validation of generated content."""
+
+    bloom_alignment: float = Field(
+        description="Does engaging with this material require the learner to operate at the target Bloom level? (0.0-1.0)"
+    )
+    accuracy: float = Field(description="Is the technical content factually correct? (0.0-1.0)")
+    clarity: float = Field(
+        description="Is the material clearly written and well-structured? (0.0-1.0)"
+    )
+    evidence_alignment: float = Field(
+        description="Does the material address the specific gaps from assessment evidence? (0.0-1.0)"
+    )
+    critique: str = Field(
+        default="",
+        description="Specific actionable critique if any score is below 0.75",
+    )

@@ -56,6 +56,7 @@ graph LR
     B --> C[Assessment Loop]
     C --> D[Gap Analysis]
     D --> E[Learning Plan]
+    E --> F[Content Generation]
 ```
 
 1. **Onboarding** — User selects a role (primary path) or browses and selects skills manually. Skills are mapped to a knowledge base domain.
@@ -63,6 +64,7 @@ graph LR
 3. **Assessment Loop** — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels.
 4. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
 5. **Learning Plan** — Claude generates a phased plan from the identified gaps with concrete resources.
+6. **Content Generation** — A background LangGraph pipeline generates Bloom-validated learning material for each knowledge gap, with quality gating and retry loops.
 
 ### Session Management
 
@@ -128,7 +130,7 @@ OpenLearning/
 │   │   ├── config.py            # Settings (API key, CORS origins, GitHub OAuth, JWT, encryption)
 │   │   ├── db.py                # SQLAlchemy models, async engine, session factory
 │   │   ├── models/              # Pydantic models (API request/response contracts)
-│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, roles, auth) + export helpers
+│   │   ├── routes/              # API endpoints (health, skills, assessment, gap_analysis, learning_plan, materials, roles, auth) + export helpers
 │   │   ├── deps.py              # Auth dependencies (JWT cookie extraction, user validation, API key injection)
 │   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
