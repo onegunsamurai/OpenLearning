@@ -109,39 +109,36 @@ mapped_skill_ids:
 
 ### 2. Define junior concepts
 
-Start with foundational concepts. Junior engineers should *understand* core concepts:
+Start with foundational concepts. Junior engineers should be able to *apply* core concepts:
 
 ```yaml
 levels:
   junior:
     concepts:
-      - concept: html_semantics
+      - concept: html_css_fundamentals
         target_confidence: 0.7
-        bloom_target: understand
+        bloom_target: apply
         prerequisites: []
 
-      - concept: css_box_model
-        target_confidence: 0.7
-        bloom_target: understand
-        prerequisites: []
-
-      - concept: javascript_fundamentals
-        target_confidence: 0.7
-        bloom_target: understand
+      - concept: javascript_essentials
+        target_confidence: 0.8
+        bloom_target: apply
         prerequisites: []
 
       - concept: dom_manipulation
-        target_confidence: 0.6
-        bloom_target: understand
-        prerequisites:
-          - html_semantics
-          - javascript_fundamentals
-
-      - concept: react_components
         target_confidence: 0.7
-        bloom_target: understand
-        prerequisites:
-          - javascript_fundamentals
+        bloom_target: apply
+        prerequisites: [html_css_fundamentals]
+
+      - concept: component_basics
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [html_css_fundamentals]
+
+      - concept: event_handling
+        target_confidence: 0.7
+        bloom_target: apply
+        prerequisites: [javascript_essentials, dom_manipulation]
 ```
 
 ### 3. Build up through levels

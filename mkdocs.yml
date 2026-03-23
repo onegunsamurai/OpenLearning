@@ -54,6 +54,7 @@ nav:
   - Architecture:
     - Overview: architecture/overview.md
     - Assessment Pipeline: architecture/assessment-pipeline.md
+    - Learning Content Pipeline: architecture/learning-content.md
     - Data Models: architecture/data-models.md
   - Guides:
     - Knowledge Base: guides/knowledge-base.md

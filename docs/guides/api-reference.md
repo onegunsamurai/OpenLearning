@@ -605,28 +605,27 @@ Generate a personalized learning plan from gap analysis.
 
 ```json
 {
-  "title": "Backend Engineering Growth Plan",
   "summary": "A 6-week plan targeting distributed systems and security gaps.",
   "totalHours": 48,
-  "totalWeeks": 6,
   "phases": [
     {
-      "phase": 1,
-      "name": "Foundations",
-      "description": "...",
-      "modules": [
+      "phaseNumber": 1,
+      "title": "Foundations",
+      "concepts": ["microservices", "http_fundamentals"],
+      "rationale": "Build foundational understanding before tackling distributed systems.",
+      "resources": [
         {
-          "id": "mod-1",
+          "type": "article",
           "title": "Microservices Fundamentals",
-          "description": "...",
-          "type": "theory",
-          "phase": 1,
-          "skillIds": ["microservices"],
-          "durationHours": 4,
-          "objectives": ["Understand service decomposition", "..."],
-          "resources": ["https://microservices.io/patterns"]
+          "url": "https://microservices.io/patterns"
+        },
+        {
+          "type": "video",
+          "title": "HTTP Deep Dive",
+          "url": null
         }
-      ]
+      ],
+      "estimatedHours": 12
     }
   ]
 }

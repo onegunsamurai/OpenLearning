@@ -1,38 +1,64 @@
-# OpenLearning
+Claude Code Prompt for Plan Mode
+#prompts
+Review this plan thoroughly before making any code changes. For every issue or recommendation, explain the concrete tradeoffs, give me an opinionated recommendation, and ask for my input before assuming a direction.
+My engineering preferences (use these to guide your recommendations):
 
-AI-powered adaptive learning platform that identifies skill gaps and generates personalized learning plans using LangGraph-powered assessment.
+DRY is important—flag repetition aggressively.
+Well-tested code is non-negotiable; I'd rather have too many tests than too few.
+I want code that's "engineered enough" — not under-engineered (fragile, hacky) and not over-engineered (premature abstraction, unnecessary complexity).
+I err on the side of handling more edge cases, not fewer; thoughtfulness > speed.
+Bias toward explicit over clever.
 
-## Tech Stack
-- **Backend:** Python 3.11+ / FastAPI / SQLAlchemy (async) / PostgreSQL 16
-- **AI:** Anthropic Claude SDK / LangChain / LangGraph (stateful agent pipeline)
-- **Frontend:** Next.js 16 (App Router) / React 19 / TypeScript 5 (strict) / Tailwind 4 / Zustand
-- **Codegen:** Pydantic models -> OpenAPI spec -> generated TypeScript client
+1. Architecture review
+Evaluate:
 
-## Key Commands
-- `make dev` — Run backend + frontend concurrently
-- `make check` — Lint + typecheck + test + build (mirrors CI, run before committing)
-- `make generate-api` — Regenerate TypeScript API client from backend OpenAPI spec
-- `make fmt` — Auto-format backend code with Ruff
+Overall system design and component boundaries.
+Dependency graph and coupling concerns.
+Data flow patterns and potential bottlenecks.
+Scaling characteristics and single points of failure.
+Security architecture (auth, data access, API boundaries).
 
-## Architecture
-- `backend/app/routes/` — FastAPI routers (one per domain: assessment, auth, skills, etc.)
-- `backend/app/agents/` — LLM agents (calibrator, evaluator, gap_analyzer, plan_generator, etc.)
-- `backend/app/graph/` — LangGraph state machine (pipeline.py, router.py, state.py)
-- `backend/app/models/` — Pydantic models (source of truth for OpenAPI)
-- `frontend/src/app/` — Next.js pages (App Router)
-- `frontend/src/components/` — React components (ui/, assessment/, onboarding/, etc.)
-- `frontend/src/lib/` — Store (Zustand), generated API client, types, utils
+2. Code quality review
+Evaluate:
 
-## Critical Conventions
-- Never edit `frontend/src/lib/generated/` or `backend/openapi.json` — run `make generate-api`
-- After Pydantic model changes: always run `make generate-api`
-- `CamelModel` for API-facing models, `BaseModel` for internal models
-- `from __future__ import annotations` at top of every Python module
-- Import generated types from `@/lib/types`, not `@/lib/generated/`
+Code organization and module structure.
+DRY violations—be aggressive here.
+Error handling patterns and missing edge cases (call these out explicitly).
+Technical debt hotspots.
+Areas that are over-engineered or under-engineered relative to my preferences.
 
-## Engineering Preferences
-- DRY is important — flag repetition aggressively
-- Well-tested code is non-negotiable
-- "Engineered enough" — not fragile, not over-abstracted
-- Handle more edge cases, not fewer; thoughtfulness > speed
-- Explicit over clever
+3. Test review
+Evaluate:
+
+Test coverage gaps (unit, integration, e2e).
+Test quality and assertion strength.
+Missing edge case coverage—be thorough.
+Untested failure modes and error paths.
+
+4. Performance review
+Evaluate:
+
+N+1 queries and database access patterns.
+Memory-usage concerns.
+Caching opportunities.
+Slow or high-complexity code paths.
+
+For each issue you find
+For every specific issue (bug, smell, design concern, or risk):
+
+Describe the problem concretely, with file and line references.
+Present 2–3 options, including "do nothing" where that's reasonable.
+For each option, specify: implementation effort, risk, impact on other code, and maintenance burden.
+Give me your recommended option and why, mapped to my preferences above.
+Then explicitly ask whether I agree or want to choose a different direction before proceeding.
+
+Workflow and interaction
+
+Do not assume my priorities on timeline or scale.
+After each section, pause and ask for my feedback before moving on.
+
+BEFORE YOU START:
+Ask if I want one of two options:
+1/ BIG CHANGE: Work through this interactively, one section at a time (Architecture → Code Quality → Tests → Performance) with at most 4 top issues in each section.
+2/ SMALL CHANGE: Work through interactively ONE question per review section
+FOR EACH STAGE OF REVIEW: output the explanation and pros and cons of each stage's questions AND your opinionated recommendation and why, and then use AskUserQuestion. Also NUMBER issues and then give LETTERS for options and when using AskUserQuestion make sure each option clearly labels the issue NUMBER and option LETTER so the user doesn't get confused. Make the recommended option always the 1st option.
