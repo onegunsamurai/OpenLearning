@@ -2,7 +2,7 @@
 
 The learning content pipeline is a LangGraph StateGraph that automatically generates personalized learning material from assessment results. It consumes the structured output of the assessment pipeline — knowledge gaps, Bloom levels, confidence scores, and evidence — and produces validated, Bloom-aligned content for each gap.
 
-**Source**: `backend/app/graph/content_pipeline.py`, `backend/app/graph/content_state.py` *(planned)*
+**Source**: `backend/app/graph/content_pipeline.py`, `backend/app/graph/content_state.py`, `backend/app/agents/content_nodes.py`
 
 ## Pipeline Overview
 

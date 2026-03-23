@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -88,6 +88,41 @@ class AssessmentResult(Base):
     )
 
     session: Mapped[AssessmentSession] = relationship(back_populates="result")
+
+
+class ConceptConfig(Base):
+    __tablename__ = "concept_config"
+
+    concept_id: Mapped[str] = mapped_column(String, primary_key=True)
+    domain: Mapped[str] = mapped_column(String, nullable=False)
+    irt_weight: Mapped[float] = mapped_column(Float, default=1.0)
+    notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class MaterialResult(Base):
+    __tablename__ = "material_results"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    session_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("assessment_sessions.session_id"), nullable=False
+    )
+    concept_id: Mapped[str] = mapped_column(String, nullable=False)
+    domain: Mapped[str] = mapped_column(String, nullable=False)
+    bloom_score: Mapped[float] = mapped_column(Float, nullable=False)
+    quality_score: Mapped[float] = mapped_column(Float, nullable=False)
+    iteration_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    quality_flag: Mapped[str | None] = mapped_column(String, nullable=True)
+    material: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("session_id", "concept_id", name="uq_material_session_concept"),
+    )
 
 
 _engine = None

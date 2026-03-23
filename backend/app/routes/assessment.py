@@ -19,6 +19,7 @@ from app.knowledge_base.loader import get_target_graph, list_domains, map_skills
 from app.models.base import CamelModel
 from app.routes.export_utils import build_assessment_markdown
 from app.services.ai import api_key_scope, classify_anthropic_error
+from app.services.content_trigger import trigger_content_pipeline
 
 logger = logging.getLogger("openlearning.assessment")
 
@@ -352,6 +353,9 @@ async def assessment_report(
         if session_row:
             session_row.status = "completed"
         await db.commit()
+
+        # Trigger content generation pipeline in background
+        trigger_content_pipeline(session_id, req.app)
 
     return AssessmentReportResponse(
         knowledge_graph=KnowledgeGraphOut(

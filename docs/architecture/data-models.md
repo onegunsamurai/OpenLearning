@@ -478,9 +478,30 @@ class PlanOutput(BaseModel):
     phases: list[PlanPhaseOutput]
 ```
 
+### Content Generation
+
+```python
+class ContentSectionOutput(BaseModel):
+    type: str            # "explanation", "code_example", "analogy", "quiz"
+    title: str
+    body: str
+    code_block: str | None
+    answer: str | None
+
+class ContentGeneratorOutput(BaseModel):
+    sections: list[ContentSectionOutput]
+
+class BloomValidatorOutput(BaseModel):
+    bloom_alignment: float    # 0.0-1.0
+    accuracy: float           # 0.0-1.0
+    clarity: float            # 0.0-1.0
+    evidence_alignment: float # 0.0-1.0
+    critique: str             # Actionable feedback if any score < 0.75
+```
+
 ## Database Schema
 
-PostgreSQL database with four tables for persisting users, authentication methods, assessment sessions, and results.
+PostgreSQL database with six tables for persisting users, authentication methods, assessment sessions, results, concept configuration, and generated learning materials.
 
 **Source**: `backend/app/db.py`
 
@@ -532,6 +553,33 @@ Unique constraint: `(provider, provider_id)`
 | `learning_plan` | `JSONB` | Generated learning plan |
 | `proficiency_scores` | `JSONB` | Per-skill proficiency scores |
 | `completed_at` | `DateTime` | Completion timestamp |
+
+### `concept_config`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `concept_id` | `String` PK | Concept identifier (matches taxonomy YAML) |
+| `domain` | `String` | Knowledge domain |
+| `irt_weight` | `Float` | IRT difficulty weight (default: 1.0) |
+| `notes` | `String` NULL | Optional operator notes |
+| `updated_at` | `DateTime` | Last modification timestamp |
+
+### `material_results`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `Integer` PK | Auto-incrementing ID |
+| `session_id` | `String(36)` FK | References `assessment_sessions.session_id` |
+| `concept_id` | `String` | Concept the material addresses |
+| `domain` | `String` | Knowledge domain |
+| `bloom_score` | `Float` | Bloom alignment score from validator |
+| `quality_score` | `Float` | Composite quality score |
+| `iteration_count` | `Integer` | Number of generation iterations |
+| `quality_flag` | `String` NULL | Set if emitted without passing quality gate |
+| `material` | `JSONB` | Full generated learning material |
+| `generated_at` | `DateTime` | Creation timestamp |
+
+Unique constraint: `(session_id, concept_id)`
 
 ### Relationships
 

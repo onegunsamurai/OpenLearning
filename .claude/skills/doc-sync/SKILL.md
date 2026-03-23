@@ -5,7 +5,7 @@ description: Verify documentation accuracy against the current codebase
 
 # Documentation Sync Verification
 
-Audit project documentation to ensure it accurately reflects the current codebase.
+Audit project documentation to ensure it accurately reflects the current codebase. Update Code -> Docs Mapping in this document and in .claude/agents/doc-writer.md if any discrepancies are found or new code areas are added.
 
 ## Mapping: Code → Docs
 

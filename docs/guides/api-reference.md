@@ -637,6 +637,56 @@ Generate a personalized learning plan from gap analysis.
 {"detail": "No API key configured. Please add your Anthropic API key in Settings."}
 ```
 
+---
+
+### GET `/api/materials/{session_id}`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Retrieve generated learning materials for a completed assessment session. Materials are generated automatically in the background when an assessment completes.
+
+**Path parameter**: `session_id` — the assessment session UUID
+
+**Response** (200): `MaterialsResponse`
+
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "materials": [
+    {
+      "conceptId": "http_fundamentals",
+      "domain": "backend_engineering",
+      "bloomScore": 0.91,
+      "qualityScore": 0.88,
+      "iterationCount": 1,
+      "qualityFlag": null,
+      "material": {
+        "concept_id": "http_fundamentals",
+        "target_bloom": 2,
+        "sections": [
+          {"type": "explanation", "title": "What HTTP does", "body": "..."},
+          {"type": "code_example", "title": "HTTP Request", "body": "...", "codeBlock": "..."},
+          {"type": "quiz", "title": "Check understanding", "body": "...", "answer": "..."}
+        ]
+      },
+      "generatedAt": "2026-03-23T12:00:00Z"
+    }
+  ]
+}
+```
+
+An empty `materials` list indicates the pipeline is still running.
+
+**Response** (404 — session not found):
+
+```json
+{"detail": "Session not found"}
+```
+
+**Source**: `backend/app/routes/materials.py`
+
+---
+
 ## Anthropic Error Responses
 
 When the backend encounters an Anthropic SDK exception, it maps it to a structured HTTP error:
