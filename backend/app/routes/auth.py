@@ -247,7 +247,12 @@ async def github_callback(
 
     # Create JWT and set cookie
     token = _create_jwt(user, settings.jwt_secret_key)
-    response = RedirectResponse(url=f"{settings.frontend_url}{redirect_path}", status_code=302)
+    final_url = f"{settings.frontend_url}{redirect_path}"
+    parsed_final = urlparse(final_url)
+    parsed_base = urlparse(settings.frontend_url)
+    if parsed_final.netloc != parsed_base.netloc:
+        final_url = settings.frontend_url
+    response = RedirectResponse(url=final_url, status_code=302)
     _set_auth_cookie(response, token, settings.frontend_url)
     return response
 
