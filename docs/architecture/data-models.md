@@ -35,6 +35,22 @@ class ProficiencyScore(CamelModel):
     reasoning: str
 ```
 
+### User Dashboard
+
+**Source**: `backend/app/routes/user.py`
+
+```python
+class UserAssessmentSummary(CamelModel):
+    session_id: str
+    status: str                          # "active", "completed", or "timed_out"
+    skill_ids: list[str]
+    target_level: str
+    created_at: datetime
+    completed_at: datetime | None = None
+    overall_readiness: int | None = None # 0-100, only set if completed
+    skill_count: int
+```
+
 ### Gap Analysis
 
 ```python
@@ -552,6 +568,7 @@ Unique constraint: `(provider, provider_id)`
 | `gap_nodes` | `JSONB` | Identified knowledge gaps |
 | `learning_plan` | `JSONB` | Generated learning plan |
 | `proficiency_scores` | `JSONB` | Per-skill proficiency scores |
+| `enriched_gap_analysis` | `JSONB` NULL | Enriched gap analysis with readiness, priorities, and recommendations |
 | `completed_at` | `DateTime` | Completion timestamp |
 
 ### `concept_config`

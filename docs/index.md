@@ -20,6 +20,9 @@ Radar chart visualization comparing your current proficiency against target leve
 ### Learning Plan
 Phased, structured learning plan with theory, quiz, and lab modules — generated from your specific knowledge gaps.
 
+### User Dashboard
+View your assessment history, resume incomplete assessments, and revisit past gap analyses and learning plans — all persisted server-side.
+
 ---
 
 ## Quick Links

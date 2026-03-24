@@ -15,6 +15,7 @@ Most learning platforms treat assessment as a static quiz. OpenLearning uses a L
 - **Skill Assessment** — Adaptive AI interview with calibration, Bloom-level targeting, and knowledge graph construction
 - **Gap Analysis** — Radar chart visualization comparing current vs target proficiency with priority-ranked gaps
 - **Learning Plan** — Phased, structured learning plan with theory, quiz, and lab modules
+- **User Dashboard** — View assessment history, resume incomplete assessments, and revisit past results
 
 ## Assessment Pipeline
 
@@ -165,6 +166,7 @@ OpenLearning/
 | GET    | /api/assessment/{id}/graph        | Get current knowledge graph        |
 | GET    | /api/assessment/{id}/report       | Get full assessment report         |
 | GET    | /api/assessment/{id}/export       | Export assessment report           |
+| GET    | /api/assessment/{id}/resume       | Resume incomplete assessment       |
 | POST   | /api/gap-analysis                 | Generate gap analysis              |
 | POST   | /api/learning-plan                | Generate learning plan             |
 | GET    | /api/auth/github                  | Initiate GitHub OAuth login        |
@@ -175,6 +177,10 @@ OpenLearning/
 | GET    | /api/auth/api-key                 | Check if API key is stored         |
 | DELETE | /api/auth/api-key                 | Delete stored API key              |
 | POST   | /api/auth/validate-key            | Validate an API key                |
+| POST   | /api/auth/register                | Register with email/password       |
+| POST   | /api/auth/login                   | Sign in with email/password        |
+| GET    | /api/user/assessments             | List user's assessment sessions    |
+| GET    | /api/materials/{session_id}       | Get generated learning materials   |
 
 ### Type Generation
 
