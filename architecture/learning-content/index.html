@@ -1761,25 +1761,17 @@
 <p>The learning content pipeline is a LangGraph StateGraph that automatically generates personalized learning material from assessment results. It consumes the structured output of the assessment pipeline — knowledge gaps, Bloom levels, confidence scores, and evidence — and produces validated, Bloom-aligned content for each gap.</p>
 <p><strong>Source</strong>: <code>backend/app/graph/content_pipeline.py</code>, <code>backend/app/graph/content_state.py</code>, <code>backend/app/agents/content_nodes.py</code></p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
-<p>The pipeline has <strong>7 nodes</strong> organized into four phases:</p>
-<pre class="mermaid"><code>graph TD
-    START([Start]) --&gt; IR[input_reader]
-    IR --&gt; GP[gap_prioritizer]
-    GP --&gt; OG[objective_generator]
-
-    OG --&gt; CP[content_planner]
-    CP --&gt; RCG[rag_content_generator]
-
-    RCG --&gt; BV[bloom_validator]
-    BV --&gt; QG{quality_gate}
-
-    QG --&gt;|"bloom &gt;= 0.75 AND&lt;br/&gt;quality &gt;= 0.70"| MW[material_writer]
-    QG --&gt;|"retry&lt;br/&gt;(iteration &lt; 3)"| CP
-    QG --&gt;|"flag&lt;br/&gt;(iteration &gt;= 3)"| MW
-
-    MW --&gt; END([End])</code></pre>
+<p>The pipeline has <strong>5 nodes</strong> organized into four phases:</p>
+<pre class="mermaid"><code>graph LR
+    A[Load Assessment Result] --&gt; B[Prioritize Gaps]
+    B --&gt; C[Generate Objectives]
+    C --&gt; D[Generate Content]
+    D --&gt; E{Validate Quality}
+    E --&gt;|Pass| F[Save Materials]
+    E --&gt;|Retry| D
+    E --&gt;|Max Retries| G[Flag &amp; Save]</code></pre>
 <blockquote>
-<p>Nodes 1–3 run sequentially per session. Nodes 4–5 run in parallel across all gap nodes via <code>asyncio.gather</code>. Nodes 6–7 run per gap with a retry loop.</p>
+<p>Nodes 1–3 (<code>input_reader</code>, <code>gap_prioritizer</code>, <code>objective_generator</code>) run sequentially per session. Node 4 (<code>generate_all_content</code>) runs in parallel across all gaps via <code>asyncio.gather</code> with a semaphore of 5. Node 5 (<code>validate_all_content</code>) runs per gap with a retry loop (up to 3 iterations).</p>
 </blockquote>
 <h3 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h3>
 <table>

@@ -957,6 +957,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get-apiassessmentsession_idresume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/assessment/{session_id}/resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiuserassessments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/user/assessments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#post-apigap-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1457,6 +1479,28 @@
     <span class="md-ellipsis">
       
         GET /api/assessment/{session_id}/export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiassessmentsession_idresume" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/assessment/{session_id}/resume
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiuserassessments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/user/assessments
       
     </span>
   </a>
@@ -1992,6 +2036,64 @@
 </ul>
 <p><strong>Response</strong> (404 — session not found):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session not found&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="get-apiassessmentsession_idresume">GET <code>/api/assessment/{session_id}/resume</code><a class="headerlink" href="#get-apiassessmentsession_idresume" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
+</blockquote>
+<p>Resume an active assessment session that was interrupted or left incomplete. Loads the pending question from the LangGraph checkpoint.</p>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you explain how React hooks work?&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;questionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assessment&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;totalSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (403 — not your session):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Not your session&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (404 — session not found):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session not found&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (409 — session already completed or no pending question):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session already completed&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><strong>Response</strong> (410 — session timed out):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Session has timed out&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="get-apiuserassessments">GET <code>/api/user/assessments</code><a class="headerlink" href="#get-apiuserassessments" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
+</blockquote>
+<p>List all assessment sessions for the authenticated user, sorted by creation date (newest first). Includes basic result data for completed sessions.</p>
+<p><strong>Response</strong> (200):</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;skillIds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;react&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;typescript&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;targetLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mid&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;createdAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-20T10:30:00Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-20T11:45:00Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;overallReadiness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">72</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;skillCount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;660e8400-e29b-41d4-a716-446655440001&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;active&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;skillIds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;targetLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mid&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;createdAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-22T09:00:00Z&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;overallReadiness&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;skillCount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
 </code></pre></div>
 <hr />
 <h3 id="post-apigap-analysis">POST <code>/api/gap-analysis</code><a class="headerlink" href="#post-apigap-analysis" title="Permanent link">&para;</a></h3>
