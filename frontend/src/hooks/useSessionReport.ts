@@ -16,41 +16,36 @@ export function useSessionReport(
   const [report, setReport] = useState<AssessmentReportResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const cancelledRef = useRef(false);
+  const requestIdRef = useRef(0);
 
   const fetchReport = useCallback(async () => {
     if (!sessionId) return;
 
+    const currentRequestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
     try {
       const data = await api.assessmentReport(sessionId);
-      if (!cancelledRef.current) {
+      if (requestIdRef.current === currentRequestId) {
         setReport(data);
       }
     } catch (err) {
-      if (!cancelledRef.current) {
+      if (requestIdRef.current === currentRequestId) {
         setError(
           err instanceof Error ? err : new Error("Failed to load report")
         );
       }
     } finally {
-      if (!cancelledRef.current) {
+      if (requestIdRef.current === currentRequestId) {
         setLoading(false);
       }
     }
   }, [sessionId]);
 
   useEffect(() => {
-    cancelledRef.current = false;
-
     if (sessionId) {
       fetchReport();
     }
-
-    return () => {
-      cancelledRef.current = true;
-    };
   }, [sessionId, fetchReport]);
 
   return { report, loading, error, refetch: fetchReport };

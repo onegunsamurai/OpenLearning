@@ -232,7 +232,7 @@ describe("LearningPlanPage", () => {
     expect(screen.getByText("Export Report")).toBeInTheDocument();
   });
 
-  it("export button hidden when no session id (search param only)", () => {
+  it("shows export button when session comes from search param", () => {
     mockStoreState.assessmentSessionId = null;
     // With no sessionId at all, the page redirects — so this scenario
     // can only happen if session comes from search params.

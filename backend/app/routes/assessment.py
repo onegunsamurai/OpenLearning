@@ -496,7 +496,7 @@ async def assessment_resume(
     req: Request,
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    api_key: str = Depends(get_user_api_key),
+    _api_key: str = Depends(get_user_api_key),
 ) -> AssessmentStartResponse:
     """Resume an active assessment session by loading the pending interrupt."""
     session_row = await db.get(AssessmentSession, session_id)
@@ -523,11 +523,13 @@ async def assessment_resume(
     if not interrupt_data:
         raise HTTPException(status_code=409, detail="No pending question found")
 
-    question_text = interrupt_data["question"]["text"]
+    question = interrupt_data.get("question")
+    if not isinstance(question, dict) or "text" not in question:
+        raise HTTPException(status_code=500, detail="Malformed interrupt data in checkpoint")
 
     return AssessmentStartResponse(
         session_id=session_id,
-        question=question_text,
+        question=question["text"],
         question_type=interrupt_data.get("type", "assessment"),
         step=interrupt_data.get("step", 1),
         total_steps=interrupt_data.get("total_steps", 3),
