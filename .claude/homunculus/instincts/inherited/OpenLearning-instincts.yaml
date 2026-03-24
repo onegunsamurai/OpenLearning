@@ -1,0 +1,444 @@
+# Instincts generated from https://github.com/onegunsamurai/OpenLearning
+# Generated: 2026-03-24T11:49:55.601Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: OpenLearning-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, docs, build, fix, refactor
+
+## Evidence
+
+- 57 commits analyzed
+- Detected conventional commit pattern
+- Examples: docs: update documentation for user dashboard feature, feat: add user dashboard with assessment history and resume
+
+---
+id: OpenLearning-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Commit Length
+
+## Action
+
+Write moderate-length commit messages (~55 characters)
+
+## Evidence
+
+- Average commit message length: 55 chars
+- Based on 57 commits
+
+---
+id: OpenLearning-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: OpenLearning-import-alias
+trigger: "when importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Import Alias
+
+## Action
+
+Use path aliases (@/, ~/) instead of relative imports
+
+## Evidence
+
+- Import analysis shows alias pattern
+- Example: import { x } from '@/lib/x'
+
+---
+id: OpenLearning-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Export Style
+
+## Action
+
+Prefer default exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: default
+
+---
+id: OpenLearning-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: OpenLearning-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.test.tsx
+
+---
+id: OpenLearning-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.tsx
+
+## Evidence
+
+- File pattern: *.test.tsx
+- Consistent across test files
+
+---
+id: OpenLearning-test-mocking
+trigger: "when mocking dependencies in tests"
+confidence: 0.75
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Test Mocking
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Mocking pattern detected: vi.mock
+- Consistent across test files
+
+---
+id: OpenLearning-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Test Types
+
+## Action
+
+Write unit, integration tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration
+- Coverage config: no
+
+---
+id: OpenLearning-workflow-database-migration
+trigger: "when modifying the database schema or adding tables"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Database Migration
+
+## Action
+
+Follow the database-migration workflow:
+1. Create migration file
+2. Update schema definitions
+3. Generate/update types
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: **/schema.*, **/types.ts, migrations/*
+
+---
+id: OpenLearning-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~18x per month
+- Files: frontend/src/components/assessment/*, frontend/src/components/gap-analysis/*, frontend/src/components/onboarding/*
+
+---
+id: OpenLearning-workflow-refactoring
+trigger: "when refactoring code"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Refactoring
+
+## Action
+
+Follow the refactoring workflow:
+1. Ensure tests pass before refactor
+2. Refactor code structure
+3. Verify tests still pass
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~6x per month
+- Files: src/**/*
+
+---
+id: OpenLearning-workflow-add-or-update-api-endpoint
+trigger: "when doing add or update api endpoint"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Add Or Update Api Endpoint
+
+## Action
+
+Follow the add-or-update-api-endpoint workflow:
+1. Create or update backend route file (backend/app/routes/*.py)
+2. Update or add schema/model (backend/app/agents/schemas.py or backend/app/models/*.py)
+3. Update OpenAPI spec (backend/openapi.json)
+4. Regenerate frontend API client (frontend/src/lib/generated/api-client/*)
+5. Update or add tests for the endpoint (backend/tests/test_*.py)
+6. Update API reference documentation (docs/guides/api-reference.md)
+7. Update data models documentation if needed (docs/architecture/data-models.md)
+8. Update or add frontend usage (frontend/src/lib/api.ts, frontend/src/hooks/*, frontend/src/app/*/page.tsx)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: backend/app/routes/*.py, backend/app/agents/schemas.py, backend/app/models/*.py
+
+---
+id: OpenLearning-workflow-feature-development-full-stack
+trigger: "when doing feature development full stack"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Feature Development Full Stack
+
+## Action
+
+Follow the feature-development-full-stack workflow:
+1. Implement backend logic (agents, services, pipeline, etc.)
+2. Add or update backend routes
+3. Update or add database models if needed
+4. Update OpenAPI spec
+5. Add or update frontend pages/components
+6. Add or update frontend hooks and state
+7. Integrate frontend with backend API
+8. Write backend and frontend tests
+9. Update documentation (README, architecture, API reference, data models)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/app/agents/*.py, backend/app/services/*.py, backend/app/graph/*.py
+
+---
+id: OpenLearning-workflow-add-or-update-database-model
+trigger: "when doing add or update database model"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Add Or Update Database Model
+
+## Action
+
+Follow the add-or-update-database-model workflow:
+1. Add or update ORM model (backend/app/db.py, backend/app/models/*.py)
+2. Create or update migration file (backend/migrations/*.sql)
+3. Update database config or connection if needed
+4. Update related backend logic (services, routes)
+5. Update tests for new/changed model
+6. Update data models documentation (docs/architecture/data-models.md)
+7. Update setup/testing docs if needed
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/app/db.py, backend/app/models/*.py, backend/migrations/*.sql
+
+---
+id: OpenLearning-workflow-documentation-sync-and-audit
+trigger: "when doing documentation sync and audit"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Documentation Sync And Audit
+
+## Action
+
+Follow the documentation-sync-and-audit workflow:
+1. Review codebase for changes in endpoints, models, features
+2. Update README.md features list and API table
+3. Update docs/guides/api-reference.md with new/changed endpoints
+4. Update docs/architecture/data-models.md for model changes
+5. Update other architecture docs as needed
+6. Fix discrepancies, outdated references, or doc-sync issues
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: README.md, docs/guides/api-reference.md, docs/architecture/data-models.md
+
+---
+id: OpenLearning-workflow-dependency-or-infrastructure-upgrade
+trigger: "when doing dependency or infrastructure upgrade"
+confidence: 0.7
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Dependency Or Infrastructure Upgrade
+
+## Action
+
+Follow the dependency-or-infrastructure-upgrade workflow:
+1. Update dependency version in package.json/requirements.txt/etc.
+2. Update lockfile (package-lock.json, requirements.txt)
+3. Update related config files (.github/workflows/*.yml, Dockerfile, docker-compose.yml)
+4. Test for compatibility and fix issues if necessary
+5. Document any relevant changes if needed
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~4x per month
+- Files: frontend/package.json, frontend/package-lock.json, backend/requirements.txt
+
+---
+id: OpenLearning-workflow-add-or-expand-test-coverage
+trigger: "when doing add or expand test coverage"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/onegunsamurai/OpenLearning
+---
+
+# OpenLearning Workflow Add Or Expand Test Coverage
+
+## Action
+
+Follow the add-or-expand-test-coverage workflow:
+1. Add or update backend test files (backend/tests/test_*.py, conftest.py)
+2. Add or update frontend test files (frontend/src/app/**/*.test.tsx, frontend/src/components/**/*.test.tsx)
+3. Update or add shared fixtures/mocks
+4. Update documentation to reflect new or changed tests
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/tests/test_*.py, backend/tests/conftest.py, frontend/src/app/**/*.test.tsx
+
