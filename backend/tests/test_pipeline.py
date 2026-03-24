@@ -64,4 +64,5 @@ class TestGraphStructure:
     def test_conclusion_edges(self):
         graph = build_graph()
         edges = set(graph.edges)
-        assert ("analyze_gaps", "generate_plan") in edges
+        assert ("analyze_gaps", "enrich_gaps") in edges
+        assert ("enrich_gaps", "generate_plan") in edges

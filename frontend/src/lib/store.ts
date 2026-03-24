@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { ProficiencyScore, GapAnalysis, LearningPlan } from "./types";
 
 interface AppState {
   // Step tracking
@@ -21,16 +20,6 @@ interface AppState {
   // Assessment
   assessmentSessionId: string | null;
   setAssessmentSessionId: (id: string) => void;
-  proficiencyScores: ProficiencyScore[];
-  setProficiencyScores: (scores: ProficiencyScore[]) => void;
-
-  // Gap Analysis
-  gapAnalysis: GapAnalysis | null;
-  setGapAnalysis: (analysis: GapAnalysis) => void;
-
-  // Learning Plan
-  learningPlan: LearningPlan | null;
-  setLearningPlan: (plan: LearningPlan) => void;
 
   // Reset
   reset: () => void;
@@ -43,9 +32,6 @@ export const initialState = {
   roleSkillIds: [] as string[],
   targetLevel: "mid",
   assessmentSessionId: null as string | null,
-  proficiencyScores: [],
-  gapAnalysis: null,
-  learningPlan: null,
 };
 
 export const useAppStore = create<AppState>()(
@@ -68,10 +54,6 @@ export const useAppStore = create<AppState>()(
       setTargetLevel: (level) => set({ targetLevel: level }),
 
       setAssessmentSessionId: (id) => set({ assessmentSessionId: id }),
-      setProficiencyScores: (scores) => set({ proficiencyScores: scores }),
-
-      setGapAnalysis: (analysis) => set({ gapAnalysis: analysis }),
-      setLearningPlan: (plan) => set({ learningPlan: plan }),
 
       reset: () => set(initialState),
     }),

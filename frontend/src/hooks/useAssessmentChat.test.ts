@@ -335,7 +335,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentReport.mockResolvedValueOnce({
         proficiencyScores: scores,
         knowledgeGraph: { nodes: [] },
-        gapNodes: [],
+        gapAnalysis: { overallReadiness: 0, summary: "", gaps: [] },
         learningPlan: { summary: "", totalHours: 0, phases: [] },
       });
 
@@ -355,9 +355,6 @@ describe("useAssessmentChat", () => {
 
     it("handles report fetch failure gracefully", async () => {
       const onComplete = vi.fn();
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
 
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
@@ -387,16 +384,12 @@ describe("useAssessmentChat", () => {
       await act(() => result.current.sendMessage("answer"));
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Failed to fetch assessment report:",
-          expect.any(Error)
-        );
+        expect(result.current.status).toBe("error");
+        expect(result.current.error?.message).toBe("Report failed");
       });
 
       // Should not call onComplete
       expect(onComplete).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
 
     it("skips markdown fence lines", async () => {

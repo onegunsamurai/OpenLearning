@@ -9,13 +9,13 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { GapItem } from "@/lib/types";
+import type { EnrichedGapItemOut } from "@/lib/types";
 
 interface RadarChartProps {
-  gaps: GapItem[];
+  gaps: EnrichedGapItemOut[];
 }
 
-export function transformGapData(gaps: GapItem[]) {
+export function transformGapData(gaps: EnrichedGapItemOut[]) {
   return gaps.map((g) => ({
     skill:
       g.skillName.length > 12

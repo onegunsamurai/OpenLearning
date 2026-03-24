@@ -3,8 +3,7 @@ import { vi } from "vitest";
 // Mock the generated SDK functions
 vi.mock("@/lib/generated/api-client", () => ({
   getSkillsApiSkillsGet: vi.fn(),
-  gapAnalysisApiGapAnalysisPost: vi.fn(),
-  learningPlanApiLearningPlanPost: vi.fn(),
+  listUserAssessmentsApiUserAssessmentsGet: vi.fn(),
 }));
 
 // Mock the client module
@@ -15,8 +14,7 @@ vi.mock("@/lib/generated/api-client/client.gen", () => ({
 import { unwrap, api, ApiError, parseRetryAfter } from "./api";
 import {
   getSkillsApiSkillsGet,
-  gapAnalysisApiGapAnalysisPost,
-  learningPlanApiLearningPlanPost,
+  listUserAssessmentsApiUserAssessmentsGet,
 } from "@/lib/generated/api-client";
 
 const mockFetch = vi.fn();
@@ -230,7 +228,7 @@ describe("api.assessmentRespond", () => {
 
 describe("api.assessmentReport", () => {
   it("returns parsed report on success", async () => {
-    const report = { proficiencyScores: [], knowledgeGraph: { nodes: [] }, gapNodes: [], learningPlan: { summary: "", totalHours: 0, phases: [] } };
+    const report = { proficiencyScores: [], knowledgeGraph: { nodes: [] }, gapAnalysis: { overallReadiness: 0, summary: "", gaps: [] }, learningPlan: { summary: "", totalHours: 0, phases: [] } };
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve(report),
@@ -285,33 +283,13 @@ describe("SDK-wrapped methods", () => {
     expect(result).toEqual(data);
   });
 
-  it("gapAnalysis unwraps SDK result", async () => {
-    const data = { overallReadiness: 80, summary: "Good", gaps: [] };
-    vi.mocked(gapAnalysisApiGapAnalysisPost).mockResolvedValueOnce(
+  it("getUserAssessments unwraps SDK result", async () => {
+    const data = [{ sessionId: "s1", status: "completed", createdAt: "2026-01-01" }];
+    vi.mocked(listUserAssessmentsApiUserAssessmentsGet).mockResolvedValueOnce(
       sdkResult(data)
     );
 
-    const result = await api.gapAnalysis([]);
-    expect(result).toEqual(data);
-  });
-
-  it("learningPlan unwraps SDK result", async () => {
-    const data = {
-      title: "Plan",
-      summary: "s",
-      totalHours: 10,
-      totalWeeks: 2,
-      phases: [],
-    };
-    vi.mocked(learningPlanApiLearningPlanPost).mockResolvedValueOnce(
-      sdkResult(data)
-    );
-
-    const result = await api.learningPlan({
-      overallReadiness: 80,
-      summary: "s",
-      gaps: [],
-    });
+    const result = await api.getUserAssessments();
     expect(result).toEqual(data);
   });
 
@@ -377,5 +355,46 @@ describe("api.assessmentExport", () => {
     });
 
     await expect(api.assessmentExport("bad-id")).rejects.toThrow("Request failed");
+  });
+});
+
+describe("api.assessmentResume", () => {
+  it("returns parsed response on success", async () => {
+    const body = {
+      sessionId: "sess-42",
+      question: "Where were we?",
+      questionType: "open",
+      step: 2,
+      totalSteps: 3,
+    };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(body),
+    });
+
+    const result = await api.assessmentResume("sess-42");
+    expect(result).toEqual(body);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/assessment/sess-42/resume"),
+      expect.objectContaining({ credentials: "include" })
+    );
+  });
+
+  it("throws ApiError on server error", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      headers: new Headers(),
+      json: () => Promise.resolve({ detail: "Session not found" }),
+    });
+
+    try {
+      await api.assessmentResume("bad-id");
+      expect.fail("should have thrown");
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      expect((e as ApiError).status).toBe(404);
+      expect((e as ApiError).message).toBe("Session not found");
+    }
   });
 });

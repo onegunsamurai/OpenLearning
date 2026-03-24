@@ -13,12 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 function safeRedirect(value: string | null): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
+  if (!value || !value.startsWith("/") || value.startsWith("//"))
+    return "/dashboard";
   try {
     const url = new URL(value, "http://localhost");
-    if (url.origin !== "http://localhost") return "/";
+    if (url.origin !== "http://localhost") return "/dashboard";
   } catch {
-    return "/";
+    return "/dashboard";
   }
   return value;
 }

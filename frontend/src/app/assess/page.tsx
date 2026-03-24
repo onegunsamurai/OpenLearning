@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { ChatMessage } from "@/components/assessment/ChatMessage";
 import { AssessmentComplete } from "@/components/assessment/AssessmentComplete";
@@ -14,13 +14,25 @@ import { useAuth } from "@/hooks/useAuth";
 import { ProficiencyScore } from "@/lib/types";
 import { useAssessmentChat } from "@/hooks/useAssessmentChat";
 import { Progress } from "@/components/ui/progress";
+import { ApiError } from "@/lib/api";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { Send, Bot } from "lucide-react";
+
 export default function AssessPage() {
+  return (
+    <Suspense>
+      <AssessPageContent />
+    </Suspense>
+  );
+}
+
+function AssessPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumeSessionId = searchParams.get("session");
+
   const {
     selectedSkillIds,
-    setProficiencyScores,
     setCurrentStep,
     setAssessmentSessionId,
     targetLevel,
@@ -39,19 +51,26 @@ export default function AssessPage() {
   const onAssessmentComplete = useCallback(
     (extractedScores: ProficiencyScore[]) => {
       setScores(extractedScores);
-      setProficiencyScores(extractedScores);
       setAssessmentDone(true);
     },
-    [setProficiencyScores]
+    []
   );
 
-  const { messages, sendMessage, status, error, initialiseChat, sessionId, progress } =
-    useAssessmentChat({
-      skillIds: selectedSkillIds,
-      targetLevel,
-      roleId: selectedRoleId,
-      onAssessmentComplete,
-    });
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+    initialiseChat,
+    resumeChat,
+    sessionId,
+    progress,
+  } = useAssessmentChat({
+    skillIds: selectedSkillIds,
+    targetLevel,
+    roleId: selectedRoleId,
+    onAssessmentComplete,
+  });
 
   // Store session ID
   useEffect(() => {
@@ -62,23 +81,64 @@ export default function AssessPage() {
 
   const isLoading = status === "submitted" || status === "streaming";
 
+  // Resume existing session
   useEffect(() => {
-    if (selectedSkillIds.length > 0 && messages.length === 0 && status === "ready" && !needsApiKey) {
+    if (
+      resumeSessionId &&
+      messages.length === 0 &&
+      status === "ready" &&
+      !needsApiKey
+    ) {
+      resumeChat(resumeSessionId);
+    }
+  }, [resumeSessionId, messages.length, status, resumeChat, needsApiKey]);
+
+  // Start new session
+  useEffect(() => {
+    if (
+      !resumeSessionId &&
+      selectedSkillIds.length > 0 &&
+      messages.length === 0 &&
+      status === "ready" &&
+      !needsApiKey
+    ) {
       initialiseChat();
     }
-  }, [selectedSkillIds.length, messages.length, status, initialiseChat, needsApiKey]);
+  }, [
+    resumeSessionId,
+    selectedSkillIds.length,
+    messages.length,
+    status,
+    initialiseChat,
+    needsApiKey,
+  ]);
+
+  // Redirect to results if trying to resume a completed session (409)
+  useEffect(() => {
+    if (
+      resumeSessionId &&
+      error instanceof ApiError &&
+      error.status === 409
+    ) {
+      router.push(`/gap-analysis?session=${resumeSessionId}`);
+    }
+  }, [resumeSessionId, error, router]);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      login("/assess");
+      const redirect = resumeSessionId
+        ? `/assess?session=${resumeSessionId}`
+        : "/assess";
+      login(redirect);
     }
-  }, [authLoading, user, login]);
+  }, [authLoading, user, login, resumeSessionId]);
 
+  // Only redirect to onboarding if not resuming and no skills selected
   useEffect(() => {
-    if (selectedSkillIds.length === 0) {
+    if (!resumeSessionId && selectedSkillIds.length === 0) {
       router.push("/");
     }
-  }, [selectedSkillIds, router]);
+  }, [resumeSessionId, selectedSkillIds, router]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -86,7 +146,8 @@ export default function AssessPage() {
 
   const handleContinue = () => {
     setCurrentStep(2);
-    router.push("/gap-analysis");
+    const sid = sessionId || resumeSessionId;
+    router.push(`/gap-analysis${sid ? `?session=${sid}` : ""}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -104,7 +165,7 @@ export default function AssessPage() {
   };
 
   if (authLoading || !user) return null;
-  if (selectedSkillIds.length === 0) return null;
+  if (!resumeSessionId && selectedSkillIds.length === 0) return null;
 
   return (
     <PageShell currentStep={1} noPadding autoPromptApiKey>
@@ -115,45 +176,53 @@ export default function AssessPage() {
             Skill Assessment
           </h2>
           <p className="text-sm text-muted-foreground">
-            Assessing {selectedSkillIds.length} skill
-            {selectedSkillIds.length !== 1 ? "s" : ""}
+            {resumeSessionId
+              ? "Resuming your assessment..."
+              : `Assessing ${selectedSkillIds.length} skill${selectedSkillIds.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
         {/* Progress Bar */}
-        {progress && !assessmentDone && (() => {
-          const assessmentPercent = progress.type === "assessment"
-            ? (((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100
-            : 0;
-          const isOverflowing = progress.type === "assessment" && assessmentPercent >= 95;
+        {progress &&
+          !assessmentDone &&
+          (() => {
+            const assessmentPercent =
+              progress.type === "assessment"
+                ? (((progress.totalQuestions ?? 0) + 1) /
+                    (progress.maxQuestions ?? 25)) *
+                  100
+                : 0;
+            const isOverflowing =
+              progress.type === "assessment" && assessmentPercent >= 95;
 
-          return (
-            <div className="border-b border-border px-4 py-2 sm:px-6">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                <span>
-                  {progress.type === "calibration"
-                    ? `Calibration: Step ${progress.step ?? 1} of ${progress.totalSteps ?? 3}`
-                    : `Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
-                </span>
-                <span>
-                  {progress.type === "calibration"
-                    ? `${Math.round(((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100)}%`
-                    : isOverflowing
-                      ? "Almost done"
-                      : `${Math.round(assessmentPercent)}%`}
-                </span>
+            return (
+              <div className="border-b border-border px-4 py-2 sm:px-6">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                  <span>
+                    {progress.type === "calibration"
+                      ? `Calibration: Step ${progress.step ?? 1} of ${progress.totalSteps ?? 3}`
+                      : `Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
+                  </span>
+                  <span>
+                    {progress.type === "calibration"
+                      ? `${Math.round(((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100)}%`
+                      : isOverflowing
+                        ? "Almost done"
+                        : `${Math.round(assessmentPercent)}%`}
+                  </span>
+                </div>
+                <Progress
+                  value={
+                    progress.type === "calibration"
+                      ? ((progress.step ?? 1) / (progress.totalSteps ?? 3)) *
+                        100
+                      : Math.min(assessmentPercent, 95)
+                  }
+                  className="h-1.5"
+                />
               </div>
-              <Progress
-                value={
-                  progress.type === "calibration"
-                    ? ((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100
-                    : Math.min(assessmentPercent, 95)
-                }
-                className="h-1.5"
-              />
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {assessmentDone ? (
           <div className="flex-1 overflow-y-auto">
@@ -196,13 +265,21 @@ export default function AssessPage() {
                   error={error}
                   onRetry={() => {
                     if (messages.length === 0) {
-                      initialiseChat();
+                      if (resumeSessionId) {
+                        resumeChat(resumeSessionId);
+                      } else {
+                        initialiseChat();
+                      }
                     } else {
                       const lastUserMsg = [...messages]
                         .reverse()
                         .find((m) => m.role === "user");
                       if (lastUserMsg) sendMessage(lastUserMsg.content);
-                      else initialiseChat();
+                      else if (resumeSessionId) {
+                        resumeChat(resumeSessionId);
+                      } else {
+                        initialiseChat();
+                      }
                     }
                   }}
                 />

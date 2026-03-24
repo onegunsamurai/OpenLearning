@@ -1,32 +1,32 @@
 "use client";
 
-import { LearningPlan } from "@/lib/types";
+import type { AssessmentReportResponse } from "@/lib/api";
 import { BookOpen, Clock, Calendar, Target } from "lucide-react";
 import { motion } from "motion/react";
 
+type PipelinePlan = AssessmentReportResponse["learningPlan"];
+
 interface PlanHeaderProps {
-  plan: LearningPlan;
+  plan: PipelinePlan;
 }
 
 export function PlanHeader({ plan }: PlanHeaderProps) {
-  const totalModules = plan.phases.reduce(
-    (sum, p) => sum + p.modules.length,
+  const totalConcepts = plan.phases.reduce(
+    (sum, p) => sum + p.concepts.length,
     0
   );
-  const totalSkills = [
-    ...new Set(plan.phases.flatMap((p) => p.modules.flatMap((m) => m.skillIds))),
-  ].length;
+  const totalWeeks = Math.max(1, Math.round(plan.totalHours / 10));
 
   const stats = [
-    { icon: BookOpen, label: "Modules", value: totalModules },
-    { icon: Clock, label: "Hours", value: plan.totalHours },
-    { icon: Calendar, label: "Weeks", value: plan.totalWeeks },
-    { icon: Target, label: "Skills", value: totalSkills },
+    { icon: BookOpen, label: "Phases", value: plan.phases.length },
+    { icon: Clock, label: "Hours", value: Math.round(plan.totalHours) },
+    { icon: Calendar, label: "Weeks", value: totalWeeks },
+    { icon: Target, label: "Concepts", value: totalConcepts },
   ];
 
   return (
     <div className="space-y-4">
-      <h2 className="font-heading text-2xl font-bold">{plan.title}</h2>
+      <h2 className="font-heading text-2xl font-bold">Learning Plan</h2>
       <p className="text-sm text-muted-foreground">{plan.summary}</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((stat, i) => (

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from app.models.base import CamelModel
 
@@ -89,6 +89,22 @@ class LearningPlan(CamelModel):
     summary: str
 
 
+class EnrichedGapItem(CamelModel):
+    skill_id: str
+    skill_name: str
+    current_level: int  # 0-100
+    target_level: int  # 0-100
+    gap: int  # target - current
+    priority: Literal["critical", "high", "medium", "low"]
+    recommendation: str
+
+
+class EnrichedGapAnalysis(CamelModel):
+    overall_readiness: int  # 0-100
+    summary: str
+    gaps: list[EnrichedGapItem]
+
+
 class AssessmentState(TypedDict, total=False):
     candidate_id: str
     skill_ids: list[str]
@@ -116,6 +132,7 @@ class AssessmentState(TypedDict, total=False):
     knowledge_graph: KnowledgeGraph
     target_graph: KnowledgeGraph
     gap_nodes: list[KnowledgeNode]
+    enriched_gap_analysis: EnrichedGapAnalysis
     learning_plan: LearningPlan
 
     # Human-in-the-loop
@@ -149,6 +166,7 @@ def make_initial_state(
         knowledge_graph=KnowledgeGraph(),
         target_graph=KnowledgeGraph(),
         gap_nodes=[],
+        enriched_gap_analysis=EnrichedGapAnalysis(overall_readiness=0, summary="", gaps=[]),
         learning_plan=LearningPlan(phases=[], total_hours=0, summary=""),
         pending_question=None,
     )

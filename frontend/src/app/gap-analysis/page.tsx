@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { RadarChart } from "@/components/gap-analysis/RadarChart";
 import { GapCard } from "@/components/gap-analysis/GapCard";
@@ -10,72 +10,50 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
-import { api } from "@/lib/api";
+import { useSessionReport } from "@/hooks/useSessionReport";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { ArrowRight, Loader2 } from "lucide-react";
 
 export default function GapAnalysisPage() {
-  const router = useRouter();
-  const { proficiencyScores, gapAnalysis, setGapAnalysis, setCurrentStep } =
-    useAppStore();
+  return (
+    <Suspense>
+      <GapAnalysisPageContent />
+    </Suspense>
+  );
+}
 
+function GapAnalysisPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionParam = searchParams.get("session");
+
+  const { assessmentSessionId, setCurrentStep } = useAppStore();
   const { user, isLoading: authLoading } = useAuthStore();
   const { login } = useAuth();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const sessionId = sessionParam || assessmentSessionId;
+  const { report, loading, error, refetch } = useSessionReport(sessionId);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      login("/gap-analysis");
+      login("/gap-analysis" + (sessionParam ? `?session=${sessionParam}` : ""));
       return;
     }
-  }, [authLoading, user, login]);
+  }, [authLoading, user, login, sessionParam]);
 
   useEffect(() => {
-    if (proficiencyScores.length === 0) {
-      router.push("/");
-      return;
+    if (!sessionId && !authLoading && user) {
+      router.push("/dashboard");
     }
-
-    if (gapAnalysis) return;
-
-    const fetchGapAnalysis = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await api.gapAnalysis(proficiencyScores);
-        setGapAnalysis(data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Something went wrong"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGapAnalysis();
-  }, [proficiencyScores, gapAnalysis, setGapAnalysis, router]);
-
-  const handleRetry = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const data = await api.gapAnalysis(proficiencyScores);
-      setGapAnalysis(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed again. Please try later."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [sessionId, authLoading, user, router]);
 
   const handleContinue = () => {
     setCurrentStep(3);
-    router.push("/learning-plan");
+    router.push(`/learning-plan${sessionId ? `?session=${sessionId}` : ""}`);
   };
 
   if (authLoading || !user) return null;
-  if (proficiencyScores.length === 0) return null;
+  if (!sessionId) return null;
 
   if (loading) {
     return (
@@ -83,9 +61,8 @@ export default function GapAnalysisPage() {
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan" />
           <p className="text-muted-foreground font-mono text-sm">
-            Analyzing skill gaps...
+            Loading gap analysis...
           </p>
-          {/* Skeleton */}
           <div className="w-full max-w-4xl grid gap-6 lg:grid-cols-2 mt-8">
             <div className="h-[250px] sm:h-[350px] rounded-xl bg-card border border-border animate-pulse" />
             <div className="space-y-4">
@@ -106,13 +83,15 @@ export default function GapAnalysisPage() {
     return (
       <PageShell currentStep={2}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <ApiErrorDisplay error={error} onRetry={handleRetry} />
+          <ApiErrorDisplay error={error} onRetry={refetch} />
         </div>
       </PageShell>
     );
   }
 
-  if (!gapAnalysis) return null;
+  if (!report) return null;
+
+  const { gapAnalysis } = report;
 
   return (
     <PageShell currentStep={2}>

@@ -527,6 +527,87 @@ Export the full assessment report as a formatted Markdown file.
 
 ---
 
+### GET `/api/assessment/{session_id}/resume`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+>
+> **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
+
+Resume an active assessment session that was interrupted or left incomplete. Loads the pending question from the LangGraph checkpoint.
+
+**Response** (200):
+
+```json
+{
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+  "question": "Can you explain how React hooks work?",
+  "questionType": "assessment",
+  "step": 4,
+  "totalSteps": 5
+}
+```
+
+**Response** (403 — not your session):
+
+```json
+{"detail": "Not your session"}
+```
+
+**Response** (404 — session not found):
+
+```json
+{"detail": "Session not found"}
+```
+
+**Response** (409 — session already completed or no pending question):
+
+```json
+{"detail": "Session already completed"}
+```
+
+**Response** (410 — session timed out):
+
+```json
+{"detail": "Session has timed out"}
+```
+
+---
+
+### GET `/api/user/assessments`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+List all assessment sessions for the authenticated user, sorted by creation date (newest first). Includes basic result data for completed sessions.
+
+**Response** (200):
+
+```json
+[
+  {
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "completed",
+    "skillIds": ["react", "typescript"],
+    "targetLevel": "mid",
+    "createdAt": "2026-03-20T10:30:00Z",
+    "completedAt": "2026-03-20T11:45:00Z",
+    "overallReadiness": 72,
+    "skillCount": 2
+  },
+  {
+    "sessionId": "660e8400-e29b-41d4-a716-446655440001",
+    "status": "active",
+    "skillIds": ["python"],
+    "targetLevel": "mid",
+    "createdAt": "2026-03-22T09:00:00Z",
+    "completedAt": null,
+    "overallReadiness": null,
+    "skillCount": 1
+  }
+]
+```
+
+---
+
 ### POST `/api/gap-analysis`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.

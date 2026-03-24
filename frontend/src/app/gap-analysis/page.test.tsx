@@ -1,36 +1,35 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import type { GapAnalysis, ProficiencyScore } from "@/lib/types";
+import type { AssessmentReportResponse } from "@/lib/api";
 
 // All mocks used inside vi.mock factories must live in vi.hoisted
 const {
-  mockState,
   mockRouter,
-  mockSetGapAnalysis,
   mockSetCurrentStep,
-  mockGapAnalysisApi,
+  mockSessionReport,
+  mockSearchParams,
+  mockStoreState,
 } = vi.hoisted(() => {
-  const mockSetGapAnalysis = vi.fn();
-  const state = {
-    scores: [] as ProficiencyScore[],
-    gapAnalysis: null as GapAnalysis | null,
-  };
-  mockSetGapAnalysis.mockImplementation((data: GapAnalysis) => {
-    state.gapAnalysis = data;
-  });
   return {
-    mockState: state,
-    // STABLE router reference — prevents useEffect re-firing on every render
     mockRouter: { push: vi.fn() },
-    mockSetGapAnalysis,
     mockSetCurrentStep: vi.fn(),
-    mockGapAnalysisApi: vi.fn(),
+    mockSessionReport: {
+      report: null as AssessmentReportResponse | null,
+      loading: false,
+      error: null as Error | null,
+      refetch: vi.fn(),
+    },
+    mockSearchParams: { get: vi.fn().mockReturnValue(null) },
+    mockStoreState: {
+      assessmentSessionId: "sess-123" as string | null,
+    },
   };
 });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/components/gap-analysis/RadarChart", () => ({
@@ -59,22 +58,14 @@ vi.mock("@/components/error/api-error-display", () => ({
 
 vi.mock("@/lib/store", () => ({
   useAppStore: () => ({
-    proficiencyScores: mockState.scores,
-    gapAnalysis: mockState.gapAnalysis,
-    setGapAnalysis: mockSetGapAnalysis,
+    assessmentSessionId: mockStoreState.assessmentSessionId,
     setCurrentStep: mockSetCurrentStep,
   }),
 }));
 
-vi.mock("@/lib/api", async (importOriginal) => {
-  const mod = await importOriginal<typeof import("@/lib/api")>();
-  return {
-    ApiError: mod.ApiError,
-    api: {
-      gapAnalysis: (...args: unknown[]) => mockGapAnalysisApi(...args),
-    },
-  };
-});
+vi.mock("@/hooks/useSessionReport", () => ({
+  useSessionReport: () => mockSessionReport,
+}));
 
 vi.mock("@/lib/auth-store", () => ({
   useAuthStore: () => ({ user: { userId: "u1", displayName: "test", avatarUrl: "", hasApiKey: false, email: null }, isLoading: false }),
@@ -84,142 +75,113 @@ vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
 }));
 
-const sampleScores: ProficiencyScore[] = [
-  {
-    skillId: "react",
-    skillName: "React",
-    score: 72,
-    confidence: 0.85,
-    reasoning: "Good",
-  },
-];
-
-const sampleGapAnalysis: GapAnalysis = {
-  overallReadiness: 65,
-  summary: "Moderate readiness",
-  gaps: [
+const sampleReport: AssessmentReportResponse = {
+  proficiencyScores: [
     {
-      skillId: "typescript",
-      skillName: "TypeScript",
-      currentLevel: 40,
-      targetLevel: 80,
-      gap: 40,
-      priority: "high",
-      recommendation: "Study generics",
+      skillId: "react",
+      skillName: "React",
+      score: 72,
+      confidence: 0.85,
+      reasoning: "Good",
     },
   ],
+  knowledgeGraph: { nodes: [] },
+  gapAnalysis: {
+    overallReadiness: 65,
+    summary: "Moderate readiness",
+    gaps: [
+      {
+        skillId: "typescript",
+        skillName: "TypeScript",
+        currentLevel: 40,
+        targetLevel: 80,
+        gap: 40,
+        priority: "high",
+        recommendation: "Study generics",
+      },
+    ],
+  },
+  learningPlan: {
+    summary: "Learn TypeScript",
+    totalHours: 20,
+    phases: [],
+  },
 };
 
 import GapAnalysisPage from "./page";
 
 beforeEach(() => {
   mockRouter.push.mockClear();
-  mockSetGapAnalysis.mockClear();
-  mockSetGapAnalysis.mockImplementation((data: GapAnalysis) => {
-    mockState.gapAnalysis = data;
-  });
   mockSetCurrentStep.mockClear();
-  mockGapAnalysisApi.mockReset();
-  mockState.scores = sampleScores;
-  mockState.gapAnalysis = null;
+  mockSessionReport.report = null;
+  mockSessionReport.loading = false;
+  mockSessionReport.error = null;
+  mockSessionReport.refetch.mockClear();
+  mockSearchParams.get.mockReturnValue(null);
+  mockStoreState.assessmentSessionId = "sess-123";
 });
 
 describe("GapAnalysisPage", () => {
-  it("redirects when no scores", () => {
-    mockState.scores = [];
+  it("redirects when no session ID", () => {
+    mockStoreState.assessmentSessionId = null;
     render(<GapAnalysisPage />);
-    expect(mockRouter.push).toHaveBeenCalledWith("/");
+    expect(mockRouter.push).toHaveBeenCalledWith("/dashboard");
   });
 
-  it("returns null when no scores", () => {
-    mockState.scores = [];
+  it("returns null when no session ID", () => {
+    mockStoreState.assessmentSessionId = null;
     const { container } = render(<GapAnalysisPage />);
     expect(container.innerHTML).toBe("");
   });
 
   it("shows loading spinner during fetch", () => {
-    mockGapAnalysisApi.mockImplementation(() => new Promise(() => {}));
+    mockSessionReport.loading = true;
     render(<GapAnalysisPage />);
-    expect(screen.getByText("Analyzing skill gaps...")).toBeInTheDocument();
+    expect(screen.getByText("Loading gap analysis...")).toBeInTheDocument();
   });
 
-  it("renders components on success", async () => {
-    mockGapAnalysisApi.mockResolvedValueOnce(sampleGapAnalysis);
+  it("renders components on success", () => {
+    mockSessionReport.report = sampleReport;
     render(<GapAnalysisPage />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
-      expect(screen.getByTestId("gap-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("gap-card")).toBeInTheDocument();
-    });
-  });
-
-  it("calls setGapAnalysis on success", async () => {
-    mockGapAnalysisApi.mockResolvedValueOnce(sampleGapAnalysis);
-    render(<GapAnalysisPage />);
-
-    await waitFor(() => {
-      expect(mockSetGapAnalysis).toHaveBeenCalledWith(sampleGapAnalysis);
-    });
-  });
-
-  it("shows error message on failure", async () => {
-    mockGapAnalysisApi.mockRejectedValueOnce(new Error("Network error"));
-    render(<GapAnalysisPage />);
-    await waitFor(() => {
-      expect(screen.getByText("Network error")).toBeInTheDocument();
-    });
-  });
-
-  it("calls api again on retry", async () => {
-    const user = userEvent.setup();
-    mockGapAnalysisApi.mockRejectedValueOnce(new Error("First failure"));
-    render(<GapAnalysisPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("First failure")).toBeInTheDocument();
-    });
-
-    mockGapAnalysisApi.mockResolvedValueOnce(sampleGapAnalysis);
-    await user.click(screen.getByText("Retry"));
-
-    await waitFor(() => {
-      expect(mockSetGapAnalysis).toHaveBeenCalledWith(sampleGapAnalysis);
-    });
-  });
-
-  it("shows retry failure message", async () => {
-    const user = userEvent.setup();
-    mockGapAnalysisApi.mockRejectedValueOnce(new Error("First failure"));
-    render(<GapAnalysisPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("First failure")).toBeInTheDocument();
-    });
-
-    mockGapAnalysisApi.mockRejectedValueOnce(new Error("Second failure"));
-    await user.click(screen.getByText("Retry"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Second failure")).toBeInTheDocument();
-    });
-  });
-
-  it("skips fetch when cached", () => {
-    mockState.gapAnalysis = sampleGapAnalysis;
-    render(<GapAnalysisPage />);
-    expect(mockGapAnalysisApi).not.toHaveBeenCalled();
     expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+    expect(screen.getByTestId("gap-summary")).toBeInTheDocument();
+    expect(screen.getByTestId("gap-card")).toBeInTheDocument();
+  });
+
+  it("shows error message on failure", () => {
+    mockSessionReport.error = new Error("Network error");
+    render(<GapAnalysisPage />);
+    expect(screen.getByText("Network error")).toBeInTheDocument();
+  });
+
+  it("calls refetch on retry", async () => {
+    const user = userEvent.setup();
+    mockSessionReport.error = new Error("First failure");
+    render(<GapAnalysisPage />);
+
+    expect(screen.getByText("First failure")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Retry"));
+    expect(mockSessionReport.refetch).toHaveBeenCalled();
   });
 
   it("continue navigates to learning plan", async () => {
     const user = userEvent.setup();
-    mockState.gapAnalysis = sampleGapAnalysis;
+    mockSessionReport.report = sampleReport;
     render(<GapAnalysisPage />);
 
     await user.click(screen.getByText("Generate Learning Plan"));
 
     expect(mockSetCurrentStep).toHaveBeenCalledWith(3);
-    expect(mockRouter.push).toHaveBeenCalledWith("/learning-plan");
+    expect(mockRouter.push).toHaveBeenCalledWith("/learning-plan?session=sess-123");
+  });
+
+  it("uses session search param when provided", () => {
+    mockSearchParams.get.mockReturnValue("param-sess");
+    mockSessionReport.report = sampleReport;
+    render(<GapAnalysisPage />);
+
+    expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
   });
 });

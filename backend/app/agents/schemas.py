@@ -108,6 +108,29 @@ class PlanOutput(BaseModel):
     phases: list[PlanPhaseOutput] = Field(description="Ordered phases of the learning plan")
 
 
+# --- Gap Enrichment ---
+
+
+class GapRecommendationOutput(BaseModel):
+    """A single gap recommendation from the LLM."""
+
+    concept: str = Field(description="The concept name (must match a gap node concept)")
+    recommendation: str = Field(
+        description="A specific, actionable 1-sentence learning recommendation"
+    )
+
+
+class GapEnrichmentOutput(BaseModel):
+    """Output schema for gap analysis enrichment."""
+
+    summary: str = Field(
+        description="2-3 sentence executive summary of the candidate's readiness and gaps"
+    )
+    recommendations: list[GapRecommendationOutput] = Field(
+        description="One recommendation per gap concept"
+    )
+
+
 # --- Content Generation (Learning Material Pipeline) ---
 
 

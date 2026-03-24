@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -71,6 +71,8 @@ class AssessmentSession(Base):
     user: Mapped[User | None] = relationship(back_populates="sessions")
     result: Mapped[AssessmentResult | None] = relationship(back_populates="session")
 
+    __table_args__ = (Index("ix_assessment_sessions_user_created", "user_id", "created_at"),)
+
 
 class AssessmentResult(Base):
     __tablename__ = "assessment_results"
@@ -83,6 +85,7 @@ class AssessmentResult(Base):
     gap_nodes: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     learning_plan: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     proficiency_scores: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    enriched_gap_analysis: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

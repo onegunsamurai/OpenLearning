@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import uuid
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from langgraph.types import Command
@@ -31,6 +32,13 @@ class AssessmentStartRequest(CamelModel):
     target_level: str = "mid"
     role_id: str | None = None
 
+    @field_validator("skill_ids")
+    @classmethod
+    def validate_skill_ids(cls, v: list[str]) -> list[str]:
+        if len(v) > 50:
+            raise ValueError("Too many skills (max 50)")
+        return v
+
     @field_validator("role_id")
     @classmethod
     def validate_role_id(cls, v: str | None) -> str | None:
@@ -49,6 +57,13 @@ class AssessmentStartResponse(CamelModel):
 
 class AssessmentRespondRequest(CamelModel):
     response: str
+
+    @field_validator("response")
+    @classmethod
+    def validate_response_length(cls, v: str) -> str:
+        if len(v) > 10_000:
+            raise ValueError("Response too long (max 10,000 characters)")
+        return v
 
 
 class KnowledgeNodeOut(CamelModel):
@@ -98,9 +113,25 @@ class GapNodeOut(CamelModel):
     prerequisites: list[str]
 
 
+class EnrichedGapItemOut(CamelModel):
+    skill_id: str
+    skill_name: str
+    current_level: int
+    target_level: int
+    gap: int
+    priority: Literal["critical", "high", "medium", "low"]
+    recommendation: str
+
+
+class EnrichedGapAnalysisOut(CamelModel):
+    overall_readiness: int
+    summary: str
+    gaps: list[EnrichedGapItemOut]
+
+
 class AssessmentReportResponse(CamelModel):
     knowledge_graph: KnowledgeGraphOut
-    gap_nodes: list[GapNodeOut]
+    gap_analysis: EnrichedGapAnalysisOut
     learning_plan: LearningPlanOut
     proficiency_scores: list[ProficiencyScoreOut]
 
@@ -206,6 +237,8 @@ async def assessment_respond(
     # Touch updated_at to prevent session timeout during active assessments
     session_row = await db.get(AssessmentSession, session_id)
     if session_row:
+        if session_row.user_id != user.user_id:
+            raise HTTPException(status_code=403, detail="Not your session")
         if session_row.status == "timed_out":
             raise HTTPException(status_code=410, detail="Session has timed out")
         session_row.updated_at = func.now()
@@ -291,9 +324,16 @@ async def assessment_respond(
     "/assessment/{session_id}/graph", response_model=KnowledgeGraphOut, response_model_by_alias=True
 )
 async def assessment_graph(
-    session_id: str, req: Request, db: AsyncSession = Depends(get_db)
+    session_id: str,
+    req: Request,
+    db: AsyncSession = Depends(get_db),
+    user: AuthUser = Depends(get_current_user),
 ) -> KnowledgeGraphOut:
     thread_id = await _get_thread_id(session_id, db)
+
+    session_row = await db.get(AssessmentSession, session_id)
+    if session_row and session_row.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
 
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
@@ -322,10 +362,28 @@ async def assessment_graph(
     response_model_by_alias=True,
 )
 async def assessment_report(
-    session_id: str, req: Request, db: AsyncSession = Depends(get_db)
+    session_id: str,
+    req: Request,
+    db: AsyncSession = Depends(get_db),
+    user: AuthUser = Depends(get_current_user),
 ) -> AssessmentReportResponse:
     thread_id = await _get_thread_id(session_id, db)
 
+    # Ownership check
+    session_row = await db.get(AssessmentSession, session_id)
+    if session_row and session_row.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+
+    # Try DB-stored result first (optimized for completed sessions)
+    result_row_res = await db.execute(
+        select(AssessmentResult).where(AssessmentResult.session_id == session_id)
+    )
+    result_row = result_row_res.scalar_one_or_none()
+
+    if result_row:
+        return _build_report_from_db(result_row)
+
+    # Fall back to live graph state for active sessions
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
     state = (await graph.aget_state(config)).values
@@ -333,6 +391,7 @@ async def assessment_report(
     kg = state.get("knowledge_graph")
     gap_nodes = state.get("gap_nodes", [])
     learning_plan = state.get("learning_plan")
+    enriched = state.get("enriched_gap_analysis")
     proficiency_scores = _build_proficiency_scores(state)
 
     # Store result in DB and mark session completed (idempotent)
@@ -347,9 +406,9 @@ async def assessment_report(
                 gap_nodes=[n.model_dump() for n in gap_nodes] if gap_nodes else None,
                 learning_plan=learning_plan.model_dump() if learning_plan else None,
                 proficiency_scores=[s.model_dump() for s in proficiency_scores],
+                enriched_gap_analysis=enriched.model_dump() if enriched else None,
             )
         )
-        session_row = await db.get(AssessmentSession, session_id)
         if session_row:
             session_row.status = "completed"
         await db.commit()
@@ -358,55 +417,26 @@ async def assessment_report(
         trigger_content_pipeline(session_id, req.app)
 
     return AssessmentReportResponse(
-        knowledge_graph=KnowledgeGraphOut(
-            nodes=[
-                KnowledgeNodeOut(
-                    concept=n.concept,
-                    confidence=n.confidence,
-                    bloom_level=n.bloom_level.value,
-                    prerequisites=n.prerequisites,
-                )
-                for n in (kg.nodes if kg else [])
-            ]
-        ),
-        gap_nodes=[
-            GapNodeOut(
-                concept=n.concept,
-                current_confidence=n.confidence,
-                target_bloom_level=n.bloom_level.value,
-                prerequisites=n.prerequisites,
-            )
-            for n in gap_nodes
-        ],
-        learning_plan=LearningPlanOut(
-            summary=learning_plan.summary if learning_plan else "",
-            total_hours=learning_plan.total_hours if learning_plan else 0,
-            phases=[
-                LearningPhaseOut(
-                    phase_number=p.phase_number,
-                    title=p.title,
-                    concepts=p.concepts,
-                    rationale=p.rationale,
-                    resources=[
-                        ResourceOut(type=r.type, title=r.title, url=r.url) for r in p.resources
-                    ],
-                    estimated_hours=p.estimated_hours,
-                )
-                for p in (learning_plan.phases if learning_plan else [])
-            ],
-        ),
+        knowledge_graph=_build_kg_out(kg),
+        gap_analysis=_build_enriched_gap_out(enriched),
+        learning_plan=_build_learning_plan_out(learning_plan),
         proficiency_scores=proficiency_scores,
     )
 
 
 @router.get("/assessment/{session_id}/export")
 async def assessment_export(
-    session_id: str, req: Request, db: AsyncSession = Depends(get_db)
+    session_id: str,
+    req: Request,
+    db: AsyncSession = Depends(get_db),
+    user: AuthUser = Depends(get_current_user),
 ) -> PlainTextResponse:
     thread_id = await _get_thread_id(session_id, db)
 
-    # Fetch session row for metadata
+    # Fetch session row for metadata + ownership check
     session_row = await db.get(AssessmentSession, session_id)
+    if session_row and session_row.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
 
     # Try DB-stored result first
     result_row_res = await db.execute(
@@ -453,6 +483,183 @@ async def assessment_export(
         headers={
             "Content-Disposition": f'attachment; filename="assessment-{session_id[:8]}.md"',
         },
+    )
+
+
+@router.get(
+    "/assessment/{session_id}/resume",
+    response_model=AssessmentStartResponse,
+    response_model_by_alias=True,
+)
+async def assessment_resume(
+    session_id: str,
+    req: Request,
+    user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    _api_key: str = Depends(get_user_api_key),
+) -> AssessmentStartResponse:
+    """Resume an active assessment session by loading the pending interrupt."""
+    session_row = await db.get(AssessmentSession, session_id)
+    if not session_row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session_row.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+    if session_row.status == "timed_out":
+        raise HTTPException(status_code=410, detail="Session has timed out")
+    if session_row.status == "completed":
+        raise HTTPException(status_code=409, detail="Session already completed")
+
+    graph = req.app.state.graph
+    config = {"configurable": {"thread_id": session_row.thread_id}}
+
+    graph_state = await graph.aget_state(config)
+
+    interrupt_data = None
+    for task in graph_state.tasks or []:
+        if hasattr(task, "interrupts") and task.interrupts:
+            interrupt_data = task.interrupts[0].value
+            break
+
+    if not interrupt_data:
+        raise HTTPException(status_code=409, detail="No pending question found")
+
+    question = interrupt_data.get("question")
+    if not isinstance(question, dict) or "text" not in question:
+        raise HTTPException(status_code=500, detail="Malformed interrupt data in checkpoint")
+
+    return AssessmentStartResponse(
+        session_id=session_id,
+        question=question["text"],
+        question_type=interrupt_data.get("type", "assessment"),
+        step=interrupt_data.get("step", 1),
+        total_steps=interrupt_data.get("total_steps", 3),
+    )
+
+
+# --- Helper functions ---
+
+
+def _build_kg_out(kg) -> KnowledgeGraphOut:
+    """Build KnowledgeGraphOut from a KnowledgeGraph state object."""
+    if not kg:
+        return KnowledgeGraphOut(nodes=[])
+    return KnowledgeGraphOut(
+        nodes=[
+            KnowledgeNodeOut(
+                concept=n.concept,
+                confidence=n.confidence,
+                bloom_level=n.bloom_level.value
+                if hasattr(n.bloom_level, "value")
+                else n.bloom_level,
+                prerequisites=n.prerequisites,
+            )
+            for n in (kg.nodes if hasattr(kg, "nodes") else [])
+        ]
+    )
+
+
+def _build_enriched_gap_out(enriched) -> EnrichedGapAnalysisOut:
+    """Build EnrichedGapAnalysisOut from state or DB data."""
+    if not enriched:
+        return EnrichedGapAnalysisOut(overall_readiness=0, summary="", gaps=[])
+
+    # Handle both Pydantic model and dict (from DB JSONB)
+    if isinstance(enriched, dict):
+        return EnrichedGapAnalysisOut(
+            overall_readiness=enriched.get("overall_readiness", 0),
+            summary=enriched.get("summary", ""),
+            gaps=[EnrichedGapItemOut(**gap) for gap in enriched.get("gaps", [])],
+        )
+
+    return EnrichedGapAnalysisOut(
+        overall_readiness=enriched.overall_readiness,
+        summary=enriched.summary,
+        gaps=[
+            EnrichedGapItemOut(
+                skill_id=g.skill_id,
+                skill_name=g.skill_name,
+                current_level=g.current_level,
+                target_level=g.target_level,
+                gap=g.gap,
+                priority=g.priority,
+                recommendation=g.recommendation,
+            )
+            for g in enriched.gaps
+        ],
+    )
+
+
+def _build_learning_plan_out(learning_plan) -> LearningPlanOut:
+    """Build LearningPlanOut from state or DB data."""
+    if not learning_plan:
+        return LearningPlanOut(summary="", total_hours=0, phases=[])
+
+    # Handle dict (from DB JSONB)
+    if isinstance(learning_plan, dict):
+        return LearningPlanOut(
+            summary=learning_plan.get("summary", ""),
+            total_hours=learning_plan.get("total_hours", 0),
+            phases=[
+                LearningPhaseOut(
+                    phase_number=p.get("phase_number", 0),
+                    title=p.get("title", ""),
+                    concepts=p.get("concepts", []),
+                    rationale=p.get("rationale", ""),
+                    resources=[
+                        ResourceOut(
+                            type=r.get("type", ""), title=r.get("title", ""), url=r.get("url")
+                        )
+                        for r in p.get("resources", [])
+                    ],
+                    estimated_hours=p.get("estimated_hours", 0),
+                )
+                for p in learning_plan.get("phases", [])
+            ],
+        )
+
+    return LearningPlanOut(
+        summary=learning_plan.summary,
+        total_hours=learning_plan.total_hours,
+        phases=[
+            LearningPhaseOut(
+                phase_number=p.phase_number,
+                title=p.title,
+                concepts=p.concepts,
+                rationale=p.rationale,
+                resources=[ResourceOut(type=r.type, title=r.title, url=r.url) for r in p.resources],
+                estimated_hours=p.estimated_hours,
+            )
+            for p in learning_plan.phases
+        ],
+    )
+
+
+def _build_report_from_db(result_row: AssessmentResult) -> AssessmentReportResponse:
+    """Build report response from a stored AssessmentResult row."""
+    # Rebuild proficiency scores from stored JSONB
+    proficiency_scores = [ProficiencyScoreOut(**s) for s in (result_row.proficiency_scores or [])]
+
+    # Rebuild knowledge graph from stored JSONB
+    kg_data = result_row.knowledge_graph
+    kg_out = KnowledgeGraphOut(nodes=[])
+    if kg_data and "nodes" in kg_data:
+        kg_out = KnowledgeGraphOut(
+            nodes=[
+                KnowledgeNodeOut(
+                    concept=n.get("concept", ""),
+                    confidence=n.get("confidence", 0),
+                    bloom_level=n.get("bloom_level", "remember"),
+                    prerequisites=n.get("prerequisites", []),
+                )
+                for n in kg_data["nodes"]
+            ]
+        )
+
+    return AssessmentReportResponse(
+        knowledge_graph=kg_out,
+        gap_analysis=_build_enriched_gap_out(result_row.enriched_gap_analysis),
+        learning_plan=_build_learning_plan_out(result_row.learning_plan),
+        proficiency_scores=proficiency_scores,
     )
 
 

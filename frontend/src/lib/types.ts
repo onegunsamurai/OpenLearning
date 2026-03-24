@@ -15,4 +15,11 @@ export type {
   ValidateKeyResponse,
   RegisterRequest,
   LoginRequest,
+  EnrichedGapAnalysisOut,
+  EnrichedGapItemOut,
+  UserAssessmentSummary,
+  AssessmentReportResponse,
+  LearningPlanOut,
+  LearningPhaseOut,
+  ResourceOut,
 } from "@/lib/generated/api-client";

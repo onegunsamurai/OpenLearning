@@ -29,10 +29,7 @@ export type ApiKeySetRequest = {
  */
 export type AssessmentReportResponse = {
     knowledgeGraph: KnowledgeGraphOut;
-    /**
-     * Gapnodes
-     */
-    gapNodes: Array<GapNodeOut>;
+    gapAnalysis: EnrichedGapAnalysisOut;
     learningPlan: LearningPlanOut;
     /**
      * Proficiencyscores
@@ -121,6 +118,58 @@ export type AuthMeResponse = {
 };
 
 /**
+ * EnrichedGapAnalysisOut
+ */
+export type EnrichedGapAnalysisOut = {
+    /**
+     * Overallreadiness
+     */
+    overallReadiness: number;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Gaps
+     */
+    gaps: Array<EnrichedGapItemOut>;
+};
+
+/**
+ * EnrichedGapItemOut
+ */
+export type EnrichedGapItemOut = {
+    /**
+     * Skillid
+     */
+    skillId: string;
+    /**
+     * Skillname
+     */
+    skillName: string;
+    /**
+     * Currentlevel
+     */
+    currentLevel: number;
+    /**
+     * Targetlevel
+     */
+    targetLevel: number;
+    /**
+     * Gap
+     */
+    gap: number;
+    /**
+     * Priority
+     */
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    /**
+     * Recommendation
+     */
+    recommendation: string;
+};
+
+/**
  * GapAnalysis
  */
 export type GapAnalysis = {
@@ -180,28 +229,6 @@ export type GapItem = {
      * Recommendation
      */
     recommendation: string;
-};
-
-/**
- * GapNodeOut
- */
-export type GapNodeOut = {
-    /**
-     * Concept
-     */
-    concept: string;
-    /**
-     * Currentconfidence
-     */
-    currentConfidence: number;
-    /**
-     * Targetbloomlevel
-     */
-    targetBloomLevel: string;
-    /**
-     * Prerequisites
-     */
-    prerequisites: Array<string>;
 };
 
 /**
@@ -395,6 +422,60 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * MaterialOut
+ */
+export type MaterialOut = {
+    /**
+     * Conceptid
+     */
+    conceptId: string;
+    /**
+     * Domain
+     */
+    domain: string;
+    /**
+     * Bloomscore
+     */
+    bloomScore: number;
+    /**
+     * Qualityscore
+     */
+    qualityScore: number;
+    /**
+     * Iterationcount
+     */
+    iterationCount: number;
+    /**
+     * Qualityflag
+     */
+    qualityFlag?: string | null;
+    /**
+     * Material
+     */
+    material: {
+        [key: string]: unknown;
+    };
+    /**
+     * Generatedat
+     */
+    generatedAt: string;
+};
+
+/**
+ * MaterialsResponse
+ */
+export type MaterialsResponse = {
+    /**
+     * Sessionid
+     */
+    sessionId: string;
+    /**
+     * Materials
+     */
+    materials: Array<MaterialOut>;
 };
 
 /**
@@ -624,6 +705,44 @@ export type SkillsResponse = {
 };
 
 /**
+ * UserAssessmentSummary
+ */
+export type UserAssessmentSummary = {
+    /**
+     * Sessionid
+     */
+    sessionId: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Skillids
+     */
+    skillIds: Array<string>;
+    /**
+     * Targetlevel
+     */
+    targetLevel: string;
+    /**
+     * Createdat
+     */
+    createdAt: string;
+    /**
+     * Completedat
+     */
+    completedAt?: string | null;
+    /**
+     * Overallreadiness
+     */
+    overallReadiness?: number | null;
+    /**
+     * Skillcount
+     */
+    skillCount: number;
+};
+
+/**
  * ValidateKeyResponse
  */
 export type ValidateKeyResponse = {
@@ -847,6 +966,36 @@ export type AssessmentExportApiAssessmentSessionIdExportGetResponses = {
     200: unknown;
 };
 
+export type AssessmentResumeApiAssessmentSessionIdResumeGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/assessment/{session_id}/resume';
+};
+
+export type AssessmentResumeApiAssessmentSessionIdResumeGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AssessmentResumeApiAssessmentSessionIdResumeGetError = AssessmentResumeApiAssessmentSessionIdResumeGetErrors[keyof AssessmentResumeApiAssessmentSessionIdResumeGetErrors];
+
+export type AssessmentResumeApiAssessmentSessionIdResumeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: AssessmentStartResponse;
+};
+
+export type AssessmentResumeApiAssessmentSessionIdResumeGetResponse = AssessmentResumeApiAssessmentSessionIdResumeGetResponses[keyof AssessmentResumeApiAssessmentSessionIdResumeGetResponses];
+
 export type GetRolesApiRolesGetData = {
     body?: never;
     path?: never;
@@ -944,6 +1093,36 @@ export type LearningPlanApiLearningPlanPostResponses = {
 };
 
 export type LearningPlanApiLearningPlanPostResponse = LearningPlanApiLearningPlanPostResponses[keyof LearningPlanApiLearningPlanPostResponses];
+
+export type GetMaterialsApiMaterialsSessionIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/materials/{session_id}';
+};
+
+export type GetMaterialsApiMaterialsSessionIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetMaterialsApiMaterialsSessionIdGetError = GetMaterialsApiMaterialsSessionIdGetErrors[keyof GetMaterialsApiMaterialsSessionIdGetErrors];
+
+export type GetMaterialsApiMaterialsSessionIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: MaterialsResponse;
+};
+
+export type GetMaterialsApiMaterialsSessionIdGetResponse = GetMaterialsApiMaterialsSessionIdGetResponses[keyof GetMaterialsApiMaterialsSessionIdGetResponses];
 
 export type GithubLoginApiAuthGithubGetData = {
     body?: never;
@@ -1193,3 +1372,30 @@ export type LoginApiAuthLoginPostResponses = {
 };
 
 export type LoginApiAuthLoginPostResponse = LoginApiAuthLoginPostResponses[keyof LoginApiAuthLoginPostResponses];
+
+export type ListUserAssessmentsApiUserAssessmentsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/user/assessments';
+};
+
+export type ListUserAssessmentsApiUserAssessmentsGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListUserAssessmentsApiUserAssessmentsGetError = ListUserAssessmentsApiUserAssessmentsGetErrors[keyof ListUserAssessmentsApiUserAssessmentsGetErrors];
+
+export type ListUserAssessmentsApiUserAssessmentsGetResponses = {
+    /**
+     * Response List User Assessments Api User Assessments Get
+     *
+     * Successful Response
+     */
+    200: Array<UserAssessmentSummary>;
+};
+
+export type ListUserAssessmentsApiUserAssessmentsGetResponse = ListUserAssessmentsApiUserAssessmentsGetResponses[keyof ListUserAssessmentsApiUserAssessmentsGetResponses];

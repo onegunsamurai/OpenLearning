@@ -173,6 +173,7 @@ async def seed_session(
     session_id: str = "sess-001",
     thread_id: str = "thread-001",
     status: str = "active",
+    user_id: str = "test-user-id",
 ) -> str:
     session = AssessmentSession(
         session_id=session_id,
@@ -180,6 +181,7 @@ async def seed_session(
         skill_ids=["react"],
         target_level="mid",
         status=status,
+        user_id=user_id,
     )
     db.add(session)
     await db.commit()
