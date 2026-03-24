@@ -190,7 +190,11 @@ async def github_callback(
             token_data = token_resp.json()
             gh_access_token = token_data.get("access_token")
             if not gh_access_token:
-                logger.warning("GitHub token exchange failed: %s", token_data)
+                logger.warning(
+                    "GitHub token exchange failed: error=%s description=%s",
+                    token_data.get("error"),
+                    token_data.get("error_description"),
+                )
                 return RedirectResponse(
                     url=f"{settings.frontend_url}/?error=auth_failed", status_code=302
                 )

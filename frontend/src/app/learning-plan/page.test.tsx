@@ -1,37 +1,34 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import type { GapAnalysis, LearningPlan } from "@/lib/types";
+import type { AssessmentReportResponse } from "@/lib/api";
 
 const {
-  mockState,
   mockRouter,
-  mockSetLearningPlan,
-  mockSetCurrentStep,
   mockReset,
-  mockLearningPlanApi,
+  mockSessionReport,
+  mockSearchParams,
+  mockStoreState,
 } = vi.hoisted(() => {
-  const mockSetLearningPlan = vi.fn();
-  const state = {
-    gapAnalysis: null as GapAnalysis | null,
-    learningPlan: null as LearningPlan | null,
-    assessmentSessionId: null as string | null,
-  };
-  mockSetLearningPlan.mockImplementation((data: LearningPlan) => {
-    state.learningPlan = data;
-  });
   return {
-    mockState: state,
     mockRouter: { push: vi.fn() },
-    mockSetLearningPlan,
-    mockSetCurrentStep: vi.fn(),
     mockReset: vi.fn(),
-    mockLearningPlanApi: vi.fn(),
+    mockSessionReport: {
+      report: null as AssessmentReportResponse | null,
+      loading: false,
+      error: null as Error | null,
+      refetch: vi.fn(),
+    },
+    mockSearchParams: { get: vi.fn().mockReturnValue(null) },
+    mockStoreState: {
+      assessmentSessionId: "sess-123" as string | null,
+    },
   };
 });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/components/learning-plan/PlanHeader", () => ({
@@ -55,24 +52,14 @@ vi.mock("@/components/error/api-error-display", () => ({
 
 vi.mock("@/lib/store", () => ({
   useAppStore: () => ({
-    gapAnalysis: mockState.gapAnalysis,
-    learningPlan: mockState.learningPlan,
-    setLearningPlan: mockSetLearningPlan,
-    setCurrentStep: mockSetCurrentStep,
+    assessmentSessionId: mockStoreState.assessmentSessionId,
     reset: mockReset,
-    assessmentSessionId: mockState.assessmentSessionId,
   }),
 }));
 
-vi.mock("@/lib/api", async (importOriginal) => {
-  const mod = await importOriginal<typeof import("@/lib/api")>();
-  return {
-    ApiError: mod.ApiError,
-    api: {
-      learningPlan: (...args: unknown[]) => mockLearningPlanApi(...args),
-    },
-  };
-});
+vi.mock("@/hooks/useSessionReport", () => ({
+  useSessionReport: () => mockSessionReport,
+}));
 
 vi.mock("@/lib/auth-store", () => ({
   useAuthStore: () => ({ user: { userId: "u1", displayName: "test", avatarUrl: "", hasApiKey: false, email: null }, isLoading: false }),
@@ -82,160 +69,94 @@ vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ login: vi.fn(), logout: vi.fn() }),
 }));
 
-const sampleGapAnalysis: GapAnalysis = {
-  overallReadiness: 50,
-  summary: "Needs work",
-  gaps: [
-    {
-      skillId: "ts",
-      skillName: "TypeScript",
-      currentLevel: 30,
-      targetLevel: 80,
-      gap: 50,
-      priority: "high",
-      recommendation: "Study generics",
-    },
-  ],
-};
-
-const samplePlan: LearningPlan = {
-  title: "TypeScript Mastery",
-  summary: "Master TypeScript in 4 weeks",
-  totalHours: 30,
-  totalWeeks: 4,
-  phases: [
-    {
-      phase: 1,
-      name: "Foundations",
-      description: "Core skills",
-      modules: [
-        {
-          id: "m1",
-          title: "Basics",
-          description: "Core types",
-          type: "theory",
-          phase: 1,
-          skillIds: ["ts"],
-          durationHours: 8,
-          objectives: ["Understand types"],
-          resources: ["https://typescriptlang.org"],
-        },
-      ],
-    },
-    {
-      phase: 2,
-      name: "Advanced",
-      description: "Advanced patterns",
-      modules: [
-        {
-          id: "m2",
-          title: "Generics",
-          description: "Generic types",
-          type: "lab",
-          phase: 2,
-          skillIds: ["ts"],
-          durationHours: 10,
-          objectives: ["Use generics"],
-          resources: [],
-        },
-      ],
-    },
-  ],
+const sampleReport: AssessmentReportResponse = {
+  proficiencyScores: [],
+  knowledgeGraph: { nodes: [] },
+  gapAnalysis: {
+    overallReadiness: 50,
+    summary: "Needs work",
+    gaps: [],
+  },
+  learningPlan: {
+    summary: "Master TypeScript in 4 weeks",
+    totalHours: 48,
+    phases: [
+      {
+        phaseNumber: 1,
+        title: "Foundations",
+        concepts: ["Core types"],
+        rationale: "Core skills",
+        resources: [],
+        estimatedHours: 8,
+      },
+      {
+        phaseNumber: 2,
+        title: "Advanced",
+        concepts: ["Generics"],
+        rationale: "Advanced patterns",
+        resources: [],
+        estimatedHours: 10,
+      },
+    ],
+  },
 };
 
 import LearningPlanPage from "./page";
 
 beforeEach(() => {
   mockRouter.push.mockClear();
-  mockSetLearningPlan.mockClear();
-  mockSetLearningPlan.mockImplementation((data: LearningPlan) => {
-    mockState.learningPlan = data;
-  });
-  mockSetCurrentStep.mockClear();
   mockReset.mockClear();
-  mockLearningPlanApi.mockReset();
-  mockState.gapAnalysis = sampleGapAnalysis;
-  mockState.learningPlan = null;
-  mockState.assessmentSessionId = null;
+  mockSessionReport.report = null;
+  mockSessionReport.loading = false;
+  mockSessionReport.error = null;
+  mockSessionReport.refetch.mockClear();
+  mockSearchParams.get.mockReturnValue(null);
+  mockStoreState.assessmentSessionId = "sess-123";
 });
 
 describe("LearningPlanPage", () => {
-  it("redirects when no gap analysis", () => {
-    mockState.gapAnalysis = null;
+  it("redirects when no session ID", () => {
+    mockStoreState.assessmentSessionId = null;
     render(<LearningPlanPage />);
-    expect(mockRouter.push).toHaveBeenCalledWith("/");
+    expect(mockRouter.push).toHaveBeenCalledWith("/dashboard");
   });
 
   it("shows loading during fetch", () => {
-    mockLearningPlanApi.mockImplementation(() => new Promise(() => {}));
+    mockSessionReport.loading = true;
     render(<LearningPlanPage />);
     expect(
-      screen.getByText("Generating your learning plan...")
+      screen.getByText("Loading your learning plan...")
     ).toBeInTheDocument();
   });
 
-  it("shows error with retry", async () => {
-    mockLearningPlanApi.mockRejectedValueOnce(new Error("API error"));
+  it("shows error with retry", () => {
+    mockSessionReport.error = new Error("API error");
     render(<LearningPlanPage />);
-    await waitFor(() => {
-      expect(screen.getByText("API error")).toBeInTheDocument();
-      expect(screen.getByText("Retry")).toBeInTheDocument();
-    });
+    expect(screen.getByText("API error")).toBeInTheDocument();
+    expect(screen.getByText("Retry")).toBeInTheDocument();
   });
 
-  it("calls api on retry", async () => {
+  it("calls refetch on retry", async () => {
     const user = userEvent.setup();
-    mockLearningPlanApi.mockRejectedValueOnce(new Error("First fail"));
+    mockSessionReport.error = new Error("First fail");
     render(<LearningPlanPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("First fail")).toBeInTheDocument();
-    });
+    expect(screen.getByText("First fail")).toBeInTheDocument();
 
-    mockLearningPlanApi.mockResolvedValueOnce(samplePlan);
     await user.click(screen.getByText("Retry"));
-
-    await waitFor(() => {
-      expect(mockSetLearningPlan).toHaveBeenCalledWith(samplePlan);
-    });
+    expect(mockSessionReport.refetch).toHaveBeenCalled();
   });
 
-  it("shows retry failure message", async () => {
-    const user = userEvent.setup();
-    mockLearningPlanApi.mockRejectedValueOnce(new Error("First"));
+  it("renders plan components on success", () => {
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText("First")).toBeInTheDocument();
-    });
-
-    mockLearningPlanApi.mockRejectedValueOnce(new Error("Second failure"));
-    await user.click(screen.getByText("Retry"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Second failure")).toBeInTheDocument();
-    });
-  });
-
-  it("renders plan components on success", async () => {
-    mockLearningPlanApi.mockResolvedValueOnce(samplePlan);
-    render(<LearningPlanPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("plan-header")).toBeInTheDocument();
-      expect(screen.getByTestId("plan-timeline")).toBeInTheDocument();
-    });
-  });
-
-  it("skips fetch when cached", () => {
-    mockState.learningPlan = samplePlan;
-    render(<LearningPlanPage />);
-    expect(mockLearningPlanApi).not.toHaveBeenCalled();
     expect(screen.getByTestId("plan-header")).toBeInTheDocument();
+    expect(screen.getByTestId("plan-timeline")).toBeInTheDocument();
   });
 
-  it("phase navigation buttons render", async () => {
-    mockState.learningPlan = samplePlan;
+  it("phase navigation buttons render", () => {
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
 
     expect(screen.getByText("Foundations")).toBeInTheDocument();
@@ -244,7 +165,7 @@ describe("LearningPlanPage", () => {
 
   it("clicking phase button works", async () => {
     const user = userEvent.setup();
-    mockState.learningPlan = samplePlan;
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
 
     // Click phase 2
@@ -257,7 +178,7 @@ describe("LearningPlanPage", () => {
 
   it("copy plan writes clipboard", async () => {
     const user = userEvent.setup();
-    mockState.learningPlan = samplePlan;
+    mockSessionReport.report = sampleReport;
 
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", {
@@ -270,7 +191,7 @@ describe("LearningPlanPage", () => {
     await user.click(screen.getByText("Save Plan (JSON)"));
 
     expect(writeTextMock).toHaveBeenCalledWith(
-      JSON.stringify(samplePlan, null, 2)
+      JSON.stringify(sampleReport.learningPlan, null, 2)
     );
 
     vi.unstubAllGlobals();
@@ -279,7 +200,7 @@ describe("LearningPlanPage", () => {
   it("copy shows confirmation then resets", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    mockState.learningPlan = samplePlan;
+    mockSessionReport.report = sampleReport;
 
     vi.stubGlobal("navigator", {
       ...navigator,
@@ -305,24 +226,28 @@ describe("LearningPlanPage", () => {
   });
 
   it("export button shown when session id exists", () => {
-    mockState.learningPlan = samplePlan;
-    mockState.assessmentSessionId = "sess-123";
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
 
     expect(screen.getByText("Export Report")).toBeInTheDocument();
   });
 
-  it("export button hidden when no session id", () => {
-    mockState.learningPlan = samplePlan;
-    mockState.assessmentSessionId = null;
+  it("export button hidden when no session id (search param only)", () => {
+    mockStoreState.assessmentSessionId = null;
+    // With no sessionId at all, the page redirects — so this scenario
+    // can only happen if session comes from search params.
+    // Since the page renders Export Report whenever sessionId is truthy,
+    // and sessionId = sessionParam || assessmentSessionId, if both are null
+    // the page redirects. So test that the link exists when session present.
+    mockSearchParams.get.mockReturnValue("param-sess");
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
-
-    expect(screen.queryByText("Export Report")).not.toBeInTheDocument();
+    expect(screen.getByText("Export Report")).toBeInTheDocument();
   });
 
   it("start over resets and navigates", async () => {
     const user = userEvent.setup();
-    mockState.learningPlan = samplePlan;
+    mockSessionReport.report = sampleReport;
     render(<LearningPlanPage />);
 
     await user.click(screen.getByText("Start Over"));

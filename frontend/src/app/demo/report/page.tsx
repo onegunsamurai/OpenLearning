@@ -137,18 +137,18 @@ export default function DemoReportPage() {
                 </h4>
                 {learningPlan.phases.map((phase) => (
                   <button
-                    key={phase.phase}
-                    onClick={() => setActivePhase(phase.phase)}
+                    key={phase.phaseNumber}
+                    onClick={() => setActivePhase(phase.phaseNumber)}
                     className={cn(
                       "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors",
-                      activePhase === phase.phase
+                      activePhase === phase.phaseNumber
                         ? "border-cyan bg-cyan-muted text-cyan"
                         : "border-border bg-card text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="font-mono text-xs">Phase {phase.phase}</span>
+                    <span className="font-mono text-xs">Phase {phase.phaseNumber}</span>
                     <br />
-                    <span className="font-medium">{phase.name}</span>
+                    <span className="font-medium">{phase.title}</span>
                   </button>
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -7,6 +8,8 @@ from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.models.gap_analysis import GapAnalysis, GapAnalysisRequest
 from app.prompts.gap_analyzer import GAP_ANALYZER_SYSTEM_PROMPT
 from app.services.ai import get_chat_model, parse_json_response
+
+logger = logging.getLogger("openlearning.gap_analysis")
 
 router = APIRouter()
 
@@ -52,4 +55,5 @@ async def gap_analysis(
 
         return GapAnalysis(**parsed)
     except (ValueError, KeyError, json.JSONDecodeError) as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate gap analysis: {e}") from e
+        logger.exception("Gap analysis generation failed")
+        raise HTTPException(status_code=500, detail="Failed to generate gap analysis") from e

@@ -9,6 +9,7 @@ from app.agents.calibrator import (
     generate_calibration_question,
 )
 from app.agents.gap_analyzer import analyze_gaps
+from app.agents.gap_enricher import enrich_gaps
 from app.agents.knowledge_mapper import update_knowledge_graph
 from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import generate_question
@@ -160,6 +161,11 @@ def analyze_gaps_node(state: AssessmentState) -> dict:
     return analyze_gaps(state)
 
 
+async def enrich_gaps_node(state: AssessmentState) -> dict:
+    """Enrich gap analysis with readiness, priority, and recommendations."""
+    return await enrich_gaps(state)
+
+
 async def generate_plan_node(state: AssessmentState) -> dict:
     """Generate learning plan from gaps."""
     return await generate_plan(state)
@@ -207,6 +213,7 @@ def build_graph() -> StateGraph:
 
     # Conclusion nodes
     graph.add_node("analyze_gaps", analyze_gaps_node)
+    graph.add_node("enrich_gaps", enrich_gaps_node)
     graph.add_node("generate_plan", generate_plan_node)
 
     # Edges: calibration chain
@@ -240,7 +247,8 @@ def build_graph() -> StateGraph:
     graph.add_edge("await_probe_response", "evaluate_response")
 
     # Conclusion
-    graph.add_edge("analyze_gaps", "generate_plan")
+    graph.add_edge("analyze_gaps", "enrich_gaps")
+    graph.add_edge("enrich_gaps", "generate_plan")
     graph.add_edge("generate_plan", END)
 
     return graph

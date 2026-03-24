@@ -1,8 +1,6 @@
 import { client } from "@/lib/generated/api-client/client.gen";
 import {
   getSkillsApiSkillsGet,
-  gapAnalysisApiGapAnalysisPost,
-  learningPlanApiLearningPlanPost,
   getRolesApiRolesGet,
   getRoleApiRolesRoleIdGet,
   authMeApiAuthMeGet,
@@ -13,17 +11,16 @@ import {
   validateKeyApiAuthValidateKeyPost,
   registerApiAuthRegisterPost,
   loginApiAuthLoginPost,
+  listUserAssessmentsApiUserAssessmentsGet,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
-  GapAnalysis,
-  LearningPlan,
-  ProficiencyScore,
   RoleSummary,
   RoleDetail,
   AuthMeResponse,
   ApiKeyResponse,
   ValidateKeyResponse,
+  UserAssessmentSummary,
 } from "@/lib/generated/api-client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -109,12 +106,19 @@ export interface AssessmentReportResponse {
       prerequisites: string[];
     }[];
   };
-  gapNodes: {
-    concept: string;
-    currentConfidence: number;
-    targetBloomLevel: string;
-    prerequisites: string[];
-  }[];
+  gapAnalysis: {
+    overallReadiness: number;
+    summary: string;
+    gaps: {
+      skillId: string;
+      skillName: string;
+      currentLevel: number;
+      targetLevel: number;
+      gap: number;
+      priority: "critical" | "high" | "medium" | "low";
+      recommendation: string;
+    }[];
+  };
   learningPlan: {
     summary: string;
     totalHours: number;
@@ -127,7 +131,13 @@ export interface AssessmentReportResponse {
       estimatedHours: number;
     }[];
   };
-  proficiencyScores: ProficiencyScore[];
+  proficiencyScores: {
+    skillId: string;
+    skillName: string;
+    score: number;
+    confidence: number;
+    reasoning: string;
+  }[];
 }
 
 const realApi = {
@@ -140,21 +150,18 @@ const realApi = {
   getSkills: async (): Promise<SkillsResponse> =>
     unwrap(await getSkillsApiSkillsGet()),
 
-  gapAnalysis: async (
-    proficiencyScores: ProficiencyScore[]
-  ): Promise<GapAnalysis> =>
-    unwrap(
-      await gapAnalysisApiGapAnalysisPost({
-        body: { proficiencyScores },
-      })
-    ),
+  getUserAssessments: async (): Promise<UserAssessmentSummary[]> =>
+    unwrap(await listUserAssessmentsApiUserAssessmentsGet()),
 
-  learningPlan: async (gapAnalysis: GapAnalysis): Promise<LearningPlan> =>
-    unwrap(
-      await learningPlanApiLearningPlanPost({
-        body: { gapAnalysis },
-      })
-    ),
+  assessmentResume: async (
+    sessionId: string
+  ): Promise<AssessmentStartResponse> => {
+    const res = await authFetch(
+      `${API_URL}/api/assessment/${sessionId}/resume`
+    );
+    if (!res.ok) await throwFromResponse(res, "Failed to resume assessment");
+    return res.json();
+  },
 
   assessmentStart: async (
     skillIds: string[],

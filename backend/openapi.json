@@ -223,6 +223,22 @@
               "type": "string",
               "title": "Session Id"
             }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
           }
         ],
         "responses": {
@@ -270,6 +286,62 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assessment/{session_id}/resume": {
+      "get": {
+        "summary": "Assessment Resume",
+        "description": "Resume an active assessment session by loading the pending interrupt.",
+        "operationId": "assessment_resume_api_assessment__session_id__resume_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssessmentStartResponse"
+                }
               }
             }
           },
@@ -442,6 +514,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LearningPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/materials/{session_id}": {
+      "get": {
+        "summary": "Get Materials",
+        "description": "Retrieve generated learning materials for a given assessment session.",
+        "operationId": "get_materials_api_materials__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialsResponse"
                 }
               }
             }
@@ -890,6 +1018,57 @@
           }
         }
       }
+    },
+    "/api/user/assessments": {
+      "get": {
+        "summary": "List User Assessments",
+        "description": "List all assessment sessions for the current user.",
+        "operationId": "list_user_assessments_api_user_assessments_get",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserAssessmentSummary"
+                  },
+                  "title": "Response List User Assessments Api User Assessments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -925,12 +1104,8 @@
           "knowledgeGraph": {
             "$ref": "#/components/schemas/KnowledgeGraphOut"
           },
-          "gapNodes": {
-            "items": {
-              "$ref": "#/components/schemas/GapNodeOut"
-            },
-            "type": "array",
-            "title": "Gapnodes"
+          "gapAnalysis": {
+            "$ref": "#/components/schemas/EnrichedGapAnalysisOut"
           },
           "learningPlan": {
             "$ref": "#/components/schemas/LearningPlanOut"
@@ -946,7 +1121,7 @@
         "type": "object",
         "required": [
           "knowledgeGraph",
-          "gapNodes",
+          "gapAnalysis",
           "learningPlan",
           "proficiencyScores"
         ],
@@ -1069,6 +1244,81 @@
         ],
         "title": "AuthMeResponse"
       },
+      "EnrichedGapAnalysisOut": {
+        "properties": {
+          "overallReadiness": {
+            "type": "integer",
+            "title": "Overallreadiness"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/EnrichedGapItemOut"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overallReadiness",
+          "summary",
+          "gaps"
+        ],
+        "title": "EnrichedGapAnalysisOut"
+      },
+      "EnrichedGapItemOut": {
+        "properties": {
+          "skillId": {
+            "type": "string",
+            "title": "Skillid"
+          },
+          "skillName": {
+            "type": "string",
+            "title": "Skillname"
+          },
+          "currentLevel": {
+            "type": "integer",
+            "title": "Currentlevel"
+          },
+          "targetLevel": {
+            "type": "integer",
+            "title": "Targetlevel"
+          },
+          "gap": {
+            "type": "integer",
+            "title": "Gap"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Priority"
+          },
+          "recommendation": {
+            "type": "string",
+            "title": "Recommendation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skillId",
+          "skillName",
+          "currentLevel",
+          "targetLevel",
+          "gap",
+          "priority",
+          "recommendation"
+        ],
+        "title": "EnrichedGapItemOut"
+      },
       "GapAnalysis": {
         "properties": {
           "overallReadiness": {
@@ -1159,37 +1409,6 @@
           "recommendation"
         ],
         "title": "GapItem"
-      },
-      "GapNodeOut": {
-        "properties": {
-          "concept": {
-            "type": "string",
-            "title": "Concept"
-          },
-          "currentConfidence": {
-            "type": "number",
-            "title": "Currentconfidence"
-          },
-          "targetBloomLevel": {
-            "type": "string",
-            "title": "Targetbloomlevel"
-          },
-          "prerequisites": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Prerequisites"
-          }
-        },
-        "type": "object",
-        "required": [
-          "concept",
-          "currentConfidence",
-          "targetBloomLevel",
-          "prerequisites"
-        ],
-        "title": "GapNodeOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1478,6 +1697,83 @@
           "password"
         ],
         "title": "LoginRequest"
+      },
+      "MaterialOut": {
+        "properties": {
+          "conceptId": {
+            "type": "string",
+            "title": "Conceptid"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "bloomScore": {
+            "type": "number",
+            "title": "Bloomscore"
+          },
+          "qualityScore": {
+            "type": "number",
+            "title": "Qualityscore"
+          },
+          "iterationCount": {
+            "type": "integer",
+            "title": "Iterationcount"
+          },
+          "qualityFlag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualityflag"
+          },
+          "material": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Material"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conceptId",
+          "domain",
+          "bloomScore",
+          "qualityScore",
+          "iterationCount",
+          "material",
+          "generatedAt"
+        ],
+        "title": "MaterialOut"
+      },
+      "MaterialsResponse": {
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          },
+          "materials": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialOut"
+            },
+            "type": "array",
+            "title": "Materials"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessionId",
+          "materials"
+        ],
+        "title": "MaterialsResponse"
       },
       "OkResponse": {
         "properties": {
@@ -1794,6 +2090,71 @@
           "categories"
         ],
         "title": "SkillsResponse"
+      },
+      "UserAssessmentSummary": {
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "title": "Sessionid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "skillIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Skillids"
+          },
+          "targetLevel": {
+            "type": "string",
+            "title": "Targetlevel"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "completedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completedat"
+          },
+          "overallReadiness": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overallreadiness"
+          },
+          "skillCount": {
+            "type": "integer",
+            "title": "Skillcount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessionId",
+          "status",
+          "skillIds",
+          "targetLevel",
+          "createdAt",
+          "skillCount"
+        ],
+        "title": "UserAssessmentSummary"
       },
       "ValidateKeyResponse": {
         "properties": {

@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -7,6 +8,8 @@ from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.models.learning_plan import LearningPlan, LearningPlanRequest
 from app.prompts.plan_generator import PLAN_GENERATOR_SYSTEM_PROMPT
 from app.services.ai import get_chat_model, parse_json_response
+
+logger = logging.getLogger("openlearning.learning_plan")
 
 router = APIRouter()
 
@@ -50,4 +53,5 @@ async def learning_plan(
 
         return LearningPlan(**parsed)
     except (ValueError, KeyError, json.JSONDecodeError) as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate learning plan: {e}") from e
+        logger.exception("Learning plan generation failed")
+        raise HTTPException(status_code=500, detail="Failed to generate learning plan") from e

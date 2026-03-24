@@ -147,11 +147,11 @@ describe("LoginPage", () => {
   });
 
   it.each([
-    ["https://evil.com", "/"],
-    ["//evil.com", "/"],
-    ["javascript:alert(1)", "/"],
+    ["https://evil.com", "/dashboard"],
+    ["//evil.com", "/dashboard"],
+    ["javascript:alert(1)", "/dashboard"],
     ["/dashboard", "/dashboard"],
-    [null, "/"],
+    [null, "/dashboard"],
   ])(
     "sanitizes redirect param %s to %s",
     async (malicious, expected) => {

@@ -9,9 +9,10 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
-from app.db import AssessmentResult, AssessmentSession
+from app.db import AssessmentResult, AssessmentSession, User
 from app.graph.state import (
     BloomLevel,
+    EnrichedGapAnalysis,
     KnowledgeGraph,
     KnowledgeNode,
     LearningPhase,
@@ -502,9 +503,15 @@ class TestAssessmentReport:
             total_hours=10,
             summary="Learn TypeScript generics",
         )
+        enriched = EnrichedGapAnalysis(
+            overall_readiness=70,
+            summary="Needs work on TypeScript generics",
+            gaps=[],
+        )
         return {
             "knowledge_graph": kg,
             "gap_nodes": gap_nodes,
+            "enriched_gap_analysis": enriched,
             "learning_plan": lp,
         }
 
@@ -534,11 +541,11 @@ class TestAssessmentReport:
             assert response.status_code == 200
             data = response.json()
             assert "knowledgeGraph" in data
-            assert "gapNodes" in data
+            assert "gapAnalysis" in data
             assert "learningPlan" in data
             assert "proficiencyScores" in data
             assert len(data["knowledgeGraph"]["nodes"]) == 1
-            assert len(data["gapNodes"]) == 1
+            assert data["gapAnalysis"]["overallReadiness"] == 70
         finally:
             _mock_graph.reset_mock()
 
@@ -641,3 +648,171 @@ class TestAssessmentReport:
             assert scores[0]["score"] == 85  # 0.85 * 100
         finally:
             _mock_graph.reset_mock()
+
+
+class TestAssessmentResume:
+    """Tests for GET /api/assessment/{session_id}/resume."""
+
+    async def _seed_session_with_user(
+        self,
+        db,
+        session_id: str = "sess-resume-001",
+        thread_id: str = "thread-resume-001",
+        status: str = "active",
+        user_id: str = "test-user-id",
+    ) -> str:
+        """Seed a session with user_id set (needed for resume ownership checks)."""
+        session = AssessmentSession(
+            session_id=session_id,
+            thread_id=thread_id,
+            skill_ids=["react"],
+            target_level="mid",
+            status=status,
+            user_id=user_id,
+        )
+        db.add(session)
+        await db.commit()
+        return session_id
+
+    @pytest.mark.asyncio
+    async def test_resume_nonexistent_session_returns_404(self, setup_db):
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/nonexistent/resume")
+        assert response.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_resume_different_user_returns_403(self, setup_db):
+        async with _TestSessionFactory() as db:
+            # Create a different user so FK constraint is satisfied
+            other_user = User(id="other-user-id", display_name="other", avatar_url="")
+            db.add(other_user)
+            await db.flush()
+            await self._seed_session_with_user(db, user_id="other-user-id")
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-resume-001/resume")
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_resume_timed_out_session_returns_410(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_session_with_user(db, status="timed_out")
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-resume-001/resume")
+        assert response.status_code == 410
+
+    @pytest.mark.asyncio
+    async def test_resume_completed_session_returns_409(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_session_with_user(db, status="completed")
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-resume-001/resume")
+        assert response.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_resume_active_session_returns_question(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_session_with_user(db)
+
+        interrupt = _make_interrupt_data(
+            question_text="What are React hooks?",
+            q_type="assessment",
+            step=2,
+            total_steps=5,
+        )
+        graph_state = _make_graph_state_with_interrupt(interrupt)
+        _mock_graph.aget_state = AsyncMock(return_value=graph_state)
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                response = await client.get("/api/assessment/sess-resume-001/resume")
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["sessionId"] == "sess-resume-001"
+            assert data["question"] == "What are React hooks?"
+            assert data["questionType"] == "assessment"
+            assert data["step"] == 2
+            assert data["totalSteps"] == 5
+        finally:
+            _mock_graph.reset_mock()
+
+
+class TestOwnershipChecks:
+    """Verify ownership checks on report, export, graph, and respond endpoints."""
+
+    async def _seed_other_user_session(self, db) -> str:
+        """Create a session owned by a different user."""
+        other_user = User(id="other-owner-id", display_name="other", avatar_url="")
+        db.add(other_user)
+        await db.flush()
+        session = AssessmentSession(
+            session_id="sess-other-001",
+            thread_id="thread-other-001",
+            skill_ids=["react"],
+            target_level="mid",
+            status="active",
+            user_id="other-owner-id",
+        )
+        db.add(session)
+        await db.commit()
+        return "sess-other-001"
+
+    @pytest.mark.asyncio
+    async def test_report_returns_403_for_wrong_user(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_other_user_session(db)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-other-001/report")
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_export_returns_403_for_wrong_user(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_other_user_session(db)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-other-001/export")
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_graph_returns_403_for_wrong_user(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_other_user_session(db)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-other-001/graph")
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_respond_returns_403_for_wrong_user(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await self._seed_other_user_session(db)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                "/api/assessment/sess-other-001/respond",
+                json={"response": "my answer"},
+            )
+        assert response.status_code == 403

@@ -16,9 +16,6 @@ describe("useAppStore", () => {
       expect(state.roleSkillIds).toEqual([]);
       expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
-      expect(state.proficiencyScores).toEqual([]);
-      expect(state.gapAnalysis).toBeNull();
-      expect(state.learningPlan).toBeNull();
     });
   });
 
@@ -98,48 +95,6 @@ describe("useAppStore", () => {
     });
   });
 
-  describe("setProficiencyScores", () => {
-    it("sets scores", () => {
-      const scores = [
-        {
-          skillId: "s1",
-          skillName: "React",
-          score: 80,
-          confidence: 0.9,
-          reasoning: "Good",
-        },
-      ];
-      useAppStore.getState().setProficiencyScores(scores);
-      expect(useAppStore.getState().proficiencyScores).toEqual(scores);
-    });
-  });
-
-  describe("setGapAnalysis", () => {
-    it("sets gap analysis", () => {
-      const analysis = {
-        overallReadiness: 75,
-        summary: "On track",
-        gaps: [],
-      };
-      useAppStore.getState().setGapAnalysis(analysis);
-      expect(useAppStore.getState().gapAnalysis).toEqual(analysis);
-    });
-  });
-
-  describe("setLearningPlan", () => {
-    it("sets learning plan", () => {
-      const plan = {
-        title: "Plan",
-        summary: "Learn",
-        totalHours: 10,
-        totalWeeks: 2,
-        phases: [],
-      };
-      useAppStore.getState().setLearningPlan(plan);
-      expect(useAppStore.getState().learningPlan).toEqual(plan);
-    });
-  });
-
   describe("reset", () => {
     it("restores all fields to initial values", () => {
       useAppStore.getState().setCurrentStep(5);
@@ -148,20 +103,6 @@ describe("useAppStore", () => {
       useAppStore.getState().setRoleSkillIds(["nodejs"]);
       useAppStore.getState().setTargetLevel("senior");
       useAppStore.getState().setAssessmentSessionId("sess-1");
-      useAppStore.getState().setProficiencyScores([
-        {
-          skillId: "s1",
-          skillName: "React",
-          score: 80,
-          confidence: 0.9,
-          reasoning: "Good",
-        },
-      ]);
-      useAppStore.getState().setGapAnalysis({
-        overallReadiness: 50,
-        summary: "s",
-        gaps: [],
-      });
 
       useAppStore.getState().reset();
 
@@ -172,9 +113,6 @@ describe("useAppStore", () => {
       expect(state.roleSkillIds).toEqual([]);
       expect(state.targetLevel).toBe("mid");
       expect(state.assessmentSessionId).toBeNull();
-      expect(state.proficiencyScores).toEqual([]);
-      expect(state.gapAnalysis).toBeNull();
-      expect(state.learningPlan).toBeNull();
     });
   });
 
@@ -195,9 +133,6 @@ describe("useAppStore", () => {
           selectedSkillIds: ["rehydrated"],
           roleSkillIds: ["rehydrated"],
           assessmentSessionId: null,
-          proficiencyScores: [],
-          gapAnalysis: null,
-          learningPlan: null,
         },
         version: 0,
       };

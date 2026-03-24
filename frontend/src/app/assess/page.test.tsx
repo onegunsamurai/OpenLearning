@@ -5,6 +5,7 @@ import type { AssessmentProgress } from "@/hooks/useAssessmentChat";
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  useSearchParams: () => ({ get: () => null }),
 }));
 
 const mockSendMessage = vi.fn();
@@ -26,7 +27,6 @@ vi.mock("@/hooks/useAssessmentChat", () => ({
 vi.mock("@/lib/store", () => ({
   useAppStore: () => ({
     selectedSkillIds: ["skill-1"],
-    setProficiencyScores: vi.fn(),
     setCurrentStep: vi.fn(),
     setAssessmentSessionId: vi.fn(),
     targetLevel: "intermediate",

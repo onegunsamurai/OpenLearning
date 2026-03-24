@@ -1,16 +1,21 @@
 "use client";
 
-import { LearningPlan } from "@/lib/types";
-import { ModuleCard } from "./ModuleCard";
+import type { AssessmentReportResponse } from "@/lib/api";
+import { ConceptCard } from "./ConceptCard";
 import { motion } from "motion/react";
 
+type PipelinePlan = AssessmentReportResponse["learningPlan"];
+type PipelinePhase = PipelinePlan["phases"][number];
+
 interface PlanTimelineProps {
-  plan: LearningPlan;
+  plan: PipelinePlan;
   activePhase: number;
 }
 
 export function PlanTimeline({ plan, activePhase }: PlanTimelineProps) {
-  const phase = plan.phases.find((p) => p.phase === activePhase);
+  const phase: PipelinePhase | undefined = plan.phases.find(
+    (p) => p.phaseNumber === activePhase
+  );
   if (!phase) return null;
 
   return (
@@ -23,13 +28,18 @@ export function PlanTimeline({ plan, activePhase }: PlanTimelineProps) {
     >
       <div className="space-y-1">
         <h3 className="font-heading text-lg font-semibold">
-          Phase {phase.phase}: {phase.name}
+          Phase {phase.phaseNumber}: {phase.title}
         </h3>
-        <p className="text-sm text-muted-foreground">{phase.description}</p>
+        <p className="text-sm text-muted-foreground">{phase.rationale}</p>
       </div>
       <div className="space-y-3">
-        {phase.modules.map((mod, i) => (
-          <ModuleCard key={mod.id} module={mod} index={i} />
+        {phase.concepts.map((concept, i) => (
+          <ConceptCard
+            key={concept}
+            concept={concept}
+            resources={phase.resources}
+            index={i}
+          />
         ))}
       </div>
     </motion.div>

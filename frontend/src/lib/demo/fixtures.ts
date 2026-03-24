@@ -2,8 +2,6 @@ import type {
   SkillsResponse,
   RoleSummary,
   RoleDetail,
-  GapAnalysis,
-  LearningPlan,
   ProficiencyScore,
 } from "@/lib/types";
 import type {
@@ -254,77 +252,6 @@ export const DEMO_PROFICIENCY_SCORES: ProficiencyScore[] = [
   },
 ];
 
-// ── Assessment Report ───────────────────────────────────────────────
-
-export const DEMO_ASSESSMENT_REPORT: AssessmentReportResponse = {
-  knowledgeGraph: {
-    nodes: [
-      { concept: "React Hooks", confidence: 0.85, bloomLevel: "Apply", prerequisites: [] },
-      { concept: "React Reconciliation", confidence: 0.75, bloomLevel: "Analyze", prerequisites: ["React Hooks"] },
-      { concept: "TypeScript Generics", confidence: 0.7, bloomLevel: "Apply", prerequisites: [] },
-      { concept: "CSS Box Model", confidence: 0.9, bloomLevel: "Understand", prerequisites: [] },
-      { concept: "CSS Flexbox & Grid", confidence: 0.85, bloomLevel: "Apply", prerequisites: ["CSS Box Model"] },
-      { concept: "Next.js App Router", confidence: 0.6, bloomLevel: "Remember", prerequisites: ["React Hooks"] },
-      { concept: "Component Testing", confidence: 0.5, bloomLevel: "Apply", prerequisites: ["React Hooks"] },
-    ],
-  },
-  gapNodes: [
-    { concept: "Next.js App Router", currentConfidence: 0.6, targetBloomLevel: "Apply", prerequisites: ["React Hooks"] },
-    { concept: "Component Testing", currentConfidence: 0.5, targetBloomLevel: "Analyze", prerequisites: ["React Hooks"] },
-    { concept: "TypeScript Advanced Types", currentConfidence: 0.45, targetBloomLevel: "Apply", prerequisites: ["TypeScript Generics"] },
-    { concept: "CSS Modern Layout", currentConfidence: 0.65, targetBloomLevel: "Apply", prerequisites: ["CSS Box Model"] },
-  ],
-  learningPlan: {
-    summary: "Focus on deepening Next.js App Router knowledge, building stronger testing practices, and modernizing CSS skills.",
-    totalHours: 48,
-    phases: [
-      {
-        phaseNumber: 1,
-        title: "Next.js Deep Dive",
-        concepts: ["App Router", "Server Actions", "Parallel Routes"],
-        rationale: "Biggest gap relative to target level",
-        resources: [
-          { type: "documentation", title: "Next.js App Router Docs", url: null },
-          { type: "tutorial", title: "Building with App Router", url: null },
-        ],
-        estimatedHours: 16,
-      },
-      {
-        phaseNumber: 2,
-        title: "Testing Mastery",
-        concepts: ["Integration Testing", "Mock Strategies", "Test Architecture"],
-        rationale: "Second largest gap, builds on React fundamentals",
-        resources: [
-          { type: "course", title: "Testing JavaScript Applications", url: null },
-          { type: "documentation", title: "Vitest + RTL Guide", url: null },
-        ],
-        estimatedHours: 14,
-      },
-      {
-        phaseNumber: 3,
-        title: "TypeScript Advanced Patterns",
-        concepts: ["Conditional Types", "Template Literal Types", "Type-Level Programming"],
-        rationale: "Refinement of existing knowledge",
-        resources: [
-          { type: "course", title: "Total TypeScript", url: null },
-        ],
-        estimatedHours: 10,
-      },
-      {
-        phaseNumber: 4,
-        title: "CSS Modern Techniques",
-        concepts: ["Container Queries", "CSS Layers", "Scroll-Driven Animations"],
-        rationale: "Round out strong CSS fundamentals with modern layout and animation patterns",
-        resources: [
-          { type: "documentation", title: "MDN CSS Reference", url: null },
-        ],
-        estimatedHours: 8,
-      },
-    ],
-  },
-  proficiencyScores: DEMO_PROFICIENCY_SCORES,
-};
-
 // ── Export Markdown ─────────────────────────────────────────────────
 
 export const DEMO_EXPORT_MARKDOWN = `# Assessment Report
@@ -403,7 +330,7 @@ Round out strong CSS fundamentals with modern layout and animation patterns
 
 // ── Gap Analysis ────────────────────────────────────────────────────
 
-export const DEMO_GAP_ANALYSIS: GapAnalysis = {
+export const DEMO_GAP_ANALYSIS: AssessmentReportResponse["gapAnalysis"] = {
   overallReadiness: 64,
   summary:
     "You have strong React and CSS fundamentals, with room to grow in modern CSS techniques. Key growth areas are Next.js App Router patterns, testing depth, and advanced TypeScript. A focused 8-week plan can close the gaps.",
@@ -463,228 +390,79 @@ export const DEMO_GAP_ANALYSIS: GapAnalysis = {
 
 // ── Learning Plan ───────────────────────────────────────────────────
 
-export const DEMO_LEARNING_PLAN: LearningPlan = {
-  title: "Frontend Engineer Growth Plan",
+export const DEMO_LEARNING_PLAN: AssessmentReportResponse["learningPlan"] = {
   summary:
     "An 8-week learning plan covering your key gaps: Next.js App Router, Testing practices, advanced TypeScript patterns, and modern CSS techniques.",
   totalHours: 65,
-  totalWeeks: 8,
   phases: [
     {
-      phase: 1,
-      name: "Next.js Deep Dive",
-      description:
+      phaseNumber: 1,
+      title: "Next.js Deep Dive",
+      concepts: ["App Router", "Server Actions", "Parallel Routes", "Data Fetching"],
+      rationale:
         "Master the App Router, including server components, parallel routes, and server actions.",
-      modules: [
-        {
-          id: "mod-1",
-          title: "App Router Fundamentals",
-          description: "Learn the mental model of the Next.js App Router and its file conventions.",
-          type: "theory",
-          phase: 1,
-          skillIds: ["nextjs"],
-          durationHours: 4,
-          objectives: [
-            "Understand layout nesting and loading states",
-            "Implement parallel and intercepting routes",
-          ],
-          resources: ["Next.js Documentation — Routing"],
-        },
-        {
-          id: "mod-1b",
-          title: "Data Fetching & Caching Strategies",
-          description: "Understand fetch caching, revalidation, and ISR in the App Router.",
-          type: "theory",
-          phase: 1,
-          skillIds: ["nextjs"],
-          durationHours: 3,
-          objectives: [
-            "Understand fetch caching, revalidation, and ISR strategies",
-            "Implement on-demand revalidation with revalidateTag",
-          ],
-          resources: ["Next.js Caching Docs"],
-        },
-        {
-          id: "mod-2",
-          title: "Server Actions Lab",
-          description: "Build a form-heavy feature using Server Actions and revalidation.",
-          type: "lab",
-          phase: 1,
-          skillIds: ["nextjs", "react"],
-          durationHours: 6,
-          objectives: [
-            "Implement form mutations with server actions",
-            "Handle optimistic updates",
-          ],
-          resources: ["Next.js Server Actions Guide"],
-        },
-        {
-          id: "mod-3",
-          title: "App Router Quiz",
-          description: "Test your understanding of App Router concepts.",
-          type: "quiz",
-          phase: 1,
-          skillIds: ["nextjs"],
-          durationHours: 1,
-          objectives: ["Score 80%+ on routing concepts"],
-          resources: [],
-        },
+      resources: [
+        { type: "article", title: "Next.js Documentation — Routing", url: null },
+        { type: "article", title: "Next.js Caching Docs", url: null },
+        { type: "project", title: "Server Actions Lab", url: null },
       ],
+      estimatedHours: 14,
     },
     {
-      phase: 2,
-      name: "Testing Mastery",
-      description:
+      phaseNumber: 2,
+      title: "Testing Mastery",
+      concepts: ["Integration Testing", "Mock Strategies", "E2E Testing", "Test Architecture"],
+      rationale:
         "Build confidence in integration testing, mocking strategies, and test-driven development.",
-      modules: [
-        {
-          id: "mod-4",
-          title: "Integration Testing Patterns",
-          description: "Learn to test components with data fetching, routing, and state.",
-          type: "theory",
-          phase: 2,
-          skillIds: ["testing", "react"],
-          durationHours: 4,
-          objectives: [
-            "Test async data flows with MSW",
-            "Write meaningful assertions for user interactions",
-          ],
-          resources: ["Testing Library Docs", "MSW Documentation"],
-        },
-        {
-          id: "mod-4b",
-          title: "E2E Testing with Playwright",
-          description: "Learn cross-browser end-to-end testing with Playwright.",
-          type: "theory",
-          phase: 2,
-          skillIds: ["testing"],
-          durationHours: 3,
-          objectives: [
-            "Write cross-browser E2E tests",
-            "Test user flows with page object model",
-          ],
-          resources: ["Playwright Documentation", "Testing Library Docs"],
-        },
-        {
-          id: "mod-5",
-          title: "Test a Real Feature",
-          description: "Write a full test suite for an existing component in your project.",
-          type: "lab",
-          phase: 2,
-          skillIds: ["testing"],
-          durationHours: 8,
-          objectives: [
-            "Achieve 90%+ coverage on a feature module",
-            "Test error states and loading states",
-          ],
-          resources: [],
-        },
-        {
-          id: "mod-5b",
-          title: "Testing Quiz",
-          description: "Verify your understanding of testing patterns and strategies.",
-          type: "quiz",
-          phase: 2,
-          skillIds: ["testing"],
-          durationHours: 1,
-          objectives: ["Score 80%+ on testing patterns and strategies"],
-          resources: [],
-        },
+      resources: [
+        { type: "article", title: "Testing Library Docs", url: null },
+        { type: "article", title: "MSW Documentation", url: null },
+        { type: "article", title: "Playwright Documentation", url: null },
       ],
+      estimatedHours: 16,
     },
     {
-      phase: 3,
-      name: "Advanced TypeScript",
-      description:
+      phaseNumber: 3,
+      title: "Advanced TypeScript",
+      concepts: ["Conditional Types", "Template Literal Types", "Type-Level Programming"],
+      rationale:
         "Level up your TypeScript skills with generics, conditional types, and type-level programming.",
-      modules: [
-        {
-          id: "mod-6",
-          title: "Advanced Type Patterns",
-          description: "Master conditional types, mapped types, and template literal types.",
-          type: "theory",
-          phase: 3,
-          skillIds: ["typescript"],
-          durationHours: 5,
-          objectives: [
-            "Implement custom utility types",
-            "Use conditional types for API type safety",
-          ],
-          resources: ["Total TypeScript — Advanced Patterns", "TypeScript Handbook — Advanced Types"],
-        },
-        {
-          id: "mod-7",
-          title: "Type Challenges",
-          description: "Work through progressive type challenges to solidify your skills.",
-          type: "lab",
-          phase: 3,
-          skillIds: ["typescript"],
-          durationHours: 6,
-          objectives: [
-            "Complete 20+ type challenges at medium difficulty",
-            "Build a type-safe event emitter",
-          ],
-          resources: ["Type Challenges Repository", "type-challenges/type-challenges on GitHub"],
-        },
-        {
-          id: "mod-8",
-          title: "TypeScript Assessment",
-          description: "Verify your advanced TypeScript knowledge.",
-          type: "quiz",
-          phase: 3,
-          skillIds: ["typescript"],
-          durationHours: 1,
-          objectives: ["Score 80%+ on advanced type concepts"],
-          resources: [],
-        },
+      resources: [
+        { type: "video", title: "Total TypeScript — Advanced Patterns", url: null },
+        { type: "exercise", title: "Type Challenges Repository", url: null },
       ],
+      estimatedHours: 12,
     },
     {
-      phase: 4,
-      name: "CSS Modern Techniques",
-      description:
+      phaseNumber: 4,
+      title: "CSS Modern Techniques",
+      concepts: ["Container Queries", "CSS Layers", "Scroll-Driven Animations"],
+      rationale:
         "Deepen your CSS skills with container queries, CSS layers, and scroll-driven animations.",
-      modules: [
-        {
-          id: "mod-9",
-          title: "Modern Layout Patterns",
-          description: "Learn container queries and CSS layers for component-scoped styling.",
-          type: "theory",
-          phase: 4,
-          skillIds: ["css"],
-          durationHours: 3,
-          objectives: [
-            "Use container queries for component-scoped responsive design",
-            "Organize styles with CSS layers (@layer)",
-          ],
-          resources: ["MDN Container Queries", "web.dev CSS Layers Guide"],
-        },
-        {
-          id: "mod-10",
-          title: "Advanced Animations Lab",
-          description: "Build scroll-driven animations and a micro-interaction library.",
-          type: "lab",
-          phase: 4,
-          skillIds: ["css"],
-          durationHours: 5,
-          objectives: [
-            "Implement scroll-driven animations",
-            "Build a micro-interaction library with CSS transitions",
-          ],
-          resources: ["MDN Scroll-Driven Animations"],
-        },
-        {
-          id: "mod-11",
-          title: "CSS Assessment",
-          description: "Verify your knowledge of modern CSS techniques.",
-          type: "quiz",
-          phase: 4,
-          skillIds: ["css"],
-          durationHours: 1,
-          objectives: ["Score 80%+ on modern CSS techniques"],
-          resources: [],
-        },
+      resources: [
+        { type: "article", title: "MDN Container Queries", url: null },
+        { type: "article", title: "MDN Scroll-Driven Animations", url: null },
       ],
+      estimatedHours: 9,
     },
   ],
+};
+
+// ── Assessment Report ───────────────────────────────────────────────
+
+export const DEMO_ASSESSMENT_REPORT: AssessmentReportResponse = {
+  knowledgeGraph: {
+    nodes: [
+      { concept: "React Hooks", confidence: 0.85, bloomLevel: "Apply", prerequisites: [] },
+      { concept: "React Reconciliation", confidence: 0.75, bloomLevel: "Analyze", prerequisites: ["React Hooks"] },
+      { concept: "TypeScript Generics", confidence: 0.7, bloomLevel: "Apply", prerequisites: [] },
+      { concept: "CSS Box Model", confidence: 0.9, bloomLevel: "Understand", prerequisites: [] },
+      { concept: "CSS Flexbox & Grid", confidence: 0.85, bloomLevel: "Apply", prerequisites: ["CSS Box Model"] },
+      { concept: "Next.js App Router", confidence: 0.6, bloomLevel: "Remember", prerequisites: ["React Hooks"] },
+      { concept: "Component Testing", confidence: 0.5, bloomLevel: "Apply", prerequisites: ["React Hooks"] },
+    ],
+  },
+  gapAnalysis: DEMO_GAP_ANALYSIS,
+  learningPlan: DEMO_LEARNING_PLAN,
+  proficiencyScores: DEMO_PROFICIENCY_SCORES,
 };

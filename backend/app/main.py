@@ -25,6 +25,7 @@ from app.routes import (
     materials,
     roles,
     skills,
+    user,
 )
 from app.services.session_cleanup import cleanup_stale_sessions
 
@@ -75,6 +76,7 @@ app.include_router(gap_analysis.router, prefix="/api")
 app.include_router(learning_plan.router, prefix="/api")
 app.include_router(materials.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
+app.include_router(user.router, prefix="/api/user")
 
 
 def register_anthropic_error_handlers(application: FastAPI) -> None:

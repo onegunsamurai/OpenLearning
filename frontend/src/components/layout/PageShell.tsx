@@ -5,7 +5,7 @@ import { StepProgress, type StepDefinition } from "./StepProgress";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, Key } from "lucide-react";
+import { LogOut, Key, LayoutDashboard } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiKeySetup } from "@/components/settings/api-key-setup";
@@ -73,6 +73,15 @@ export function PageShell({
           </div>
 
           <div className="flex items-center gap-4">
+            {!isDemo && user && (
+              <Link
+                href="/dashboard"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                Dashboard
+              </Link>
+            )}
             {currentStep !== undefined && (
               <StepProgress currentStep={currentStep} steps={steps} />
             )}

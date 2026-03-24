@@ -66,6 +66,33 @@ export function useAssessmentChat({
     }
   }, [skillIds, targetLevel, roleId]);
 
+  const resumeChat = useCallback(async (existingSessionId: string) => {
+    setMessages([]);
+    setStatus("submitted");
+    setError(null);
+
+    try {
+      const result = await api.assessmentResume(existingSessionId);
+      sessionIdRef.current = result.sessionId;
+      setProgress({
+        type: result.questionType === "calibration" ? "calibration" : "assessment",
+        step: result.step,
+        totalSteps: result.totalSteps,
+      });
+
+      const assistantId = nextId();
+      setMessages([
+        { id: assistantId, role: "assistant", content: result.question },
+      ]);
+      setStatus("ready");
+    } catch (err) {
+      setStatus("error");
+      setError(
+        err instanceof Error ? err : new Error("Failed to resume assessment")
+      );
+    }
+  }, []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       const sessionId = sessionIdRef.current;
@@ -108,6 +135,7 @@ export function useAssessmentChat({
         const decoder = new TextDecoder();
         let accumulated = "";
         let buffer = "";
+        let reportFetchFailed = false;
 
         setMessages((prev) => [
           ...prev,
@@ -161,7 +189,13 @@ export function useAssessmentChat({
                   const report = await api.assessmentReport(sessionId);
                   onAssessmentComplete?.(report.proficiencyScores);
                 } catch (e) {
-                  console.error("Failed to fetch assessment report:", e);
+                  reportFetchFailed = true;
+                  setStatus("error");
+                  setError(
+                    e instanceof Error
+                      ? e
+                      : new Error("Failed to fetch assessment report")
+                  );
                 }
                 continue;
               }
@@ -180,7 +214,9 @@ export function useAssessmentChat({
           }
         }
 
-        setStatus("ready");
+        if (!reportFetchFailed) {
+          setStatus("ready");
+        }
       } catch (err) {
         setStatus("error");
         setError(
@@ -197,6 +233,7 @@ export function useAssessmentChat({
     status,
     error,
     initialiseChat,
+    resumeChat,
     sessionId: sessionIdRef.current,
     progress,
   };

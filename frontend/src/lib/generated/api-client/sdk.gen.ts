@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, AuthLogoutApiAuthLogoutPostData, AuthLogoutApiAuthLogoutPostResponses, AuthMeApiAuthMeGetData, AuthMeApiAuthMeGetErrors, AuthMeApiAuthMeGetResponses, DeleteApiKeyApiAuthApiKeyDeleteData, DeleteApiKeyApiAuthApiKeyDeleteErrors, DeleteApiKeyApiAuthApiKeyDeleteResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetApiKeyApiAuthApiKeyGetData, GetApiKeyApiAuthApiKeyGetErrors, GetApiKeyApiAuthApiKeyGetResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, GithubCallbackApiAuthGithubCallbackGetData, GithubCallbackApiAuthGithubCallbackGetErrors, GithubCallbackApiAuthGithubCallbackGetResponses, GithubLoginApiAuthGithubGetData, GithubLoginApiAuthGithubGetErrors, GithubLoginApiAuthGithubGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, LoginApiAuthLoginPostData, LoginApiAuthLoginPostErrors, LoginApiAuthLoginPostResponses, RegisterApiAuthRegisterPostData, RegisterApiAuthRegisterPostErrors, RegisterApiAuthRegisterPostResponses, SetApiKeyApiAuthApiKeyPostData, SetApiKeyApiAuthApiKeyPostErrors, SetApiKeyApiAuthApiKeyPostResponses, ValidateKeyApiAuthValidateKeyPostData, ValidateKeyApiAuthValidateKeyPostErrors, ValidateKeyApiAuthValidateKeyPostResponses } from './types.gen';
+import type { AssessmentExportApiAssessmentSessionIdExportGetData, AssessmentExportApiAssessmentSessionIdExportGetErrors, AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentGraphApiAssessmentSessionIdGraphGetData, AssessmentGraphApiAssessmentSessionIdGraphGetErrors, AssessmentGraphApiAssessmentSessionIdGraphGetResponses, AssessmentReportApiAssessmentSessionIdReportGetData, AssessmentReportApiAssessmentSessionIdReportGetErrors, AssessmentReportApiAssessmentSessionIdReportGetResponses, AssessmentRespondApiAssessmentSessionIdRespondPostData, AssessmentRespondApiAssessmentSessionIdRespondPostErrors, AssessmentRespondApiAssessmentSessionIdRespondPostResponses, AssessmentResumeApiAssessmentSessionIdResumeGetData, AssessmentResumeApiAssessmentSessionIdResumeGetErrors, AssessmentResumeApiAssessmentSessionIdResumeGetResponses, AssessmentStartApiAssessmentStartPostData, AssessmentStartApiAssessmentStartPostErrors, AssessmentStartApiAssessmentStartPostResponses, AuthLogoutApiAuthLogoutPostData, AuthLogoutApiAuthLogoutPostResponses, AuthMeApiAuthMeGetData, AuthMeApiAuthMeGetErrors, AuthMeApiAuthMeGetResponses, DeleteApiKeyApiAuthApiKeyDeleteData, DeleteApiKeyApiAuthApiKeyDeleteErrors, DeleteApiKeyApiAuthApiKeyDeleteResponses, GapAnalysisApiGapAnalysisPostData, GapAnalysisApiGapAnalysisPostErrors, GapAnalysisApiGapAnalysisPostResponses, GetApiKeyApiAuthApiKeyGetData, GetApiKeyApiAuthApiKeyGetErrors, GetApiKeyApiAuthApiKeyGetResponses, GetMaterialsApiMaterialsSessionIdGetData, GetMaterialsApiMaterialsSessionIdGetErrors, GetMaterialsApiMaterialsSessionIdGetResponses, GetRoleApiRolesRoleIdGetData, GetRoleApiRolesRoleIdGetErrors, GetRoleApiRolesRoleIdGetResponses, GetRolesApiRolesGetData, GetRolesApiRolesGetResponses, GetSkillsApiSkillsGetData, GetSkillsApiSkillsGetResponses, GithubCallbackApiAuthGithubCallbackGetData, GithubCallbackApiAuthGithubCallbackGetErrors, GithubCallbackApiAuthGithubCallbackGetResponses, GithubLoginApiAuthGithubGetData, GithubLoginApiAuthGithubGetErrors, GithubLoginApiAuthGithubGetResponses, HealthCheckApiHealthGetData, HealthCheckApiHealthGetErrors, HealthCheckApiHealthGetResponses, LearningPlanApiLearningPlanPostData, LearningPlanApiLearningPlanPostErrors, LearningPlanApiLearningPlanPostResponses, ListUserAssessmentsApiUserAssessmentsGetData, ListUserAssessmentsApiUserAssessmentsGetErrors, ListUserAssessmentsApiUserAssessmentsGetResponses, LoginApiAuthLoginPostData, LoginApiAuthLoginPostErrors, LoginApiAuthLoginPostResponses, RegisterApiAuthRegisterPostData, RegisterApiAuthRegisterPostErrors, RegisterApiAuthRegisterPostResponses, SetApiKeyApiAuthApiKeyPostData, SetApiKeyApiAuthApiKeyPostErrors, SetApiKeyApiAuthApiKeyPostResponses, ValidateKeyApiAuthValidateKeyPostData, ValidateKeyApiAuthValidateKeyPostErrors, ValidateKeyApiAuthValidateKeyPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -70,6 +70,13 @@ export const assessmentReportApiAssessmentSessionIdReportGet = <ThrowOnError ext
 export const assessmentExportApiAssessmentSessionIdExportGet = <ThrowOnError extends boolean = false>(options: Options<AssessmentExportApiAssessmentSessionIdExportGetData, ThrowOnError>) => (options.client ?? client).get<AssessmentExportApiAssessmentSessionIdExportGetResponses, AssessmentExportApiAssessmentSessionIdExportGetErrors, ThrowOnError>({ url: '/api/assessment/{session_id}/export', ...options });
 
 /**
+ * Assessment Resume
+ *
+ * Resume an active assessment session by loading the pending interrupt.
+ */
+export const assessmentResumeApiAssessmentSessionIdResumeGet = <ThrowOnError extends boolean = false>(options: Options<AssessmentResumeApiAssessmentSessionIdResumeGetData, ThrowOnError>) => (options.client ?? client).get<AssessmentResumeApiAssessmentSessionIdResumeGetResponses, AssessmentResumeApiAssessmentSessionIdResumeGetErrors, ThrowOnError>({ url: '/api/assessment/{session_id}/resume', ...options });
+
+/**
  * Get Roles
  */
 export const getRolesApiRolesGet = <ThrowOnError extends boolean = false>(options?: Options<GetRolesApiRolesGetData, ThrowOnError>) => (options?.client ?? client).get<GetRolesApiRolesGetResponses, unknown, ThrowOnError>({ url: '/api/roles', ...options });
@@ -102,6 +109,13 @@ export const learningPlanApiLearningPlanPost = <ThrowOnError extends boolean = f
         ...options.headers
     }
 });
+
+/**
+ * Get Materials
+ *
+ * Retrieve generated learning materials for a given assessment session.
+ */
+export const getMaterialsApiMaterialsSessionIdGet = <ThrowOnError extends boolean = false>(options: Options<GetMaterialsApiMaterialsSessionIdGetData, ThrowOnError>) => (options.client ?? client).get<GetMaterialsApiMaterialsSessionIdGetResponses, GetMaterialsApiMaterialsSessionIdGetErrors, ThrowOnError>({ url: '/api/materials/{session_id}', ...options });
 
 /**
  * Github Login
@@ -200,3 +214,10 @@ export const loginApiAuthLoginPost = <ThrowOnError extends boolean = false>(opti
         ...options.headers
     }
 });
+
+/**
+ * List User Assessments
+ *
+ * List all assessment sessions for the current user.
+ */
+export const listUserAssessmentsApiUserAssessmentsGet = <ThrowOnError extends boolean = false>(options?: Options<ListUserAssessmentsApiUserAssessmentsGetData, ThrowOnError>) => (options?.client ?? client).get<ListUserAssessmentsApiUserAssessmentsGetResponses, ListUserAssessmentsApiUserAssessmentsGetErrors, ThrowOnError>({ url: '/api/user/assessments', ...options });

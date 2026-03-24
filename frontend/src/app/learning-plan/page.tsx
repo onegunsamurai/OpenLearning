@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { PlanHeader } from "@/components/learning-plan/PlanHeader";
 import { PlanTimeline } from "@/components/learning-plan/PlanTimeline";
@@ -9,73 +9,54 @@ import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
-import { api } from "@/lib/api";
+import { useSessionReport } from "@/hooks/useSessionReport";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { cn } from "@/lib/utils";
 import { Loader2, Copy, RotateCcw, Check, FileDown } from "lucide-react";
 
 export default function LearningPlanPage() {
-  const router = useRouter();
-  const { gapAnalysis, learningPlan, setLearningPlan, setCurrentStep, reset, assessmentSessionId } =
-    useAppStore();
+  return (
+    <Suspense>
+      <LearningPlanPageContent />
+    </Suspense>
+  );
+}
 
+function LearningPlanPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionParam = searchParams.get("session");
+
+  const { assessmentSessionId, reset } = useAppStore();
   const { user, isLoading: authLoading } = useAuthStore();
   const { login } = useAuth();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const sessionId = sessionParam || assessmentSessionId;
+  const { report, loading, error, refetch } = useSessionReport(sessionId);
+
   const [activePhase, setActivePhase] = useState(1);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      login("/learning-plan");
+      login(
+        "/learning-plan" + (sessionParam ? `?session=${sessionParam}` : "")
+      );
       return;
     }
-  }, [authLoading, user, login]);
+  }, [authLoading, user, login, sessionParam]);
 
   useEffect(() => {
-    if (!gapAnalysis) {
-      router.push("/");
-      return;
+    if (!sessionId && !authLoading && user) {
+      router.push("/dashboard");
     }
-
-    if (learningPlan) return;
-
-    const fetchPlan = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await api.learningPlan(gapAnalysis);
-        setLearningPlan(data);
-        setCurrentStep(3);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error("Something went wrong"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlan();
-  }, [gapAnalysis, learningPlan, setLearningPlan, setCurrentStep, router]);
-
-  const handleRetry = async () => {
-    if (!gapAnalysis) return;
-    setError(null);
-    setLoading(true);
-    try {
-      const data = await api.learningPlan(gapAnalysis);
-      setLearningPlan(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed again. Please try later."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [sessionId, authLoading, user, router]);
 
   const handleCopyPlan = async () => {
-    if (!learningPlan) return;
-    await navigator.clipboard.writeText(JSON.stringify(learningPlan, null, 2));
+    if (!report?.learningPlan) return;
+    await navigator.clipboard.writeText(
+      JSON.stringify(report.learningPlan, null, 2)
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -86,7 +67,7 @@ export default function LearningPlanPage() {
   };
 
   if (authLoading || !user) return null;
-  if (!gapAnalysis) return null;
+  if (!sessionId) return null;
 
   if (loading) {
     return (
@@ -94,7 +75,7 @@ export default function LearningPlanPage() {
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan" />
           <p className="text-muted-foreground font-mono text-sm">
-            Generating your learning plan...
+            Loading your learning plan...
           </p>
           <div className="w-full max-w-4xl grid gap-4 lg:grid-cols-[250px,1fr] mt-8">
             <div className="h-[300px] rounded-xl bg-card border border-border animate-pulse" />
@@ -116,13 +97,15 @@ export default function LearningPlanPage() {
     return (
       <PageShell currentStep={3}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <ApiErrorDisplay error={error} onRetry={handleRetry} />
+          <ApiErrorDisplay error={error} onRetry={refetch} />
         </div>
       </PageShell>
     );
   }
 
-  if (!learningPlan) return null;
+  if (!report) return null;
+
+  const { learningPlan } = report;
 
   return (
     <PageShell currentStep={3}>
@@ -138,18 +121,20 @@ export default function LearningPlanPage() {
             </h4>
             {learningPlan.phases.map((phase) => (
               <button
-                key={phase.phase}
-                onClick={() => setActivePhase(phase.phase)}
+                key={phase.phaseNumber}
+                onClick={() => setActivePhase(phase.phaseNumber)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors",
-                  activePhase === phase.phase
+                  activePhase === phase.phaseNumber
                     ? "border-cyan bg-cyan-muted text-cyan"
                     : "border-border bg-card text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span className="font-mono text-xs">Phase {phase.phase}</span>
+                <span className="font-mono text-xs">
+                  Phase {phase.phaseNumber}
+                </span>
                 <br />
-                <span className="font-medium">{phase.name}</span>
+                <span className="font-medium">{phase.title}</span>
               </button>
             ))}
           </div>
@@ -175,13 +160,17 @@ export default function LearningPlanPage() {
           )}
           {copied ? "Copied!" : "Save Plan (JSON)"}
         </Button>
-        {assessmentSessionId && (
+        {sessionId && (
           <Button
             asChild
             variant="outline"
             className="gap-2 border-border"
           >
-            <a href={`/export/${assessmentSessionId}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`/export/${sessionId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <FileDown className="h-4 w-4" />
               Export Report
             </a>

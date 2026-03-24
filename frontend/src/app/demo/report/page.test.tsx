@@ -75,7 +75,7 @@ describe("DemoReportPage", () => {
     const tabButtons = screen.getAllByRole("button", { name: /Learning Plan/i });
     await user.click(tabButtons[0]);
 
-    expect(screen.getByText(DEMO_LEARNING_PLAN.title)).toBeInTheDocument();
+    expect(screen.getByText(DEMO_LEARNING_PLAN.summary)).toBeInTheDocument();
   });
 
   it("renders learning plan phases", async () => {
@@ -86,8 +86,8 @@ describe("DemoReportPage", () => {
     await user.click(tabButtons[0]);
 
     for (const phase of DEMO_LEARNING_PLAN.phases) {
-      // Phase names may appear in sidebar buttons and timeline
-      expect(screen.getAllByText(phase.name).length).toBeGreaterThanOrEqual(1);
+      // Phase titles may appear in sidebar buttons and timeline
+      expect(screen.getAllByText(phase.title).length).toBeGreaterThanOrEqual(1);
     }
   });
 

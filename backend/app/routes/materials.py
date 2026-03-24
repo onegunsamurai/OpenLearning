@@ -47,7 +47,7 @@ async def get_materials(
     session_row = session_result.scalar_one_or_none()
     if not session_row:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session_row.user_id and session_row.user_id != user.user_id:
+    if session_row.user_id != user.user_id:
         raise HTTPException(status_code=404, detail="Session not found")
 
     # Fetch materials
