@@ -6,28 +6,20 @@ The learning content pipeline is a LangGraph StateGraph that automatically gener
 
 ## Pipeline Overview
 
-The pipeline has **7 nodes** organized into four phases:
+The pipeline has **5 nodes** organized into four phases:
 
 ```mermaid
-graph TD
-    START([Start]) --> IR[input_reader]
-    IR --> GP[gap_prioritizer]
-    GP --> OG[objective_generator]
-
-    OG --> CP[content_planner]
-    CP --> RCG[rag_content_generator]
-
-    RCG --> BV[bloom_validator]
-    BV --> QG{quality_gate}
-
-    QG -->|"bloom >= 0.75 AND<br/>quality >= 0.70"| MW[material_writer]
-    QG -->|"retry<br/>(iteration < 3)"| CP
-    QG -->|"flag<br/>(iteration >= 3)"| MW
-
-    MW --> END([End])
+graph LR
+    A[Load Assessment Result] --> B[Prioritize Gaps]
+    B --> C[Generate Objectives]
+    C --> D[Generate Content]
+    D --> E{Validate Quality}
+    E -->|Pass| F[Save Materials]
+    E -->|Retry| D
+    E -->|Max Retries| G[Flag & Save]
 ```
 
-> Nodes 1–3 run sequentially per session. Nodes 4–5 run in parallel across all gap nodes via `asyncio.gather`. Nodes 6–7 run per gap with a retry loop.
+> Nodes 1–3 (`input_reader`, `gap_prioritizer`, `objective_generator`) run sequentially per session. Node 4 (`generate_all_content`) runs in parallel across all gaps via `asyncio.gather` with a semaphore of 5. Node 5 (`validate_all_content`) runs per gap with a retry loop (up to 3 iterations).
 
 ### Components
 

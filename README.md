@@ -38,6 +38,21 @@ graph LR
 
 The assessment uses a LangGraph state machine with human-in-the-loop interrupts. It calibrates difficulty with 3 initial questions, then adaptively routes through topics using Bloom taxonomy levels (remember, understand, apply, analyze, evaluate, create) until it has evaluated up to 8 topics or 25 questions.
 
+## Content Generation Pipeline
+
+```mermaid
+graph LR
+    A[Load Assessment Result] --> B[Prioritize Gaps]
+    B --> C[Generate Objectives]
+    C --> D[Generate Content]
+    D --> E{Validate Quality}
+    E -->|Pass| F[Save Materials]
+    E -->|Retry| D
+    E -->|Max Retries| G[Flag & Save]
+```
+
+After assessment completion, a background pipeline generates personalized learning materials. Gaps are scored by severity, Bloom distance, and IRT weight, then content is generated in parallel (up to 5 concurrent) with Bloom-level validation. Each piece must pass a quality gate (bloom alignment >= 0.75, quality >= 0.70) or gets regenerated up to 3 times.
+
 ## Getting Started
 
 ### Prerequisites
