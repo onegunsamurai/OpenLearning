@@ -6,7 +6,7 @@ import { ApiKeySetup } from "./api-key-setup";
 // Mock the api module
 vi.mock("@/lib/api", () => ({
   api: {
-    authGetApiKey: vi.fn().mockRejectedValue(new Error("No key")),
+    authGetApiKey: vi.fn().mockResolvedValue(null),
     authValidateKey: vi.fn(),
     authSetApiKey: vi.fn(),
     authDeleteApiKey: vi.fn(),
@@ -25,7 +25,7 @@ const mockApi = api as unknown as {
 describe("ApiKeySetup", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApi.authGetApiKey.mockRejectedValue(new Error("No key"));
+    mockApi.authGetApiKey.mockResolvedValue(null);
   });
 
   it("renders dialog when open", () => {
@@ -114,6 +114,31 @@ describe("ApiKeySetup", () => {
     expect(
       await screen.findByText("Key is valid but failed to save. Please try again.")
     ).toBeInTheDocument();
+  });
+
+  it("renders a close button and skip button", () => {
+    render(<ApiKeySetup open={true} onClose={vi.fn()} />);
+
+    expect(screen.getByLabelText("Close")).toBeInTheDocument();
+    expect(screen.getByText("Skip for now")).toBeInTheDocument();
+  });
+
+  it("calls onClose when X close button is clicked", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<ApiKeySetup open={true} onClose={onClose} />);
+
+    await user.click(screen.getByLabelText("Close"));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("calls onClose when Skip for now is clicked", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<ApiKeySetup open={true} onClose={onClose} />);
+
+    await user.click(screen.getByText("Skip for now"));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("shows existing key preview when available", async () => {

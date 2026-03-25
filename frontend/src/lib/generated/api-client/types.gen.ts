@@ -1269,6 +1269,10 @@ export type GetApiKeyApiAuthApiKeyGetResponses = {
      * Successful Response
      */
     200: ApiKeyResponse;
+    /**
+     * No API key stored
+     */
+    204: void;
 };
 
 export type GetApiKeyApiAuthApiKeyGetResponse = GetApiKeyApiAuthApiKeyGetResponses[keyof GetApiKeyApiAuthApiKeyGetResponses];
