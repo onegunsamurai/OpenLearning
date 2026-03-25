@@ -58,6 +58,8 @@ playwright-report/
 test-results/
 blob-report/
 frontend/e2e/.auth/user.json
+e2e-screenshots/
+.playwright-mcp/
 
 # claude code local settings (may contain API keys)
 .claude/settings.local.json

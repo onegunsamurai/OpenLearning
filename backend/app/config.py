@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings
@@ -22,3 +23,20 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def configure_langsmith_tracing() -> None:
+    """Bridge LangSmith settings from pydantic-settings into os.environ.
+
+    The LangSmith SDK reads tracing config directly from os.environ,
+    but pydantic-settings only loads .env values into the Settings object.
+    Uses setdefault so explicit shell exports take precedence.
+    """
+    s = get_settings()
+    if not s.langsmith_tracing:
+        return
+    os.environ.setdefault("LANGSMITH_TRACING", "true")
+    if s.langsmith_api_key:
+        os.environ.setdefault("LANGSMITH_API_KEY", s.langsmith_api_key)
+    if s.langsmith_project:
+        os.environ.setdefault("LANGSMITH_PROJECT", s.langsmith_project)
