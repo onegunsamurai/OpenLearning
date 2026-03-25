@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { api } from "@/lib/api";
@@ -8,23 +8,8 @@ import { api } from "@/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export function useAuth() {
-  const { user, isLoading, setUser, logout: clearStore } = useAuthStore();
+  const { user, isLoading, logout: clearStore } = useAuthStore();
   const router = useRouter();
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .authMe()
-      .then((me) => {
-        if (!cancelled) setUser(me);
-      })
-      .catch(() => {
-        if (!cancelled) setUser(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [setUser]);
 
   const login = useCallback(
     (redirectPath?: string) => {

@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     langsmith_endpoint: str = "https://api.smith.langchain.com"
     langsmith_project: str = "open-learning"
     langsmith_tracing: bool = False
-    langsmith_workspace_id: str = ""
     database_url: str = "postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning"
     github_client_id: str = ""
     github_client_secret: str = ""
@@ -44,5 +43,3 @@ def configure_langsmith_tracing() -> None:
         os.environ.setdefault("LANGSMITH_ENDPOINT", s.langsmith_endpoint)
     if s.langsmith_project:
         os.environ.setdefault("LANGSMITH_PROJECT", s.langsmith_project)
-    if s.langsmith_workspace_id:
-        os.environ.setdefault("LANGSMITH_WORKSPACE_ID", s.langsmith_workspace_id)
