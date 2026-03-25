@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     cors_origins: list[str] = ["http://localhost:3000"]
     langsmith_api_key: str = ""
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
     langsmith_project: str = "open-learning"
     langsmith_tracing: bool = False
     database_url: str = "postgresql+asyncpg://openlearning:openlearning@localhost:5432/openlearning"
@@ -38,5 +39,7 @@ def configure_langsmith_tracing() -> None:
     os.environ.setdefault("LANGSMITH_TRACING", "true")
     if s.langsmith_api_key:
         os.environ.setdefault("LANGSMITH_API_KEY", s.langsmith_api_key)
+    if s.langsmith_endpoint:
+        os.environ.setdefault("LANGSMITH_ENDPOINT", s.langsmith_endpoint)
     if s.langsmith_project:
         os.environ.setdefault("LANGSMITH_PROJECT", s.langsmith_project)
