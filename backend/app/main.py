@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from starlette.requests import Request
 
-from app.config import get_settings
+from app.config import configure_langsmith_tracing, get_settings
 from app.db import init_db
 from app.graph.content_pipeline import compile_content_graph
 from app.graph.pipeline import compile_graph
@@ -30,6 +30,7 @@ from app.routes import (
 from app.services.session_cleanup import cleanup_stale_sessions
 
 settings = get_settings()
+configure_langsmith_tracing()
 
 
 @asynccontextmanager

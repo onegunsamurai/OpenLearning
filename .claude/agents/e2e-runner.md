@@ -79,9 +79,25 @@ Common causes: race conditions (use auto-wait locators), network timing (wait fo
 - Test duration < 10 minutes
 - Artifacts uploaded and accessible
 
-## Reference
+## Project Structure
 
-For detailed Playwright patterns, Page Object Model examples, configuration templates, CI/CD workflows, and artifact management strategies, see skill: `e2e-testing`.
+```
+frontend/
+  playwright.config.ts        # Playwright configuration
+  e2e/
+    global-setup.ts            # Auth setup (registers/logs in test user)
+    .auth/                     # Stored auth state (gitignored)
+    pages/                     # Page Object Models
+      login.page.ts
+      dashboard.page.ts
+      landing.page.ts
+      assessment.page.ts
+    specs/                     # Test specifications
+      landing.spec.ts
+      auth.noauth.spec.ts
+      dashboard.spec.ts
+      assessment-setup.spec.ts
+```
 
 ---
 
