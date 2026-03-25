@@ -230,8 +230,11 @@ const realApi = {
     unwrap(await setApiKeyApiAuthApiKeyPost({ body: { apiKey } }));
   },
 
-  authGetApiKey: async (): Promise<ApiKeyResponse> =>
-    unwrap(await getApiKeyApiAuthApiKeyGet()),
+  authGetApiKey: async (): Promise<ApiKeyResponse | null> => {
+    const result = await getApiKeyApiAuthApiKeyGet();
+    if (result.response?.status === 204) return null;
+    return unwrap(result) as ApiKeyResponse;
+  },
 
   authDeleteApiKey: async (): Promise<void> => {
     unwrap(await deleteApiKeyApiAuthApiKeyDelete());

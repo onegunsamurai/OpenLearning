@@ -452,6 +452,19 @@ class TestApiKey:
         assert preview == "sk-...1234"
 
     @patch("app.deps.get_settings", _mock_settings)
+    async def test_get_api_key_no_key_returns_204(
+        self, http_client: AsyncClient, db_session: AsyncSession
+    ) -> None:
+        user = await _seed_user(db_session)
+        token = _make_jwt(user_id=user.id)
+        resp = await http_client.get(
+            "/api/auth/api-key",
+            cookies={"access_token": token},
+        )
+        assert resp.status_code == 204
+        assert resp.content == b""
+
+    @patch("app.deps.get_settings", _mock_settings)
     async def test_set_api_key_unauthenticated_returns_401(
         self, http_client: AsyncClient, setup_db
     ) -> None:

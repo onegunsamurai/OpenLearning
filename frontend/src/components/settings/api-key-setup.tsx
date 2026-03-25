@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Loader2, Check, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check, Trash2, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface ApiKeySetupProps {
@@ -45,7 +46,7 @@ function ApiKeySetupInner({ onClose, onKeySet }: Omit<ApiKeySetupProps, "open">)
   const fetchPreview = useCallback(() => {
     api
       .authGetApiKey()
-      .then((res) => setPreview(res.apiKeyPreview))
+      .then((res) => setPreview(res?.apiKeyPreview ?? null))
       .catch(() => setPreview(null));
   }, []);
 
@@ -99,6 +100,12 @@ function ApiKeySetupInner({ onClose, onKeySet }: Omit<ApiKeySetupProps, "open">)
   return (
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-md p-8">
+        <DialogClose
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </DialogClose>
         <DialogTitle className="text-xl">Set Up Your API Key</DialogTitle>
         <DialogDescription className="mt-1 text-sm text-muted-foreground">
           Enter your Anthropic API key to power assessments. Get one at{" "}
@@ -186,6 +193,13 @@ function ApiKeySetupInner({ onClose, onKeySet }: Omit<ApiKeySetupProps, "open">)
               "Validate & Save"
             )}
           </Button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Skip for now
+          </button>
         </div>
       </DialogContent>
     </Dialog>

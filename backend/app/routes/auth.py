@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import urlencode, urlparse
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from jose import jwt
 from pydantic import EmailStr
@@ -315,16 +315,21 @@ async def set_api_key(
     return OkResponse(ok=True)
 
 
-@router.get("/api-key", response_model=ApiKeyResponse, response_model_by_alias=True)
+@router.get(
+    "/api-key",
+    response_model=ApiKeyResponse,
+    response_model_by_alias=True,
+    responses={204: {"description": "No API key stored"}},
+)
 async def get_api_key(
     user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> ApiKeyResponse:
+) -> ApiKeyResponse | Response:
     """Return a masked preview of the stored API key."""
     result = await db.execute(select(User).where(User.id == user.user_id))
     db_user = result.scalar_one_or_none()
     if not db_user or not db_user.encrypted_api_key:
-        raise HTTPException(status_code=404, detail="No API key stored")
+        return Response(status_code=204)
     # Decrypt to get last 4 chars for preview
     plaintext = decrypt_api_key(db_user.encrypted_api_key)
     preview = f"sk-...{plaintext[-4:]}" if len(plaintext) >= 4 else "sk-...****"
