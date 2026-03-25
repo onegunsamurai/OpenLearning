@@ -35,6 +35,19 @@ async function globalSetup(config: FullConfig) {
     }
   }
 
+  // Set API key for the test user if available (required for real LLM tests)
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey) {
+    const keyRes = await page.request.post(`${apiURL}/api/auth/api-key`, {
+      data: { apiKey },
+    });
+    if (!keyRes.ok() && keyRes.status() !== 409) {
+      throw new Error(
+        `Failed to set API key for test user: ${keyRes.status()} ${await keyRes.text()}`
+      );
+    }
+  }
+
   // Navigate to let the browser pick up the auth cookie
   await page.goto("/dashboard");
   await context.storageState({ path: "e2e/.auth/user.json" });
