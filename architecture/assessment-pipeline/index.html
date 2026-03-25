@@ -763,6 +763,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#gap-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap Enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#learning-plan-generation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1428,6 +1439,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#gap-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gap Enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#learning-plan-generation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1539,7 +1561,7 @@
 <p>The assessment pipeline is a LangGraph state machine that adaptively evaluates a candidate's knowledge across multiple topics and Bloom taxonomy levels. This page covers every node, routing decision, and data structure in the pipeline.</p>
 <p><strong>Source</strong>: <code>backend/app/graph/pipeline.py</code>, <code>backend/app/graph/router.py</code>, <code>backend/app/graph/state.py</code></p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
-<p>The pipeline has <strong>14 nodes</strong> organized into four phases:</p>
+<p>The pipeline has <strong>15 nodes</strong> organized into four phases:</p>
 <pre class="mermaid"><code>graph TD
     START([Start]) --&gt; CE[calibrate_easy]
     CE --&gt; CM[calibrate_medium]
@@ -1561,7 +1583,8 @@
     PQ --&gt; APR[await_probe_response]
     APR --&gt; ER
 
-    AG --&gt; GP[generate_plan]
+    AG --&gt; EG[enrich_gaps]
+    EG --&gt; GP[generate_plan]
     GP --&gt; END([End])</code></pre>
 <h2 id="phase-1-calibration">Phase 1: Calibration<a class="headerlink" href="#phase-1-calibration" title="Permanent link">&para;</a></h2>
 <p>Three calibration questions at increasing difficulty determine the candidate's starting level.</p>
@@ -1850,6 +1873,16 @@
 <li>A <strong>gap</strong> exists where <code>current_confidence &lt; target_confidence - 0.2</code></li>
 <li>Gaps are <strong>topologically sorted</strong> by prerequisites so foundational concepts come first</li>
 </ul>
+<h3 id="gap-enrichment">Gap Enrichment<a class="headerlink" href="#gap-enrichment" title="Permanent link">&para;</a></h3>
+<p><strong>Source</strong>: <code>backend/app/agents/gap_enricher.py</code> → <code>enrich_gaps()</code></p>
+<p>Enriches the raw gap nodes with priority tiers, overall readiness, and LLM-generated recommendations:</p>
+<ul>
+<li><strong><code>overall_readiness</code></strong> (0–100) — Weighted average of current/target confidence across all concepts</li>
+<li><strong><code>priority</code></strong> — Per-gap tier based on confidence gap: <code>critical</code> (&gt;0.6), <code>high</code> (&gt;0.4), <code>medium</code> (&gt;0.2), <code>low</code></li>
+<li><strong><code>recommendation</code></strong> — LLM-generated actionable learning recommendation per gap (via <code>GapEnrichmentOutput</code> schema)</li>
+<li>Gaps are sorted by priority (critical first), then by gap size</li>
+</ul>
+<p>Returns an <code>EnrichedGapAnalysis</code> stored in the <code>enriched_gap_analysis</code> state field.</p>
 <h3 id="learning-plan-generation">Learning Plan Generation<a class="headerlink" href="#learning-plan-generation" title="Permanent link">&para;</a></h3>
 <p><strong>Source</strong>: <code>backend/app/agents/plan_generator.py</code> → <code>generate_plan()</code></p>
 <p>Claude generates a phased learning plan from the gap nodes:</p>
@@ -1934,6 +1967,16 @@
 <td><code>PlanOutput</code></td>
 <td>Plan Generator</td>
 <td>Full learning plan with phases and resources</td>
+</tr>
+<tr>
+<td><code>GapEnrichmentOutput</code></td>
+<td>Gap Enricher</td>
+<td>Summary and per-gap recommendations</td>
+</tr>
+<tr>
+<td><code>GapRecommendationOutput</code></td>
+<td>Gap Enricher</td>
+<td>Single concept recommendation (nested in <code>GapEnrichmentOutput</code>)</td>
 </tr>
 </tbody>
 </table>
