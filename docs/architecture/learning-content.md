@@ -126,7 +126,7 @@ Each objective specifies what the learner will **do**, not what they will know:
 | Node | Function | Description |
 |------|----------|-------------|
 | `content_planner` | `plan_content` | Computes Cognitive Load Theory parameters per gap |
-| `rag_content_generator` | `generate_content` | Vector store retrieval + LLM generation, parallel via `asyncio.gather` |
+| `rag_content_generator` | `generate_all_content` | Vector store retrieval + LLM generation, parallel via `asyncio.gather` |
 
 ### Cognitive Load Parameters
 

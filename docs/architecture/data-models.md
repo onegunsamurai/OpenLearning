@@ -316,6 +316,7 @@ class AssessmentState(TypedDict, total=False):
     knowledge_graph: KnowledgeGraph
     target_graph: KnowledgeGraph
     gap_nodes: list[KnowledgeNode]
+    enriched_gap_analysis: EnrichedGapAnalysis
     learning_plan: LearningPlan   # state.py LearningPlan (see below)
 
     # Human-in-the-loop
@@ -347,6 +348,28 @@ class AssessmentState(TypedDict, total=False):
     ```
 
     The API `LearningPlan` (in `models/learning_plan.py`) has `title`, `total_weeks`, `total_hours: int`, and `phases: list[Phase]`. The pipeline version omits `title`/`total_weeks`, uses `float` for hours, and structures phases differently.
+
+#### EnrichedGapAnalysis
+
+Populated by `gap_enricher.enrich_gaps()` between gap analysis and plan generation:
+
+```python
+class EnrichedGapItem(CamelModel):
+    skill_id: str
+    skill_name: str
+    current_level: int   # 0-100
+    target_level: int    # 0-100
+    gap: int             # target - current
+    priority: Literal["critical", "high", "medium", "low"]
+    recommendation: str
+
+class EnrichedGapAnalysis(CamelModel):
+    overall_readiness: int  # 0-100
+    summary: str
+    gaps: list[EnrichedGapItem]
+```
+
+**Source**: `backend/app/graph/state.py`
 
 ### State Data Types
 

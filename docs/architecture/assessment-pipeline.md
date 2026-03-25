@@ -6,7 +6,7 @@ The assessment pipeline is a LangGraph state machine that adaptively evaluates a
 
 ## Pipeline Overview
 
-The pipeline has **14 nodes** organized into four phases:
+The pipeline has **15 nodes** organized into four phases:
 
 ```mermaid
 graph TD
@@ -30,7 +30,8 @@ graph TD
     PQ --> APR[await_probe_response]
     APR --> ER
 
-    AG --> GP[generate_plan]
+    AG --> EG[enrich_gaps]
+    EG --> GP[generate_plan]
     GP --> END([End])
 ```
 
@@ -191,6 +192,19 @@ Pure Python (no LLM call). Compares the current knowledge graph against the targ
 - A **gap** exists where `current_confidence < target_confidence - 0.2`
 - Gaps are **topologically sorted** by prerequisites so foundational concepts come first
 
+### Gap Enrichment
+
+**Source**: `backend/app/agents/gap_enricher.py` → `enrich_gaps()`
+
+Enriches the raw gap nodes with priority tiers, overall readiness, and LLM-generated recommendations:
+
+- **`overall_readiness`** (0–100) — Weighted average of current/target confidence across all concepts
+- **`priority`** — Per-gap tier based on confidence gap: `critical` (>0.6), `high` (>0.4), `medium` (>0.2), `low`
+- **`recommendation`** — LLM-generated actionable learning recommendation per gap (via `GapEnrichmentOutput` schema)
+- Gaps are sorted by priority (critical first), then by gap size
+
+Returns an `EnrichedGapAnalysis` stored in the `enriched_gap_analysis` state field.
+
 ### Learning Plan Generation
 
 **Source**: `backend/app/agents/plan_generator.py` → `generate_plan()`
@@ -268,6 +282,8 @@ Agents use LangChain's `with_structured_output()` instead of regex-based JSON pa
 | `QuestionOutput` | Question Generator | Assessment question |
 | `EvaluationOutput` | Response Evaluator | Response confidence, Bloom level, evidence |
 | `PlanOutput` | Plan Generator | Full learning plan with phases and resources |
+| `GapEnrichmentOutput` | Gap Enricher | Summary and per-gap recommendations |
+| `GapRecommendationOutput` | Gap Enricher | Single concept recommendation (nested in `GapEnrichmentOutput`) |
 
 Agents call `ainvoke_structured(schema, prompt)`, which returns a validated Pydantic instance. The agent then maps this to the pipeline's `CamelModel` state types.
 
