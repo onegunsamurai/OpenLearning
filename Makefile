@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
+.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend test-e2e test-e2e-headed test-e2e-report fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -46,6 +46,15 @@ test-backend:
 	cd backend && pytest tests/ -v
 test-frontend:
 	cd frontend && npm test
+
+test-e2e:
+	cd frontend && npx playwright test
+
+test-e2e-headed:
+	cd frontend && npx playwright test --headed
+
+test-e2e-report:
+	cd frontend && npx playwright show-report
 
 fmt: fmt-backend
 fmt-backend:

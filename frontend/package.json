@@ -9,6 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
     "generate-api": "openapi-ts -i ../backend/openapi.json -o src/lib/generated/api-client -c @hey-api/client-fetch"
   },
   "dependencies": {
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.94.0",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

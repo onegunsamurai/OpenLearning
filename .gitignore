@@ -53,5 +53,11 @@ backend/data/
 # mkdocs
 site/
 
+# playwright
+playwright-report/
+test-results/
+blob-report/
+frontend/e2e/.auth/user.json
+
 # claude code local settings (may contain API keys)
 .claude/settings.local.json
