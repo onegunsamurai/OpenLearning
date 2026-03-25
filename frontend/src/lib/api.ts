@@ -53,6 +53,24 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Normalize FastAPI's `detail` field into a readable string.
+ * Handles: string, array of {msg: string} (validation errors), or fallback.
+ */
+export function extractDetail(
+  detail: unknown,
+  fallback: string
+): string {
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => (typeof item === "object" && item !== null && "msg" in item ? item.msg : null))
+      .filter((msg): msg is string => typeof msg === "string");
+    if (messages.length > 0) return messages.join("; ");
+  }
+  return fallback;
+}
+
 async function throwFromResponse(
   res: Response,
   fallback: string
@@ -60,7 +78,7 @@ async function throwFromResponse(
   const err = await res.json().catch(() => ({ detail: fallback }));
   const retryAfter = res.headers?.get("Retry-After");
   throw new ApiError(
-    err.detail ?? fallback,
+    extractDetail(err.detail, fallback),
     res.status,
     parseRetryAfter(retryAfter)
   );
@@ -72,11 +90,11 @@ export function unwrap<T>(result: {
   response?: Response;
 }): T {
   if (result.error !== undefined) {
-    const err = result.error as { detail?: string };
+    const err = result.error as { detail?: unknown };
     const status = result.response?.status ?? 500;
     const retryAfter = result.response?.headers?.get("Retry-After");
     throw new ApiError(
-      err?.detail ?? "Request failed",
+      extractDetail(err?.detail, "Request failed"),
       status,
       parseRetryAfter(retryAfter)
     );

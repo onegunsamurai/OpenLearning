@@ -11,7 +11,7 @@ vi.mock("@/lib/generated/api-client/client.gen", () => ({
   client: { setConfig: vi.fn() },
 }));
 
-import { unwrap, api, ApiError, parseRetryAfter } from "./api";
+import { unwrap, api, ApiError, parseRetryAfter, extractDetail } from "./api";
 import {
   getSkillsApiSkillsGet,
   listUserAssessmentsApiUserAssessmentsGet,
@@ -110,6 +110,54 @@ describe("unwrap", () => {
       expect(e).toBeInstanceOf(ApiError);
       expect((e as ApiError).status).toBe(500);
     }
+  });
+
+  it("extracts messages from FastAPI validation error array", () => {
+    const mockResponse = { status: 422, headers: new Headers() } as Response;
+    const detail = [
+      { type: "value_error", loc: ["body", "email"], msg: "Invalid email format", input: "bad" },
+      { type: "value_error", loc: ["body", "password"], msg: "Too short", input: "x" },
+    ];
+    expect(() =>
+      unwrap({ error: { detail }, response: mockResponse })
+    ).toThrow("Invalid email format; Too short");
+  });
+
+  it("falls back when detail is an unrecognized type", () => {
+    const mockResponse = { status: 500, headers: new Headers() } as Response;
+    expect(() =>
+      unwrap({ error: { detail: 42 }, response: mockResponse })
+    ).toThrow("Request failed");
+  });
+});
+
+describe("extractDetail", () => {
+  it("returns string detail as-is", () => {
+    expect(extractDetail("Not found", "fallback")).toBe("Not found");
+  });
+
+  it("joins msg fields from validation error array", () => {
+    const detail = [
+      { msg: "field required" },
+      { msg: "invalid format" },
+    ];
+    expect(extractDetail(detail, "fallback")).toBe("field required; invalid format");
+  });
+
+  it("returns fallback for empty array", () => {
+    expect(extractDetail([], "fallback")).toBe("fallback");
+  });
+
+  it("returns fallback for array without msg fields", () => {
+    expect(extractDetail([{ code: 123 }], "fallback")).toBe("fallback");
+  });
+
+  it("returns fallback for null", () => {
+    expect(extractDetail(null, "fallback")).toBe("fallback");
+  });
+
+  it("returns fallback for undefined", () => {
+    expect(extractDetail(undefined, "fallback")).toBe("fallback");
   });
 });
 

@@ -146,6 +146,24 @@ describe("LoginPage", () => {
     });
   });
 
+  it("shows readable message from validation error, not [object Object]", async () => {
+    const user = userEvent.setup();
+    const err = new Error("Invalid email format; Too short");
+    err.name = "ApiError";
+    vi.mocked(api.authLogin).mockRejectedValue(err);
+    render(<LoginPage />);
+    await user.type(screen.getByPlaceholderText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("Password"), "short");
+    await user.click(screen.getByRole("button", { name: "Sign In" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Invalid email format; Too short")
+      ).toBeInTheDocument();
+      expect(screen.queryByText("[object Object]")).not.toBeInTheDocument();
+    });
+  });
+
   it.each([
     ["https://evil.com", "/dashboard"],
     ["//evil.com", "/dashboard"],
