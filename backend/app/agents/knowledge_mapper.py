@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from app.graph.state import AssessmentState, KnowledgeGraph, KnowledgeNode, bloom_index
+from app.agents.gap_analyzer import PREREQ_DISCOUNT
+from app.graph.state import (
+    AgendaItem,
+    AssessmentState,
+    BloomLevel,
+    KnowledgeGraph,
+    KnowledgeNode,
+    TopicStatus,
+    bloom_index,
+)
 
 
 def update_knowledge_graph(state: AssessmentState) -> dict:
     """Update the knowledge graph based on the latest evaluation result.
 
     Pure Python — no LLM call. Uses weighted averaging for confidence.
+    After updating the assessed topic, propagates discounted confidence
+    to its prerequisites and updates agenda status accordingly.
     """
     evaluation = state["latest_evaluation"]
     question = state["question_history"][-1]
@@ -54,10 +65,70 @@ def update_knowledge_graph(state: AssessmentState) -> dict:
     if question.topic not in topics_evaluated:
         topics_evaluated.append(question.topic)
 
-    return {
+    # Propagate confidence to prerequisites
+    assessed_node = new_kg.get_node(question.topic)
+    agenda = _propagate_prereq_confidence(state, new_kg, assessed_node)
+
+    result: dict = {
         "knowledge_graph": new_kg,
         "topics_evaluated": topics_evaluated,
     }
+    if agenda is not None:
+        result["topic_agenda"] = agenda
+
+    return result
+
+
+def _propagate_prereq_confidence(
+    state: AssessmentState,
+    kg: KnowledgeGraph,
+    assessed_node: KnowledgeNode | None,
+) -> list[AgendaItem] | None:
+    """Propagate discounted confidence from an assessed topic to its prerequisites.
+
+    When a topic is assessed, this infers confidence for its prerequisite topics
+    as (assessed_confidence * PREREQ_DISCOUNT), but only for prerequisites that
+    do not yet exist as nodes in the knowledge graph. Existing prerequisite nodes
+    are never modified by this function. Also updates agenda status for
+    prerequisite items.
+    """
+    if not assessed_node or not assessed_node.prerequisites:
+        return None
+
+    agenda = state.get("topic_agenda", [])
+    if not agenda:
+        return None
+
+    agenda = [item.model_copy(deep=True) for item in agenda]
+    changed = False
+
+    for prereq_name in assessed_node.prerequisites:
+        inferred_conf = assessed_node.confidence * PREREQ_DISCOUNT
+        existing_prereq = kg.get_node(prereq_name)
+
+        if existing_prereq:
+            # Never overwrite — assessed or previously inferred data takes precedence
+            pass
+        else:
+            # Create a new node for the prerequisite with inferred confidence
+            new_prereq = KnowledgeNode(
+                concept=prereq_name,
+                confidence=inferred_conf,
+                bloom_level=BloomLevel.understand,
+                prerequisites=_get_prerequisites_from_target(state, prereq_name),
+                evidence=[f"Inferred from {assessed_node.concept}"],
+            )
+            kg.upsert_node(new_prereq)
+            changed = True
+
+        # Update agenda status for the prerequisite
+        for item in agenda:
+            if item.concept == prereq_name and item.status == TopicStatus.pending:
+                item.status = TopicStatus.inferred
+                item.confidence = max(item.confidence, inferred_conf)
+                changed = True
+
+    return agenda if changed else None
 
 
 def _get_prerequisites_from_target(state: AssessmentState, concept: str) -> list[str]:

@@ -19,54 +19,67 @@ levels:
   junior:
     concepts:
       - concept: linux_fundamentals
+        display_name: "Linux Fundamentals"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: []
       - concept: shell_scripting
+        display_name: "Shell Scripting"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [linux_fundamentals]
       - concept: version_control_workflows
+        display_name: "Version Control Workflows"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: []
       - concept: networking_basics
+        display_name: "Networking Basics"
         target_confidence: 0.7
         bloom_target: understand
         prerequisites: []
       - concept: dns_and_http
+        display_name: "DNS & HTTP"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [networking_basics]
       - concept: container_fundamentals
+        display_name: "Container Fundamentals"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [linux_fundamentals]
       - concept: package_management_os
+        display_name: "OS Package Management"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [linux_fundamentals]
       - concept: basic_monitoring
+        display_name: "Basic Monitoring"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [linux_fundamentals]
       - concept: cloud_basics
+        display_name: "Cloud Basics"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [networking_basics]
       - concept: scripting_automation
+        display_name: "Scripting & Automation"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [shell_scripting]
       - concept: file_systems_storage
+        display_name: "File Systems & Storage"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [linux_fundamentals]
       - concept: ssh_remote_access
+        display_name: "SSH & Remote Access"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [networking_basics, linux_fundamentals]
       - concept: basic_security
+        display_name: "Basic Security"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [linux_fundamentals, networking_basics]
@@ -74,54 +87,67 @@ levels:
   mid:
     concepts:
       - concept: docker_compose_orchestration
+        display_name: "Docker Compose & Orchestration"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [container_fundamentals]
       - concept: ci_cd_pipelines
+        display_name: "CI/CD Pipelines"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [version_control_workflows, container_fundamentals]
       - concept: infrastructure_as_code
+        display_name: "Infrastructure as Code"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [cloud_basics, scripting_automation]
       - concept: log_aggregation
+        display_name: "Log Aggregation"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [basic_monitoring]
       - concept: metrics_alerting
+        display_name: "Metrics & Alerting"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [basic_monitoring, log_aggregation]
       - concept: cloud_networking
+        display_name: "Cloud Networking"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [networking_basics, cloud_basics]
       - concept: secrets_management
+        display_name: "Secrets Management"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [basic_security, ci_cd_pipelines]
       - concept: database_operations
+        display_name: "Database Operations"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [linux_fundamentals]
       - concept: load_balancing
+        display_name: "Load Balancing"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [networking_basics, dns_and_http]
       - concept: artifact_management
+        display_name: "Artifact Management"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [ci_cd_pipelines, container_fundamentals]
       - concept: configuration_management
+        display_name: "Configuration Management"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [infrastructure_as_code]
       - concept: backup_recovery
+        display_name: "Backup & Recovery"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [database_operations, file_systems_storage]
       - concept: deployment_strategies
+        display_name: "Deployment Strategies"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [ci_cd_pipelines, load_balancing]
@@ -129,54 +155,67 @@ levels:
   senior:
     concepts:
       - concept: kubernetes_orchestration
+        display_name: "Kubernetes Orchestration"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [docker_compose_orchestration, cloud_networking]
       - concept: observability_stack
+        display_name: "Observability Stack"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [metrics_alerting, log_aggregation]
       - concept: distributed_tracing
+        display_name: "Distributed Tracing"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [observability_stack]
       - concept: service_mesh
+        display_name: "Service Mesh"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [kubernetes_orchestration, cloud_networking]
       - concept: security_hardening
+        display_name: "Security Hardening"
         target_confidence: 0.7
         bloom_target: analyze
         prerequisites: [secrets_management, basic_security]
       - concept: disaster_recovery
+        display_name: "Disaster Recovery"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [backup_recovery, deployment_strategies]
       - concept: performance_tuning
+        display_name: "Performance Tuning"
         target_confidence: 0.6
         bloom_target: analyze
         prerequisites: [observability_stack, load_balancing]
       - concept: gitops
+        display_name: "GitOps"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [infrastructure_as_code, kubernetes_orchestration]
       - concept: cost_management
+        display_name: "Cost Management"
         target_confidence: 0.6
         bloom_target: analyze
         prerequisites: [cloud_basics, infrastructure_as_code]
       - concept: compliance_automation
+        display_name: "Compliance Automation"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [security_hardening, ci_cd_pipelines]
       - concept: multi_environment_management
+        display_name: "Multi-Environment Management"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [infrastructure_as_code, deployment_strategies]
       - concept: incident_response
+        display_name: "Incident Response"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [observability_stack, metrics_alerting]
       - concept: capacity_planning
+        display_name: "Capacity Planning"
         target_confidence: 0.6
         bloom_target: analyze
         prerequisites: [performance_tuning, cost_management]
@@ -184,54 +223,67 @@ levels:
   staff:
     concepts:
       - concept: platform_architecture
+        display_name: "Platform Architecture"
         target_confidence: 0.8
         bloom_target: create
         prerequisites: [kubernetes_orchestration, observability_stack, gitops]
       - concept: developer_experience
+        display_name: "Developer Experience"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [platform_architecture, ci_cd_pipelines]
       - concept: technical_strategy
+        display_name: "Technical Strategy"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [platform_architecture]
       - concept: reliability_engineering
+        display_name: "Reliability Engineering"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [disaster_recovery, incident_response, observability_stack]
       - concept: multi_cloud_strategy
+        display_name: "Multi-Cloud Strategy"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [platform_architecture, cloud_networking]
       - concept: security_architecture
+        display_name: "Security Architecture"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [security_hardening, compliance_automation]
       - concept: cost_optimization
+        display_name: "Cost Optimization"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [cost_management, capacity_planning]
       - concept: migration_strategies
+        display_name: "Migration Strategies"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [platform_architecture, multi_environment_management]
       - concept: vendor_evaluation
+        display_name: "Vendor Evaluation"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [technical_strategy]
       - concept: incident_management
+        display_name: "Incident Management"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [incident_response, reliability_engineering]
       - concept: mentorship_patterns
+        display_name: "Mentorship Patterns"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: []
       - concept: organizational_scaling
+        display_name: "Organizational Scaling"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [developer_experience, platform_architecture]
       - concept: technical_documentation
+        display_name: "Technical Documentation"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [platform_architecture]

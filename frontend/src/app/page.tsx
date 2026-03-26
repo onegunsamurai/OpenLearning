@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
-import { SkillBrowser } from "@/components/onboarding/SkillBrowser";
+import { ConceptBrowser } from "@/components/onboarding/ConceptBrowser";
 import { RoleSelector } from "@/components/onboarding/role-selector";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
-import { Skill } from "@/lib/types";
 import { api } from "@/lib/api";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Play, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
+import type { ConceptSummary } from "@/lib/types";
+
+const MAX_CONCEPTS = 10;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -22,29 +24,75 @@ export default function OnboardingPage() {
     setCurrentStep,
     selectedRoleId,
     setSelectedRoleId,
-    roleSkillIds,
     setRoleSkillIds,
     targetLevel,
     setTargetLevel,
   } = useAppStore();
 
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  type ConceptsAction =
+    | { type: "loading" }
+    | { type: "loaded"; concepts: ConceptSummary[] }
+    | { type: "error" };
 
+  const [conceptsState, dispatchConcepts] = useReducer(
+    (_: { concepts: ConceptSummary[]; loading: boolean }, action: ConceptsAction) => {
+      switch (action.type) {
+        case "loading": return { concepts: [], loading: true };
+        case "loaded": return { concepts: action.concepts, loading: false };
+        case "error": return { concepts: [], loading: false };
+      }
+    },
+    { concepts: [], loading: false }
+  );
+
+  // Fetch concepts when role or target level changes
   useEffect(() => {
-    api.getSkills().then((data) => {
-      setSkills(data.skills);
-      setCategories(data.categories);
-    });
-  }, []);
+    if (!selectedRoleId) return;
+    let cancelled = false;
+    dispatchConcepts({ type: "loading" });
+    api
+      .getRoleConcepts(selectedRoleId, targetLevel)
+      .then((data) => {
+        if (!cancelled) dispatchConcepts({ type: "loaded", concepts: data.concepts });
+      })
+      .catch(() => {
+        if (!cancelled) dispatchConcepts({ type: "error" });
+      });
+    return () => { cancelled = true; };
+  }, [selectedRoleId, targetLevel]);
+
+  const { concepts, loading: loadingConcepts } = conceptsState;
 
   const handleRoleSelected = useCallback(
-    (roleId: string, skillIds: string[]) => {
+    (roleId: string, _skillIds: string[]) => {
       setSelectedRoleId(roleId);
-      setSelectedSkillIds(skillIds);
-      setRoleSkillIds(skillIds);
+      // Clear previous concept selections when role changes
+      setSelectedSkillIds([]);
+      setRoleSkillIds([]);
     },
     [setSelectedRoleId, setSelectedSkillIds, setRoleSkillIds]
+  );
+
+  const handleTargetLevelChange = useCallback(
+    (level: string) => {
+      setTargetLevel(level);
+      // Clear selections when level changes (different concepts available)
+      setSelectedSkillIds([]);
+    },
+    [setTargetLevel, setSelectedSkillIds]
+  );
+
+  const handleToggleConcept = useCallback(
+    (conceptId: string) => {
+      if (
+        selectedSkillIds.length >= MAX_CONCEPTS &&
+        !selectedSkillIds.includes(conceptId)
+      ) {
+        return;
+      }
+      toggleSkill(conceptId);
+    },
+    [selectedSkillIds, toggleSkill]
   );
 
   const handleStart = () => {
@@ -52,14 +100,10 @@ export default function OnboardingPage() {
     router.push("/assess");
   };
 
+  // Build display names for the bottom bar
   const selectedNames = selectedSkillIds
-    .map((id) => skills.find((s) => s.id === id)?.name)
+    .map((id) => concepts.find((c) => c.id === id)?.displayName)
     .filter(Boolean);
-
-  const isModified =
-    selectedRoleId !== null &&
-    (selectedSkillIds.length !== roleSkillIds.length ||
-      !selectedSkillIds.every((id) => roleSkillIds.includes(id)));
 
   return (
     <PageShell autoPromptApiKey>
@@ -76,16 +120,16 @@ export default function OnboardingPage() {
             <span className="text-gradient">skill gaps</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-            Select a role or choose skills manually. Our AI will assess your
-            proficiency, identify gaps, and generate a personalized learning
-            plan.
+            Select a role, then choose the topics you want to be assessed on.
+            Our AI will evaluate your proficiency and generate a personalized
+            learning plan.
           </p>
           <div className="mt-6 space-y-2">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-muted text-xs font-mono text-cyan">
                 1
               </span>
-              Select a role or choose skills
+              Select a role and pick topics
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-muted text-xs font-mono text-cyan">
@@ -129,29 +173,36 @@ export default function OnboardingPage() {
               selectedRoleId={selectedRoleId}
               onSelectRole={handleRoleSelected}
               targetLevel={targetLevel}
-              onTargetLevelChange={setTargetLevel}
+              onTargetLevelChange={handleTargetLevelChange}
             />
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-mono text-muted-foreground uppercase">
-              or browse skills
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 font-heading text-lg font-semibold">
-              Select Skills
-            </h3>
-            <SkillBrowser
-              skills={skills}
-              categories={categories}
-              selectedSkillIds={selectedSkillIds}
-              onToggleSkill={toggleSkill}
-            />
-          </div>
+          {selectedRoleId && (
+            <motion.div
+              className="rounded-xl border border-border bg-card p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h3 className="mb-4 font-heading text-lg font-semibold">
+                Select Topics to Assess
+              </h3>
+              {loadingConcepts ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    Loading topics...
+                  </span>
+                </div>
+              ) : (
+                <ConceptBrowser
+                  concepts={concepts}
+                  selectedConceptIds={selectedSkillIds}
+                  onToggleConcept={handleToggleConcept}
+                  maxSelections={MAX_CONCEPTS}
+                />
+              )}
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
@@ -165,16 +216,15 @@ export default function OnboardingPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {selectedSkillIds.length === 0 ? (
-              "Select at least 1 skill to continue"
+              selectedRoleId
+                ? "Select at least 1 topic to continue"
+                : "Select a role to see available topics"
             ) : (
               <>
                 <span className="font-semibold text-cyan">
                   {selectedSkillIds.length}
                 </span>{" "}
-                skill{selectedSkillIds.length !== 1 && "s"} selected
-                {isModified && (
-                  <span className="ml-1 text-yellow-500">(modified)</span>
-                )}
+                topic{selectedSkillIds.length !== 1 && "s"} selected
                 {selectedNames.length > 0 && (
                   <span className="hidden sm:inline">
                     {" "}
@@ -188,7 +238,7 @@ export default function OnboardingPage() {
           </div>
           <Button
             onClick={handleStart}
-            disabled={selectedSkillIds.length === 0}
+            disabled={selectedSkillIds.length === 0 || !selectedRoleId}
             className="bg-cyan text-background hover:bg-cyan/90 font-semibold gap-2"
           >
             Start Assessment

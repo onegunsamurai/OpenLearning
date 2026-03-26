@@ -15,8 +15,15 @@ from starlette.responses import PlainTextResponse, StreamingResponse
 
 from app.db import AssessmentResult, AssessmentSession, get_db
 from app.deps import AuthUser, get_current_user, get_user_api_key
-from app.graph.state import make_initial_state
-from app.knowledge_base.loader import get_target_graph, list_domains, map_skills_to_domain
+from app.graph.router import MAX_TOPICS
+from app.graph.state import THOROUGHNESS_CAPS, Thoroughness, make_initial_state
+from app.knowledge_base.loader import (
+    get_all_topics,
+    get_target_graph,
+    get_target_graph_for_concepts,
+    list_domains,
+    map_skills_to_domain,
+)
 from app.models.base import CamelModel
 from app.routes.export_utils import build_assessment_markdown
 from app.services.ai import api_key_scope, classify_anthropic_error
@@ -31,6 +38,7 @@ class AssessmentStartRequest(CamelModel):
     skill_ids: list[str]
     target_level: str = "mid"
     role_id: str | None = None
+    thoroughness: str = "standard"
 
     @field_validator("skill_ids")
     @classmethod
@@ -46,6 +54,13 @@ class AssessmentStartRequest(CamelModel):
             raise ValueError(f"Unknown role: {v}")
         return v
 
+    @field_validator("thoroughness")
+    @classmethod
+    def validate_thoroughness(cls, v: str) -> str:
+        if v not in ("quick", "standard", "thorough"):
+            raise ValueError("Thoroughness must be one of: quick, standard, thorough")
+        return v
+
 
 class AssessmentStartResponse(CamelModel):
     session_id: str
@@ -53,6 +68,7 @@ class AssessmentStartResponse(CamelModel):
     question_type: str = "calibration"
     step: int = 1
     total_steps: int = 3
+    estimated_questions: int | None = None
 
 
 class AssessmentRespondRequest(CamelModel):
@@ -163,8 +179,13 @@ async def assessment_start(
     # Map skills to domain (skip mapping if role_id provided)
     domain = request.role_id if request.role_id else map_skills_to_domain(request.skill_ids)
 
-    # Build target graph
-    target_graph = get_target_graph(domain, request.target_level)
+    # Build target graph — filter to selected concepts when role_id is provided
+    if request.role_id:
+        target_graph = get_target_graph_for_concepts(
+            domain, request.target_level, request.skill_ids
+        )
+    else:
+        target_graph = get_target_graph(domain, request.target_level)
 
     # Create initial state
     session_id = str(uuid.uuid4())
@@ -187,6 +208,7 @@ async def assessment_start(
         skill_ids=request.skill_ids,
         skill_domain=domain,
         target_level=request.target_level,
+        thoroughness=request.thoroughness,
     )
     initial_state["target_graph"] = target_graph
 
@@ -214,12 +236,22 @@ async def assessment_start(
 
     question_text = interrupt_data["question"]["text"]
 
+    # Compute estimated questions from topic count and thoroughness
+    topic_count = (
+        len(request.skill_ids)
+        if request.role_id
+        else len(get_all_topics(domain, request.target_level))
+    )
+    per_topic = THOROUGHNESS_CAPS[Thoroughness(request.thoroughness)]
+    estimated_questions = min(topic_count, MAX_TOPICS) * per_topic
+
     return AssessmentStartResponse(
         session_id=session_id,
         question=question_text,
         question_type=interrupt_data.get("type", "calibration"),
         step=interrupt_data.get("step", 1),
         total_steps=interrupt_data.get("total_steps", 3),
+        estimated_questions=estimated_questions,
     )
 
 

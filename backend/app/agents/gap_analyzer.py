@@ -1,6 +1,41 @@
 from __future__ import annotations
 
-from app.graph.state import AssessmentState, KnowledgeNode
+from app.graph.state import AssessmentState, KnowledgeGraph, KnowledgeNode
+
+# Discount applied when inferring confidence from assessed prerequisites.
+# E.g. if a prerequisite was assessed at 0.82, the dependent concept gets 0.82 * 0.5 = 0.41.
+PREREQ_DISCOUNT = 0.5
+
+
+def get_effective_confidence(
+    concept: str,
+    current_kg: KnowledgeGraph,
+    target_kg: KnowledgeGraph,
+) -> float:
+    """Return assessed confidence, or infer from prerequisites if un-assessed.
+
+    For concepts not directly assessed, computes the discounted average of
+    assessed prerequisite confidences. Returns 0.0 if no prerequisites were
+    assessed or the concept has no prerequisites.
+    """
+    node = current_kg.get_node(concept)
+    if node:
+        return node.confidence
+
+    target_node = target_kg.get_node(concept)
+    if not target_node or not target_node.prerequisites:
+        return 0.0
+
+    prereq_confs: list[float] = []
+    for prereq in target_node.prerequisites:
+        prereq_node = current_kg.get_node(prereq)
+        if prereq_node:
+            prereq_confs.append(prereq_node.confidence)
+
+    if not prereq_confs:
+        return 0.0
+
+    return (sum(prereq_confs) / len(prereq_confs)) * PREREQ_DISCOUNT
 
 
 def analyze_gaps(state: AssessmentState) -> dict:
@@ -8,6 +43,7 @@ def analyze_gaps(state: AssessmentState) -> dict:
 
     Pure Python — no LLM call. Finds concepts where
     current_confidence < target_confidence - 0.2 (tolerance).
+    Un-assessed concepts infer confidence from assessed prerequisites.
     Results are topologically sorted by prerequisites.
     """
     current_kg = state["knowledge_graph"]
@@ -16,8 +52,8 @@ def analyze_gaps(state: AssessmentState) -> dict:
     gap_nodes: list[KnowledgeNode] = []
 
     for target_node in target_kg.nodes:
+        current_confidence = get_effective_confidence(target_node.concept, current_kg, target_kg)
         current_node = current_kg.get_node(target_node.concept)
-        current_confidence = current_node.confidence if current_node else 0.0
 
         # Gap exists if current is more than 0.2 below target
         if current_confidence < target_node.confidence - 0.2:

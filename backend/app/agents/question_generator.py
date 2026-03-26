@@ -24,9 +24,12 @@ async def generate_question(state: AssessmentState) -> dict:
         or "None yet."
     )
 
+    # bloom_level may be a string after checkpoint deserialization
+    bloom_str = bloom_level.value if isinstance(bloom_level, BloomLevel) else str(bloom_level)
+
     prompt = QUESTION_GEN_PROMPT.format(
         topic=topic,
-        bloom_level=bloom_level.value,
+        bloom_level=bloom_str,
         calibrated_level=calibrated_level,
         questions_on_topic=questions_on_topic,
         used_types=", ".join(used_types) if used_types else "none",
@@ -42,7 +45,7 @@ async def generate_question(state: AssessmentState) -> dict:
     question = Question(
         id=str(uuid.uuid4()),
         topic=result.topic or topic,
-        bloom_level=BloomLevel(result.bloom_level or bloom_level.value),
+        bloom_level=BloomLevel(result.bloom_level or bloom_str),
         text=result.text,
         question_type=result.question_type or "conceptual",
     )

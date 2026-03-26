@@ -7,6 +7,7 @@ LEVEL_ORDER: list[str] = ["junior", "mid", "senior", "staff"]
 
 class ConceptSchema(BaseModel):
     concept: str
+    display_name: str = ""
     target_confidence: float
     bloom_target: str
     prerequisites: list[str] = []

@@ -451,6 +451,56 @@
         }
       }
     },
+    "/api/roles/{role_id}/concepts": {
+      "get": {
+        "summary": "Get Role Concepts",
+        "description": "Return concepts for a role up to the given level, topologically sorted.",
+        "operationId": "get_role_concepts_api_roles__role_id__concepts_get",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Role Id"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "mid",
+              "title": "Level"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleConceptsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/gap-analysis": {
       "post": {
         "summary": "Gap Analysis",
@@ -1199,6 +1249,11 @@
               }
             ],
             "title": "Roleid"
+          },
+          "thoroughness": {
+            "type": "string",
+            "title": "Thoroughness",
+            "default": "standard"
           }
         },
         "type": "object",
@@ -1231,6 +1286,17 @@
             "type": "integer",
             "title": "Totalsteps",
             "default": 3
+          },
+          "estimatedQuestions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimatedquestions"
           }
         },
         "type": "object",
@@ -1278,6 +1344,37 @@
           "hasApiKey"
         ],
         "title": "AuthMeResponse"
+      },
+      "ConceptSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "displayName": {
+            "type": "string",
+            "title": "Displayname"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "prerequisites": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prerequisites",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "displayName",
+          "level"
+        ],
+        "title": "ConceptSummary"
       },
       "EnrichedGapAnalysisOut": {
         "properties": {
@@ -1967,6 +2064,22 @@
           "title"
         ],
         "title": "ResourceOut"
+      },
+      "RoleConceptsResponse": {
+        "properties": {
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptSummary"
+            },
+            "type": "array",
+            "title": "Concepts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concepts"
+        ],
+        "title": "RoleConceptsResponse"
       },
       "RoleDetail": {
         "properties": {

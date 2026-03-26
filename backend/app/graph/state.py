@@ -15,11 +15,40 @@ class BloomLevel(StrEnum):
     create = "create"
 
 
+class TopicStatus(StrEnum):
+    pending = "pending"
+    active = "active"
+    assessed = "assessed"
+    inferred = "inferred"
+    skipped = "skipped"
+
+
+class Thoroughness(StrEnum):
+    quick = "quick"
+    standard = "standard"
+    thorough = "thorough"
+
+
+THOROUGHNESS_CAPS: dict[Thoroughness, int] = {
+    Thoroughness.quick: 2,
+    Thoroughness.standard: 4,
+    Thoroughness.thorough: 6,
+}
+
+
 BLOOM_ORDER: list[BloomLevel] = list(BloomLevel)
 
 
 def bloom_index(level: BloomLevel) -> int:
     return BLOOM_ORDER.index(level)
+
+
+class AgendaItem(CamelModel):
+    concept: str
+    level: str  # "junior", "mid", "senior", "staff"
+    status: TopicStatus = TopicStatus.pending
+    confidence: float = 0.0
+    prerequisites: list[str] = []
 
 
 class Question(CamelModel):
@@ -135,6 +164,11 @@ class AssessmentState(TypedDict, total=False):
     enriched_gap_analysis: EnrichedGapAnalysis
     learning_plan: LearningPlan
 
+    # Topic agenda
+    topic_agenda: list[AgendaItem]
+    thoroughness: Thoroughness
+    max_questions_per_topic: int
+
     # Human-in-the-loop
     pending_question: Question | None
 
@@ -144,7 +178,9 @@ def make_initial_state(
     skill_ids: list[str],
     skill_domain: str,
     target_level: str = "mid",
+    thoroughness: str = "standard",
 ) -> AssessmentState:
+    thor = Thoroughness(thoroughness)
     return AssessmentState(
         candidate_id=candidate_id,
         skill_ids=skill_ids,
@@ -168,5 +204,8 @@ def make_initial_state(
         gap_nodes=[],
         enriched_gap_analysis=EnrichedGapAnalysis(overall_readiness=0, summary="", gaps=[]),
         learning_plan=LearningPlan(phases=[], total_hours=0, summary=""),
+        topic_agenda=[],
+        thoroughness=thor,
+        max_questions_per_topic=THOROUGHNESS_CAPS[thor],
         pending_question=None,
     )

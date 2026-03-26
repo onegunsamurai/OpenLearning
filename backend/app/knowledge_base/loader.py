@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections import deque
 from pathlib import Path
 
 import yaml
 
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
+from app.graph.state import AgendaItem, BloomLevel, KnowledgeGraph, KnowledgeNode, TopicStatus
 from app.knowledge_base.schema import LEVEL_ORDER, KnowledgeBaseSchema
 
 _KB_DIR = Path(__file__).parent
@@ -93,6 +94,105 @@ def get_all_topics(domain: str, up_to_level: str) -> list[str]:
     """Get all topic names up to and including the given level."""
     graph = get_target_graph(domain, up_to_level)
     return [node.concept for node in graph.nodes]
+
+
+def build_topic_agenda(domain: str, target_level: str) -> list[AgendaItem]:
+    """Build a topic agenda sorted by prerequisite order (fundamentals first).
+
+    Uses Kahn's algorithm for topological sort. Topics with no prerequisites
+    come first, then their dependents, ensuring the interviewer starts with
+    fundamentals and works up.
+    """
+    kb = load_knowledge_base(domain)
+    if target_level not in LEVEL_ORDER:
+        raise ValueError(f"Unknown level: {target_level}. Must be one of {LEVEL_ORDER}")
+
+    target_idx = LEVEL_ORDER.index(target_level)
+
+    # Collect all concepts up to target level with their metadata
+    concept_level: dict[str, str] = {}
+    concept_prereqs: dict[str, list[str]] = {}
+
+    for lvl in LEVEL_ORDER[: target_idx + 1]:
+        level_data = kb.levels.get(lvl)
+        if not level_data:
+            continue
+        for c in level_data.concepts:
+            if c.concept not in concept_level:
+                concept_level[c.concept] = lvl
+                concept_prereqs[c.concept] = c.prerequisites
+
+    # Kahn's topological sort
+    in_degree: dict[str, int] = {c: 0 for c in concept_level}
+    for concept, prereqs in concept_prereqs.items():
+        for prereq in prereqs:
+            if prereq in in_degree:
+                in_degree[concept] += 1
+
+    queue: deque[str] = deque(c for c, d in in_degree.items() if d == 0)
+    sorted_concepts: list[str] = []
+
+    while queue:
+        current = queue.popleft()
+        sorted_concepts.append(current)
+        # Find dependents (concepts that list current as a prerequisite)
+        for concept, prereqs in concept_prereqs.items():
+            if current in prereqs:
+                in_degree[concept] -= 1
+                if in_degree[concept] == 0:
+                    queue.append(concept)
+
+    # Any remaining concepts (cycles or missing prereqs) go at the end
+    for concept in concept_level:
+        if concept not in sorted_concepts:
+            sorted_concepts.append(concept)
+
+    return [
+        AgendaItem(
+            concept=concept,
+            level=concept_level[concept],
+            status=TopicStatus.pending,
+            confidence=0.0,
+            prerequisites=concept_prereqs.get(concept, []),
+        )
+        for concept in sorted_concepts
+    ]
+
+
+def build_topic_agenda_from_concepts(
+    domain: str,
+    target_level: str,
+    concept_ids: list[str],
+) -> list[AgendaItem]:
+    """Build a topic agenda containing only the specified concepts.
+
+    Concepts are topologically sorted (fundamentals first). Only concepts
+    present in both the knowledge base AND concept_ids are included.
+    """
+    full_agenda = build_topic_agenda(domain, target_level)
+    concept_set = set(concept_ids)
+    return [item for item in full_agenda if item.concept in concept_set]
+
+
+def get_target_graph_for_concepts(
+    domain: str,
+    target_level: str,
+    concept_ids: list[str],
+) -> KnowledgeGraph:
+    """Build a KnowledgeGraph containing only the specified concepts.
+
+    Includes edges between selected concepts where prerequisite
+    relationships exist. Concepts not in concept_ids are excluded.
+    """
+    full_graph = get_target_graph(domain, target_level)
+    concept_set = set(concept_ids)
+
+    nodes = [n for n in full_graph.nodes if n.concept in concept_set]
+    edges = [
+        (src, dst) for src, dst in full_graph.edges if src in concept_set and dst in concept_set
+    ]
+
+    return KnowledgeGraph(nodes=nodes, edges=edges)
 
 
 def map_skills_to_domain(skill_ids: list[str]) -> str:

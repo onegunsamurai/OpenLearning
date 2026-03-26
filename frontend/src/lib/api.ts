@@ -3,6 +3,7 @@ import {
   getSkillsApiSkillsGet,
   getRolesApiRolesGet,
   getRoleApiRolesRoleIdGet,
+  getRoleConceptsApiRolesRoleIdConceptsGet,
   authMeApiAuthMeGet,
   authLogoutApiAuthLogoutPost,
   setApiKeyApiAuthApiKeyPost,
@@ -17,6 +18,7 @@ import type {
   SkillsResponse,
   RoleSummary,
   RoleDetail,
+  RoleConceptsResponse,
   AuthMeResponse,
   ApiKeyResponse,
   ValidateKeyResponse,
@@ -167,6 +169,12 @@ const realApi = {
 
   getSkills: async (): Promise<SkillsResponse> =>
     unwrap(await getSkillsApiSkillsGet()),
+
+  getRoleConcepts: async (roleId: string, level: string): Promise<RoleConceptsResponse> =>
+    unwrap(await getRoleConceptsApiRolesRoleIdConceptsGet({
+      path: { role_id: roleId },
+      query: { level },
+    })),
 
   getUserAssessments: async (): Promise<UserAssessmentSummary[]> =>
     unwrap(await listUserAssessmentsApiUserAssessmentsGet()),

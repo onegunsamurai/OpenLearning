@@ -63,6 +63,10 @@ export type AssessmentStartRequest = {
      * Roleid
      */
     roleId?: string | null;
+    /**
+     * Thoroughness
+     */
+    thoroughness?: string;
 };
 
 /**
@@ -89,6 +93,10 @@ export type AssessmentStartResponse = {
      * Totalsteps
      */
     totalSteps?: number;
+    /**
+     * Estimatedquestions
+     */
+    estimatedQuestions?: number | null;
 };
 
 /**
@@ -115,6 +123,28 @@ export type AuthMeResponse = {
      * Email
      */
     email?: string | null;
+};
+
+/**
+ * ConceptSummary
+ */
+export type ConceptSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Displayname
+     */
+    displayName: string;
+    /**
+     * Level
+     */
+    level: string;
+    /**
+     * Prerequisites
+     */
+    prerequisites?: Array<string>;
 };
 
 /**
@@ -595,6 +625,16 @@ export type ResourceOut = {
 };
 
 /**
+ * RoleConceptsResponse
+ */
+export type RoleConceptsResponse = {
+    /**
+     * Concepts
+     */
+    concepts: Array<ConceptSummary>;
+};
+
+/**
  * RoleDetail
  */
 export type RoleDetail = {
@@ -1043,6 +1083,41 @@ export type GetRoleApiRolesRoleIdGetResponses = {
 };
 
 export type GetRoleApiRolesRoleIdGetResponse = GetRoleApiRolesRoleIdGetResponses[keyof GetRoleApiRolesRoleIdGetResponses];
+
+export type GetRoleConceptsApiRolesRoleIdConceptsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: {
+        /**
+         * Level
+         */
+        level?: string;
+    };
+    url: '/api/roles/{role_id}/concepts';
+};
+
+export type GetRoleConceptsApiRolesRoleIdConceptsGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRoleConceptsApiRolesRoleIdConceptsGetError = GetRoleConceptsApiRolesRoleIdConceptsGetErrors[keyof GetRoleConceptsApiRolesRoleIdConceptsGetErrors];
+
+export type GetRoleConceptsApiRolesRoleIdConceptsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: RoleConceptsResponse;
+};
+
+export type GetRoleConceptsApiRolesRoleIdConceptsGetResponse = GetRoleConceptsApiRolesRoleIdConceptsGetResponses[keyof GetRoleConceptsApiRolesRoleIdConceptsGetResponses];
 
 export type GapAnalysisApiGapAnalysisPostData = {
     body: GapAnalysisRequest;
