@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
+from app.agents.gap_analyzer import PREREQ_DISCOUNT
 from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
-from app.graph.state import BloomLevel, KnowledgeNode
+from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
 
 
 def _node(concept: str, confidence: float) -> KnowledgeNode:
@@ -136,3 +139,30 @@ class TestComputeOverallReadiness:
         result = _compute_overall_readiness(current, target)
         assert isinstance(result, int)
         assert result == 33  # int(0.33 * 100)
+
+    def test_missing_node_uses_inferred_confidence(self):
+        """When KG objects are provided, un-assessed nodes infer from prerequisites."""
+        current_nodes = [_node("a", 0.8)]
+        target_b = KnowledgeNode(
+            concept="b",
+            confidence=0.8,
+            bloom_level=BloomLevel.understand,
+            prerequisites=["a"],
+        )
+        target_nodes = [_node("a", 0.8), target_b]
+
+        current_kg = KnowledgeGraph(nodes=[_node("a", 0.8)])
+        target_kg = KnowledgeGraph(
+            nodes=[_node("a", 0.8), target_b],
+            edges=[("a", "b")],
+        )
+
+        # Without KG objects: b defaults to 0.0 → a:1.0 + b:0.0 → avg 0.5 → 50
+        assert _compute_overall_readiness(current_nodes, target_nodes) == 50
+
+        # With KG objects: b inferred = 0.8 * 0.5 = 0.4 → b: 0.4/0.8 = 0.5
+        # a: 1.0, b: 0.5 → avg = 0.75 → 75
+        result = _compute_overall_readiness(current_nodes, target_nodes, current_kg, target_kg)
+        expected_b_ratio = (0.8 * PREREQ_DISCOUNT) / 0.8
+        expected = int(((1.0 + expected_b_ratio) / 2) * 100)
+        assert result == pytest.approx(expected, abs=1)

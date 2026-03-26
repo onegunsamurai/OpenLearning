@@ -21,54 +21,67 @@ levels:
   junior:
     concepts:
       - concept: html_css_fundamentals
+        display_name: "HTML & CSS Fundamentals"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: []
       - concept: dom_manipulation
+        display_name: "DOM Manipulation"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [html_css_fundamentals]
       - concept: component_basics
+        display_name: "Component Basics"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [html_css_fundamentals]
       - concept: javascript_essentials
+        display_name: "JavaScript Essentials"
         target_confidence: 0.8
         bloom_target: apply
         prerequisites: []
       - concept: event_handling
+        display_name: "Event Handling"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [javascript_essentials, dom_manipulation]
       - concept: css_layout
+        display_name: "CSS Layout"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [html_css_fundamentals]
       - concept: responsive_design
+        display_name: "Responsive Design"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [css_layout]
       - concept: version_control
+        display_name: "Version Control"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: []
       - concept: basic_debugging
+        display_name: "Basic Debugging"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [javascript_essentials]
       - concept: package_management
+        display_name: "Package Management"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: []
       - concept: api_consumption
+        display_name: "API Consumption"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [javascript_essentials]
       - concept: basic_accessibility
+        display_name: "Basic Accessibility"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [html_css_fundamentals]
       - concept: form_handling
+        display_name: "Form Handling"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [event_handling, component_basics]
@@ -76,54 +89,67 @@ levels:
   mid:
     concepts:
       - concept: typescript_fundamentals
+        display_name: "TypeScript Fundamentals"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [javascript_essentials]
       - concept: react_hooks
+        display_name: "React Hooks"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [component_basics, javascript_essentials]
       - concept: state_management
+        display_name: "State Management"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [react_hooks]
       - concept: routing_navigation
+        display_name: "Routing & Navigation"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [component_basics]
       - concept: css_architecture
+        display_name: "CSS Architecture"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [css_layout, responsive_design]
       - concept: component_testing
+        display_name: "Component Testing"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [component_basics, react_hooks]
       - concept: async_data_fetching
+        display_name: "Async Data Fetching"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [api_consumption, react_hooks]
       - concept: error_boundaries
+        display_name: "Error Boundaries"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [component_basics]
       - concept: build_tooling
+        display_name: "Build Tooling"
         target_confidence: 0.6
         bloom_target: understand
         prerequisites: [package_management]
       - concept: animation_transitions
+        display_name: "Animation & Transitions"
         target_confidence: 0.5
         bloom_target: apply
         prerequisites: [css_layout, javascript_essentials]
       - concept: web_accessibility_wcag
+        display_name: "Web Accessibility (WCAG)"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [basic_accessibility, component_basics]
       - concept: code_splitting
+        display_name: "Code Splitting"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [routing_navigation, build_tooling]
       - concept: design_system_usage
+        display_name: "Design System Usage"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [component_basics, css_architecture]
@@ -131,54 +157,67 @@ levels:
   senior:
     concepts:
       - concept: advanced_typescript
+        display_name: "Advanced TypeScript"
         target_confidence: 0.7
         bloom_target: analyze
         prerequisites: [typescript_fundamentals]
       - concept: performance_optimization
+        display_name: "Performance Optimization"
         target_confidence: 0.7
         bloom_target: analyze
         prerequisites: [react_hooks, code_splitting]
       - concept: ssr_ssg
+        display_name: "SSR & SSG"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [routing_navigation, async_data_fetching]
       - concept: advanced_state_patterns
+        display_name: "Advanced State Patterns"
         target_confidence: 0.7
         bloom_target: apply
         prerequisites: [state_management]
       - concept: testing_strategies
+        display_name: "Testing Strategies"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [component_testing]
       - concept: design_system_creation
+        display_name: "Design System Creation"
         target_confidence: 0.6
         bloom_target: create
         prerequisites: [design_system_usage, css_architecture]
       - concept: ci_cd_frontend
+        display_name: "CI/CD for Frontend"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [build_tooling, component_testing]
       - concept: security_frontend
+        display_name: "Frontend Security"
         target_confidence: 0.7
         bloom_target: analyze
         prerequisites: [api_consumption, form_handling]
       - concept: observability_frontend
+        display_name: "Frontend Observability"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [error_boundaries, async_data_fetching]
       - concept: api_layer_architecture
+        display_name: "API Layer Architecture"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [async_data_fetching, advanced_typescript]
       - concept: micro_frontends
+        display_name: "Micro Frontends"
         target_confidence: 0.5
         bloom_target: understand
         prerequisites: [build_tooling, routing_navigation]
       - concept: accessibility_architecture
+        display_name: "Accessibility Architecture"
         target_confidence: 0.6
         bloom_target: apply
         prerequisites: [web_accessibility_wcag, design_system_creation]
       - concept: internationalization
+        display_name: "Internationalization"
         target_confidence: 0.5
         bloom_target: apply
         prerequisites: [component_basics, routing_navigation]
@@ -186,54 +225,67 @@ levels:
   staff:
     concepts:
       - concept: frontend_architecture
+        display_name: "Frontend Architecture"
         target_confidence: 0.8
         bloom_target: create
         prerequisites: [ssr_ssg, advanced_state_patterns, performance_optimization]
       - concept: platform_dx
+        display_name: "Platform DX"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [build_tooling, ci_cd_frontend, design_system_creation]
       - concept: technical_strategy
+        display_name: "Technical Strategy"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [frontend_architecture]
       - concept: cross_team_standards
+        display_name: "Cross-Team Standards"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [frontend_architecture, design_system_creation]
       - concept: performance_culture
+        display_name: "Performance Culture"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [performance_optimization, observability_frontend]
       - concept: migration_strategies
+        display_name: "Migration Strategies"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [frontend_architecture, micro_frontends]
       - concept: web_platform_evolution
+        display_name: "Web Platform Evolution"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [frontend_architecture]
       - concept: reliability_engineering
+        display_name: "Reliability Engineering"
         target_confidence: 0.7
         bloom_target: evaluate
         prerequisites: [observability_frontend, testing_strategies]
       - concept: mentorship_patterns
+        display_name: "Mentorship Patterns"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: []
       - concept: vendor_evaluation
+        display_name: "Vendor Evaluation"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [technical_strategy]
       - concept: cost_optimization
+        display_name: "Cost Optimization"
         target_confidence: 0.6
         bloom_target: evaluate
         prerequisites: [performance_optimization, platform_dx]
       - concept: accessibility_strategy
+        display_name: "Accessibility Strategy"
         target_confidence: 0.6
         bloom_target: create
         prerequisites: [accessibility_architecture, cross_team_standards]
       - concept: technical_documentation
+        display_name: "Technical Documentation"
         target_confidence: 0.7
         bloom_target: create
         prerequisites: [frontend_architecture]

@@ -1,34 +1,58 @@
 from __future__ import annotations
 
-from app.graph.state import AssessmentState, BloomLevel, bloom_index
+from app.graph.state import (
+    AssessmentState,
+    BloomLevel,
+    TopicStatus,
+    bloom_index,
+)
 
 # Thresholds
-MAX_TOPICS = 8
-MAX_TOTAL_QUESTIONS = 25
+MAX_TOPICS = 10
 HIGH_CONFIDENCE = 0.7
-MAX_QUESTIONS_PER_TOPIC = 4
 MIN_EVIDENCE_FOR_CONFIDENCE = 2
+
+
+def _get_max_questions_per_topic(state: AssessmentState) -> int:
+    return state.get("max_questions_per_topic", 4)
+
+
+def _get_max_total_questions(state: AssessmentState) -> int:
+    agenda = state.get("topic_agenda", [])
+    per_topic = _get_max_questions_per_topic(state)
+    return min(len(agenda), MAX_TOPICS) * per_topic
+
+
+def _count_assessed_topics(state: AssessmentState) -> int:
+    agenda = state.get("topic_agenda", [])
+    return sum(1 for item in agenda if item.status == TopicStatus.assessed)
 
 
 def decide_branch(state: AssessmentState) -> str:
     """Deterministic routing after knowledge graph update.
 
     Returns one of:
-        "conclude" — enough topics evaluated or question budget exhausted
+        "conclude" — enough topics assessed or question budget exhausted
         "deeper"  — high confidence, push to higher Bloom level
         "probe"   — correct but insufficient evidence
         "pivot"   — topic confidence established or too many questions, move on
     """
-    topics_evaluated = state.get("topics_evaluated", [])
     question_history = state.get("question_history", [])
     evaluation = state.get("latest_evaluation")
     current_topic = state.get("current_topic", "")
     current_bloom = state.get("current_bloom_level", BloomLevel.understand)
     questions_on_topic = state.get("questions_on_current_topic", 0)
     knowledge_graph = state.get("knowledge_graph")
+    max_per_topic = _get_max_questions_per_topic(state)
+    max_total = _get_max_total_questions(state)
 
-    # 1. Conclude: enough coverage or budget exhausted
-    if len(topics_evaluated) >= MAX_TOPICS or len(question_history) >= MAX_TOTAL_QUESTIONS:
+    # 1. Conclude: enough topics assessed, budget exhausted, or no pending topics
+    assessed_count = _count_assessed_topics(state)
+    agenda = state.get("topic_agenda", [])
+    has_pending = any(item.status == TopicStatus.pending for item in agenda)
+    if assessed_count >= MAX_TOPICS or len(question_history) >= max_total:
+        return "conclude"
+    if agenda and not has_pending:
         return "conclude"
 
     if not evaluation:
@@ -48,7 +72,7 @@ def decide_branch(state: AssessmentState) -> str:
     if (
         confidence > HIGH_CONFIDENCE
         and bloom_index(current_bloom) < bloom_index(BloomLevel.create)
-        and questions_on_topic < MAX_QUESTIONS_PER_TOPIC
+        and questions_on_topic < max_per_topic
     ):
         return "deeper"
 
@@ -56,12 +80,12 @@ def decide_branch(state: AssessmentState) -> str:
     if (
         confidence > 0.4
         and evidence_count < MIN_EVIDENCE_FOR_CONFIDENCE
-        and questions_on_topic < MAX_QUESTIONS_PER_TOPIC
+        and questions_on_topic < max_per_topic
     ):
         return "probe"
 
     # 4. Pivot: confidence is established (high or low) or too many questions on topic
-    if node_confidence > HIGH_CONFIDENCE or questions_on_topic >= MAX_QUESTIONS_PER_TOPIC:
+    if node_confidence > HIGH_CONFIDENCE or questions_on_topic >= max_per_topic:
         return "pivot"
 
     # Default: if low confidence, pivot to expose more gaps
@@ -73,25 +97,36 @@ def decide_branch(state: AssessmentState) -> str:
 
 
 def get_next_topic(state: AssessmentState) -> dict:
-    """Select the next topic to assess, updating state accordingly."""
-    from app.knowledge_base.loader import get_all_topics
+    """Select the next topic from the agenda, updating status accordingly."""
+    agenda = [item.model_copy(deep=True) for item in state.get("topic_agenda", [])]
 
-    topics_evaluated = set(state.get("topics_evaluated", []))
-    domain = state.get("skill_domain", "backend_engineering")
-    target_level = state.get("target_level", "mid")
+    # Mark current topic as assessed if it was active
+    current_topic = state.get("current_topic", "")
+    knowledge_graph = state.get("knowledge_graph")
+    for item in agenda:
+        if item.concept == current_topic and item.status == TopicStatus.active:
+            item.status = TopicStatus.assessed
+            if knowledge_graph:
+                node = knowledge_graph.get_node(current_topic)
+                if node:
+                    item.confidence = node.confidence
 
-    all_topics = get_all_topics(domain, target_level)
-
-    # Pick the first unevaluated topic
+    # Find first pending topic
     next_topic = ""
-    for topic in all_topics:
-        if topic not in topics_evaluated:
-            next_topic = topic
+    for item in agenda:
+        if item.status == TopicStatus.pending:
+            item.status = TopicStatus.active
+            next_topic = item.concept
             break
 
-    if not next_topic and all_topics:
-        # All topics covered — shouldn't reach here, but fallback
-        next_topic = all_topics[0]
+    if not next_topic:
+        # All topics covered — shouldn't normally reach here
+        # Return empty to trigger conclude on next cycle
+        return {
+            "topic_agenda": agenda,
+            "current_topic": "",
+            "questions_on_current_topic": 0,
+        }
 
     # Determine starting bloom level based on calibrated level
     calibrated_level = state.get("calibrated_level", "mid")
@@ -103,6 +138,7 @@ def get_next_topic(state: AssessmentState) -> dict:
     }
 
     return {
+        "topic_agenda": agenda,
         "current_topic": next_topic,
         "current_bloom_level": bloom_map.get(calibrated_level, BloomLevel.apply),
         "questions_on_current_topic": 0,

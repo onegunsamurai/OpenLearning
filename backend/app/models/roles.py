@@ -22,3 +22,14 @@ class RoleDetail(CamelModel):
     description: str
     mapped_skill_ids: list[str]
     levels: list[RoleLevelSummary]
+
+
+class ConceptSummary(CamelModel):
+    id: str
+    display_name: str
+    level: str
+    prerequisites: list[str] = []
+
+
+class RoleConceptsResponse(CamelModel):
+    concepts: list[ConceptSummary]

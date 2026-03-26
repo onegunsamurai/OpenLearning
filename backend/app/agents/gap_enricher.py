@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Literal
 
+from app.agents.gap_analyzer import get_effective_confidence
 from app.agents.schemas import GapEnrichmentOutput
 from app.graph.state import (
     AssessmentState,
     EnrichedGapAnalysis,
     EnrichedGapItem,
+    KnowledgeGraph,
     KnowledgeNode,
 )
 from app.prompts.gap_enricher import GAP_ENRICHMENT_PROMPT_FOOTER, GAP_ENRICHMENT_PROMPT_HEADER
@@ -30,8 +32,14 @@ def _compute_priority(
 def _compute_overall_readiness(
     current_nodes: list[KnowledgeNode],
     target_nodes: list[KnowledgeNode],
+    current_kg: KnowledgeGraph | None = None,
+    target_kg: KnowledgeGraph | None = None,
 ) -> int:
-    """Weighted average of (current_confidence / target_confidence) * 100."""
+    """Weighted average of (current_confidence / target_confidence) * 100.
+
+    When knowledge graphs are provided, un-assessed concepts use inferred
+    confidence from their assessed prerequisites instead of defaulting to 0.
+    """
     if not target_nodes:
         return 100
 
@@ -40,7 +48,12 @@ def _compute_overall_readiness(
 
     for target_node in target_nodes:
         current = next((n for n in current_nodes if n.concept == target_node.concept), None)
-        current_conf = current.confidence if current else 0.0
+        if current:
+            current_conf = current.confidence
+        elif current_kg and target_kg:
+            current_conf = get_effective_confidence(target_node.concept, current_kg, target_kg)
+        else:
+            current_conf = 0.0
         target_conf = target_node.confidence
         if target_conf > 0:
             total_ratio += min(current_conf / target_conf, 1.0)
@@ -69,7 +82,9 @@ async def enrich_gaps(state: AssessmentState) -> dict:
     current_nodes = knowledge_graph.nodes if knowledge_graph else []
     target_nodes = target_graph.nodes if target_graph else []
 
-    overall_readiness = _compute_overall_readiness(current_nodes, target_nodes)
+    overall_readiness = _compute_overall_readiness(
+        current_nodes, target_nodes, knowledge_graph, target_graph
+    )
 
     # Build target confidence lookup
     target_map = {n.concept: n.confidence for n in target_nodes}

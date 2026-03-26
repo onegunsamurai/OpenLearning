@@ -12,6 +12,7 @@ class TestGraphStructure:
             "calibrate_medium",
             "calibrate_hard",
             "calibrate_evaluate",
+            "build_agenda",
             "handle_deeper",
             "handle_pivot",
             "generate_question",
@@ -46,7 +47,8 @@ class TestGraphStructure:
         assert ("calibrate_easy", "calibrate_medium") in edges
         assert ("calibrate_medium", "calibrate_hard") in edges
         assert ("calibrate_hard", "calibrate_evaluate") in edges
-        assert ("calibrate_evaluate", "generate_question") in edges
+        assert ("calibrate_evaluate", "build_agenda") in edges
+        assert ("build_agenda", "generate_question") in edges
 
     def test_assessment_loop_edges(self):
         graph = build_graph()

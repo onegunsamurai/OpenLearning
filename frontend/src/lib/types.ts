@@ -10,6 +10,8 @@ export type {
   RoleSummary,
   RoleDetail,
   RoleLevelSummary,
+  ConceptSummary,
+  RoleConceptsResponse,
   AuthMeResponse,
   ApiKeyResponse,
   ValidateKeyResponse,

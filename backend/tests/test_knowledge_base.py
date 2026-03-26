@@ -2,9 +2,15 @@
 
 import pytest
 
-from app.agents.gap_analyzer import _topological_sort, analyze_gaps
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
+from app.agents.gap_analyzer import (
+    PREREQ_DISCOUNT,
+    _topological_sort,
+    analyze_gaps,
+    get_effective_confidence,
+)
+from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode, TopicStatus
 from app.knowledge_base.loader import (
+    build_topic_agenda,
     clear_cache,
     get_all_topics,
     get_target_graph,
@@ -120,6 +126,58 @@ class TestMapSkillsToDomain:
         assert domain == "backend_engineering"  # fallback
 
 
+class TestBuildTopicAgenda:
+    def test_returns_all_concepts_up_to_level(self):
+        agenda = build_topic_agenda("devops_engineering", "mid")
+        concepts = [item.concept for item in agenda]
+        # Should have both junior and mid concepts
+        assert "linux_fundamentals" in concepts
+        assert "ci_cd_pipelines" in concepts
+        assert len(concepts) > 20  # 13 junior + 14 mid = 27
+
+    def test_fundamentals_come_first(self):
+        agenda = build_topic_agenda("devops_engineering", "mid")
+        concepts = [item.concept for item in agenda]
+        # Topics with no prerequisites should come before their dependents
+        assert concepts.index("linux_fundamentals") < concepts.index("shell_scripting")
+        assert concepts.index("networking_basics") < concepts.index("dns_and_http")
+        assert concepts.index("container_fundamentals") < concepts.index(
+            "docker_compose_orchestration"
+        )
+
+    def test_mid_concepts_after_junior_prereqs(self):
+        agenda = build_topic_agenda("devops_engineering", "mid")
+        concepts = [item.concept for item in agenda]
+        # ci_cd_pipelines depends on version_control_workflows and container_fundamentals
+        assert concepts.index("version_control_workflows") < concepts.index("ci_cd_pipelines")
+        assert concepts.index("container_fundamentals") < concepts.index("ci_cd_pipelines")
+
+    def test_all_items_start_pending(self):
+        agenda = build_topic_agenda("devops_engineering", "junior")
+        assert all(item.status == TopicStatus.pending for item in agenda)
+
+    def test_items_have_correct_levels(self):
+        agenda = build_topic_agenda("devops_engineering", "mid")
+        levels = {item.concept: item.level for item in agenda}
+        assert levels["linux_fundamentals"] == "junior"
+        assert levels["ci_cd_pipelines"] == "mid"
+
+    def test_items_have_prerequisites(self):
+        agenda = build_topic_agenda("devops_engineering", "mid")
+        items = {item.concept: item for item in agenda}
+        assert "linux_fundamentals" in items["shell_scripting"].prerequisites
+
+    def test_invalid_level_raises(self):
+        with pytest.raises(ValueError):
+            build_topic_agenda("devops_engineering", "intern")
+
+    def test_junior_only_excludes_mid(self):
+        agenda = build_topic_agenda("devops_engineering", "junior")
+        concepts = [item.concept for item in agenda]
+        assert "linux_fundamentals" in concepts
+        assert "ci_cd_pipelines" not in concepts
+
+
 class TestGapAnalysis:
     def test_finds_gaps_below_threshold(self):
         target = KnowledgeGraph(
@@ -166,6 +224,64 @@ class TestGapAnalysis:
         result = analyze_gaps(state)
         assert len(result["gap_nodes"]) == 0
 
+    def test_inferred_confidence_removes_gap(self):
+        """When prerequisite is assessed high, dependent infers above threshold — no gap."""
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(
+                    concept="a", confidence=0.6, bloom_level=BloomLevel.apply, prerequisites=[]
+                ),
+                KnowledgeNode(
+                    concept="b",
+                    confidence=0.6,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a"],
+                ),
+            ],
+            edges=[("a", "b")],
+        )
+        current = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.9, bloom_level=BloomLevel.apply),
+                # b not assessed — inferred: 0.9 * 0.5 = 0.45, threshold: 0.6 - 0.2 = 0.4
+                # 0.45 > 0.4 → NOT a gap
+            ],
+            edges=[],
+        )
+        state = {"knowledge_graph": current, "target_graph": target}
+        result = analyze_gaps(state)
+        gap_concepts = [n.concept for n in result["gap_nodes"]]
+        assert "a" not in gap_concepts  # assessed above target
+        assert "b" not in gap_concepts  # inferred above threshold
+
+    def test_inferred_confidence_stored_in_gap_node(self):
+        """Gap node carries inferred confidence, not 0.0."""
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(
+                    concept="a", confidence=0.8, bloom_level=BloomLevel.apply, prerequisites=[]
+                ),
+                KnowledgeNode(
+                    concept="b",
+                    confidence=0.8,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a"],
+                ),
+            ],
+            edges=[("a", "b")],
+        )
+        current = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.5, bloom_level=BloomLevel.apply),
+                # b inferred: 0.5 * 0.5 = 0.25, threshold: 0.8 - 0.2 = 0.6 → gap at 0.25
+            ],
+            edges=[],
+        )
+        state = {"knowledge_graph": current, "target_graph": target}
+        result = analyze_gaps(state)
+        gap_b = next(n for n in result["gap_nodes"] if n.concept == "b")
+        assert gap_b.confidence == pytest.approx(0.25)
+
     def test_topological_sort_respects_prerequisites(self):
         nodes = [
             KnowledgeNode(
@@ -182,3 +298,109 @@ class TestGapAnalysis:
         concepts = [n.concept for n in sorted_nodes]
         assert concepts.index("a") < concepts.index("b")
         assert concepts.index("b") < concepts.index("c")
+
+
+class TestGetEffectiveConfidence:
+    """Tests for get_effective_confidence prerequisite propagation."""
+
+    def test_returns_assessed_confidence(self):
+        current = KnowledgeGraph(
+            nodes=[KnowledgeNode(concept="a", confidence=0.82, bloom_level=BloomLevel.apply)]
+        )
+        target = KnowledgeGraph(
+            nodes=[KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply)]
+        )
+        assert get_effective_confidence("a", current, target) == pytest.approx(0.82)
+
+    def test_infers_from_single_prerequisite(self):
+        current = KnowledgeGraph(
+            nodes=[KnowledgeNode(concept="a", confidence=0.8, bloom_level=BloomLevel.apply)]
+        )
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(
+                    concept="b",
+                    confidence=0.7,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a"],
+                ),
+            ],
+            edges=[("a", "b")],
+        )
+        result = get_effective_confidence("b", current, target)
+        assert result == pytest.approx(0.8 * PREREQ_DISCOUNT)
+
+    def test_infers_from_multiple_prerequisites(self):
+        current = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.8, bloom_level=BloomLevel.apply),
+                KnowledgeNode(concept="b", confidence=0.6, bloom_level=BloomLevel.apply),
+            ]
+        )
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(concept="b", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(
+                    concept="c",
+                    confidence=0.7,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a", "b"],
+                ),
+            ],
+            edges=[("a", "c"), ("b", "c")],
+        )
+        expected = ((0.8 + 0.6) / 2) * PREREQ_DISCOUNT
+        assert get_effective_confidence("c", current, target) == pytest.approx(expected)
+
+    def test_returns_zero_no_prerequisites(self):
+        current = KnowledgeGraph()
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+            ]
+        )
+        assert get_effective_confidence("a", current, target) == 0.0
+
+    def test_returns_zero_no_assessed_prerequisites(self):
+        current = KnowledgeGraph()  # nothing assessed
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(
+                    concept="b",
+                    confidence=0.7,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a"],
+                ),
+            ],
+            edges=[("a", "b")],
+        )
+        assert get_effective_confidence("b", current, target) == 0.0
+
+    def test_not_in_target_graph_returns_zero(self):
+        current = KnowledgeGraph()
+        target = KnowledgeGraph()
+        assert get_effective_confidence("nonexistent", current, target) == 0.0
+
+    def test_partial_prerequisites_assessed(self):
+        """Only assessed prerequisites contribute to inference."""
+        current = KnowledgeGraph(
+            nodes=[KnowledgeNode(concept="a", confidence=0.8, bloom_level=BloomLevel.apply)]
+        )
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(concept="b", confidence=0.7, bloom_level=BloomLevel.apply),
+                KnowledgeNode(
+                    concept="c",
+                    confidence=0.7,
+                    bloom_level=BloomLevel.apply,
+                    prerequisites=["a", "b"],
+                ),
+            ],
+        )
+        # Only "a" is assessed; average of assessed = 0.8
+        result = get_effective_confidence("c", current, target)
+        assert result == pytest.approx(0.8 * PREREQ_DISCOUNT)

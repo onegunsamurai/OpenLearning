@@ -11,9 +11,12 @@ async def evaluate_response(state: AssessmentState) -> dict:
     question = state["question_history"][-1]
     response = state["response_history"][-1]
 
+    bloom = question.bloom_level
+    bloom_str = bloom.value if isinstance(bloom, BloomLevel) else str(bloom)
+
     prompt = EVALUATOR_PROMPT.format(
         topic=question.topic,
-        bloom_level=question.bloom_level.value,
+        bloom_level=bloom_str,
         question_text=question.text,
         response_text=response.text,
     )
