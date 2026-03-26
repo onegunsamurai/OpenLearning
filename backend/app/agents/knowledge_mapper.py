@@ -86,9 +86,11 @@ def _propagate_prereq_confidence(
 ) -> list[AgendaItem] | None:
     """Propagate discounted confidence from an assessed topic to its prerequisites.
 
-    When a topic is assessed, its prerequisites get inferred confidence
-    (assessed_confidence * PREREQ_DISCOUNT) if they haven't been directly
-    assessed or already have higher confidence. Also updates agenda status.
+    When a topic is assessed, this infers confidence for its prerequisite topics
+    as (assessed_confidence * PREREQ_DISCOUNT), but only for prerequisites that
+    do not yet exist as nodes in the knowledge graph. Existing prerequisite nodes
+    are never modified by this function. Also updates agenda status for
+    prerequisite items.
     """
     if not assessed_node or not assessed_node.prerequisites:
         return None
