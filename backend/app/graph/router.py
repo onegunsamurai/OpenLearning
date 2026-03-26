@@ -46,13 +46,13 @@ def decide_branch(state: AssessmentState) -> str:
     max_per_topic = _get_max_questions_per_topic(state)
     max_total = _get_max_total_questions(state)
 
-    # 1. Conclude: enough topics assessed, budget exhausted, or no pending topics
+    # 1. Conclude: enough topics assessed, budget exhausted, or no remaining topics
     assessed_count = _count_assessed_topics(state)
     agenda = state.get("topic_agenda", [])
-    has_pending = any(item.status == TopicStatus.pending for item in agenda)
+    has_remaining = any(item.status in (TopicStatus.pending, TopicStatus.active) for item in agenda)
     if assessed_count >= MAX_TOPICS or len(question_history) >= max_total:
         return "conclude"
-    if agenda and not has_pending:
+    if agenda and not has_remaining:
         return "conclude"
 
     if not evaluation:

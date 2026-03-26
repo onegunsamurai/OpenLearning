@@ -105,17 +105,8 @@ def _propagate_prereq_confidence(
         existing_prereq = kg.get_node(prereq_name)
 
         if existing_prereq:
-            # Only update if inferred is higher than current
-            if inferred_conf > existing_prereq.confidence:
-                updated_prereq = KnowledgeNode(
-                    concept=existing_prereq.concept,
-                    confidence=inferred_conf,
-                    bloom_level=existing_prereq.bloom_level,
-                    prerequisites=existing_prereq.prerequisites,
-                    evidence=[*existing_prereq.evidence, f"Inferred from {assessed_node.concept}"],
-                )
-                kg.upsert_node(updated_prereq)
-                changed = True
+            # Never overwrite — assessed or previously inferred data takes precedence
+            pass
         else:
             # Create a new node for the prerequisite with inferred confidence
             new_prereq = KnowledgeNode(

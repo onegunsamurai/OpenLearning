@@ -104,9 +104,12 @@ def build_agenda_node(state: AssessmentState) -> dict:
     target_level = state.get("target_level", "mid")
     skill_ids = state.get("skill_ids", [])
 
-    # Try to build a filtered agenda from selected concept IDs
-    filtered = build_topic_agenda_from_concepts(domain, target_level, skill_ids)
-    agenda = filtered if filtered else build_topic_agenda(domain, target_level)
+    # Build agenda: filtered to selected concepts when skill_ids are provided,
+    # otherwise all concepts up to the target level.
+    if skill_ids:
+        agenda = build_topic_agenda_from_concepts(domain, target_level, skill_ids)
+    else:
+        agenda = build_topic_agenda(domain, target_level)
 
     # Mark the first topic as active
     if agenda:

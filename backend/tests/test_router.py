@@ -221,8 +221,8 @@ class TestDecideBranch:
         )
         assert decide_branch(state) == "pivot"
 
-    def test_conclude_when_no_pending_topics(self):
-        """All topics assessed or inferred, none pending — must conclude."""
+    def test_conclude_when_no_remaining_topics(self):
+        """All topics assessed or inferred, none pending/active — must conclude."""
         agenda = [
             AgendaItem(concept="a", level="junior", status=TopicStatus.assessed, confidence=0.8),
             AgendaItem(concept="b", level="junior", status=TopicStatus.assessed, confidence=0.7),
@@ -249,8 +249,41 @@ class TestDecideBranch:
             ),
         )
         # assessed_count=2 < MAX_TOPICS=10, question_history=1 < max_total
-        # But no pending topics → should conclude
+        # But no pending or active topics → should conclude
         assert decide_branch(state) == "conclude"
+
+    def test_does_not_conclude_while_active_topic_exists(self):
+        """An active topic should not trigger early conclusion."""
+        agenda = [
+            AgendaItem(concept="a", level="junior", status=TopicStatus.active),
+        ]
+        state = _make_state(
+            topic_agenda=agenda,
+            current_topic="a",
+            current_bloom_level=BloomLevel.apply,
+            questions_on_current_topic=1,
+            latest_evaluation=EvaluationResult(
+                question_id="q-1",
+                confidence=0.8,
+                bloom_level=BloomLevel.apply,
+                evidence=["Good", "Solid"],
+            ),
+            knowledge_graph=KnowledgeGraph(
+                nodes=[KnowledgeNode(concept="a", confidence=0.8, bloom_level=BloomLevel.apply)],
+            ),
+            question_history=[
+                Question(
+                    id="q-1",
+                    topic="a",
+                    bloom_level=BloomLevel.apply,
+                    text="Q?",
+                    question_type="conceptual",
+                )
+            ],
+        )
+        # Only 1 topic, it's active, 1 question asked — should deeper/probe, NOT conclude
+        result = decide_branch(state)
+        assert result != "conclude"
 
     def test_dynamic_budget_with_quick_thoroughness(self):
         """Quick thoroughness (2 per topic) exhausts budget faster."""
