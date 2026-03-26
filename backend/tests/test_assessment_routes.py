@@ -101,6 +101,7 @@ class TestAssessmentStart:
             patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
+            patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
         ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -129,6 +130,7 @@ class TestAssessmentStart:
             patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
+            patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
         ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -158,7 +160,9 @@ class TestAssessmentStart:
             patch(
                 "app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"
             ) as mock_map,
-            patch("app.routes.assessment.get_target_graph", return_value=_make_kg()) as mock_tg,
+            patch(
+                "app.routes.assessment.get_target_graph_for_concepts", return_value=_make_kg()
+            ) as mock_tg,
         ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -173,7 +177,7 @@ class TestAssessmentStart:
                 )
 
         mock_map.assert_not_called()
-        mock_tg.assert_called_once_with("frontend_engineering", "mid")
+        mock_tg.assert_called_once_with("frontend_engineering", "mid", ["react"])
         _mock_graph.reset_mock()
 
     @pytest.mark.asyncio
@@ -214,6 +218,7 @@ class TestAssessmentStart:
             patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
+            patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
         ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
@@ -240,6 +245,7 @@ class TestAssessmentStart:
             patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
+            patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
         ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
