@@ -12,7 +12,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionReport } from "@/hooks/useSessionReport";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Eye } from "lucide-react";
 
 export default function GapAnalysisPage() {
   return (
@@ -57,7 +57,7 @@ function GapAnalysisPageContent() {
 
   if (loading) {
     return (
-      <PageShell currentStep={2}>
+      <PageShell currentStep={2} sessionId={sessionId}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan" />
           <p className="text-muted-foreground font-mono text-sm">
@@ -81,7 +81,7 @@ function GapAnalysisPageContent() {
 
   if (error) {
     return (
-      <PageShell currentStep={2}>
+      <PageShell currentStep={2} sessionId={sessionId}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <ApiErrorDisplay error={error} onRetry={refetch} />
         </div>
@@ -94,7 +94,7 @@ function GapAnalysisPageContent() {
   const { gapAnalysis } = report;
 
   return (
-    <PageShell currentStep={2}>
+    <PageShell currentStep={2} sessionId={sessionId}>
       <div className="space-y-8">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Left: Chart + Readiness */}
@@ -120,7 +120,7 @@ function GapAnalysisPageContent() {
         </div>
 
         {/* CTA */}
-        <div className="flex justify-center pb-8">
+        <div className="flex flex-col items-center gap-3 pb-8 sm:flex-row sm:justify-center">
           <Button
             onClick={handleContinue}
             size="lg"
@@ -129,6 +129,17 @@ function GapAnalysisPageContent() {
             Generate Learning Plan
             <ArrowRight className="h-4 w-4" />
           </Button>
+          {report.learningPlan && report.learningPlan.phases.length > 0 && (
+            <Button
+              onClick={handleContinue}
+              size="lg"
+              variant="outline"
+              className="gap-2 border-border"
+            >
+              <Eye className="h-4 w-4" />
+              View Learning Plan
+            </Button>
+          )}
         </div>
       </div>
     </PageShell>

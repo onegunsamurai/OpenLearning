@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSessionReport } from "@/hooks/useSessionReport";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { cn } from "@/lib/utils";
-import { Loader2, Copy, RotateCcw, Check, FileDown } from "lucide-react";
+import { Loader2, Copy, RotateCcw, Check, FileDown, ArrowLeft } from "lucide-react";
 
 export default function LearningPlanPage() {
   return (
@@ -61,6 +61,10 @@ function LearningPlanPageContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleBackToGaps = () => {
+    router.push(`/gap-analysis${sessionId ? `?session=${sessionId}` : ""}`);
+  };
+
   const handleStartOver = () => {
     reset();
     router.push("/");
@@ -71,7 +75,7 @@ function LearningPlanPageContent() {
 
   if (loading) {
     return (
-      <PageShell currentStep={3}>
+      <PageShell currentStep={3} sessionId={sessionId}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan" />
           <p className="text-muted-foreground font-mono text-sm">
@@ -95,7 +99,7 @@ function LearningPlanPageContent() {
 
   if (error) {
     return (
-      <PageShell currentStep={3}>
+      <PageShell currentStep={3} sessionId={sessionId}>
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <ApiErrorDisplay error={error} onRetry={refetch} />
         </div>
@@ -108,7 +112,7 @@ function LearningPlanPageContent() {
   const { learningPlan } = report;
 
   return (
-    <PageShell currentStep={3}>
+    <PageShell currentStep={3} sessionId={sessionId}>
       <div className="grid gap-8 lg:grid-cols-[260px,1fr]">
         {/* Left sidebar */}
         <aside className="space-y-6">
@@ -148,6 +152,14 @@ function LearningPlanPageContent() {
 
       {/* Footer */}
       <div className="mt-12 flex flex-col items-center gap-4 border-t border-border pt-8 pb-8 sm:flex-row sm:justify-center">
+        <Button
+          onClick={handleBackToGaps}
+          variant="outline"
+          className="gap-2 border-border"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Gap Analysis
+        </Button>
         <Button
           onClick={handleCopyPlan}
           variant="outline"
