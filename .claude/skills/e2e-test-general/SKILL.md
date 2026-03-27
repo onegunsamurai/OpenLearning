@@ -62,7 +62,7 @@ Test each page in order. For every page: navigate, snapshot, screenshot, check c
 4. **Test interaction — Register tab:** Click "Register" tab → verify "Confirm password" field appears
 5. **Test interaction — Invalid login:** Click "Sign In" tab → fill email `invalid@test.com` and password `wrong` → click "Sign In" → verify error message appears
 6. `mcp__playwright__browser_take_screenshot` → `e2e-screenshots/gen-06-login-error.png`
-7. **Test interaction — Valid login:** Fill email `e2e-test@openlearning.test` and password `TestPassword123!` → click "Sign In" → wait for redirect to `/dashboard`
+7. **Test interaction — Valid login:** Fill email `$E2E_TEST_EMAIL` and password `$E2E_TEST_PASSWORD` (from env vars) → click "Sign In" → wait for redirect to `/dashboard`
 8. Check console messages for errors
 
 ### 3. Phase B — Authenticated Pages (After Login)

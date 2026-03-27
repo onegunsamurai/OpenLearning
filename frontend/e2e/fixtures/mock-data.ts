@@ -7,7 +7,7 @@ export const MOCK_AUTH_ME = {
   displayName: "E2E Test",
   avatarUrl: "",
   hasApiKey: true,
-  email: "e2e-test@openlearning.test",
+  email: process.env.E2E_TEST_EMAIL ?? "",
 };
 
 export const MOCK_START_RESPONSE = {

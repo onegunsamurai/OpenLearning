@@ -59,7 +59,7 @@ If any auth-required pages are in the test plan:
 1. Navigate to `http://localhost:3000/login`
 2. Use `mcp__playwright__browser_snapshot` to verify the login form loaded
 3. Click the "Sign In" tab via `mcp__playwright__browser_click`
-4. Fill email `e2e-test@openlearning.test` and password `TestPassword123!` using `mcp__playwright__browser_fill_form`
+4. Fill email `$E2E_TEST_EMAIL` and password `$E2E_TEST_PASSWORD` (from env vars) using `mcp__playwright__browser_fill_form`
 5. Click the "Sign In" button via `mcp__playwright__browser_click`
 6. Wait for redirect to `/dashboard` using `mcp__playwright__browser_wait_for`
 7. If login fails (user not registered), first register via the Register tab with the same credentials, then sign in

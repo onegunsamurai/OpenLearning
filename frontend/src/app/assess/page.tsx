@@ -72,10 +72,15 @@ function AssessPageContent() {
     onAssessmentComplete,
   });
 
-  // Store session ID
+  // Store session ID and update URL so refresh triggers resume instead of new session
   useEffect(() => {
     if (sessionId) {
       setAssessmentSessionId(sessionId);
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("session") !== sessionId) {
+        url.searchParams.set("session", sessionId);
+        window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+      }
     }
   }, [sessionId, setAssessmentSessionId]);
 
