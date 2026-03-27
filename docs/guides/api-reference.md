@@ -588,6 +588,8 @@ List all assessment sessions for the authenticated user, sorted by creation date
     "status": "completed",
     "skillIds": ["react", "typescript"],
     "targetLevel": "mid",
+    "roleId": "frontend_engineering",
+    "roleName": "Frontend Engineer",
     "createdAt": "2026-03-20T10:30:00Z",
     "completedAt": "2026-03-20T11:45:00Z",
     "overallReadiness": 72,
@@ -598,6 +600,8 @@ List all assessment sessions for the authenticated user, sorted by creation date
     "status": "active",
     "skillIds": ["python"],
     "targetLevel": "mid",
+    "roleId": null,
+    "roleName": null,
     "createdAt": "2026-03-22T09:00:00Z",
     "completedAt": null,
     "overallReadiness": null,
@@ -605,6 +609,29 @@ List all assessment sessions for the authenticated user, sorted by creation date
   }
 ]
 ```
+
+---
+
+### DELETE `/api/user/assessments/{session_id}`
+
+> **Requires authentication.** Returns 401 without a valid JWT cookie.
+
+Delete an assessment session and all associated data (results, materials). Only the session owner can delete it.
+
+**Path Parameters**:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `session_id` | string | ID of the session to delete |
+
+**Response** (204): No content.
+
+**Errors**:
+
+| Status | Detail |
+|--------|--------|
+| 403 | Not your session |
+| 404 | Session not found |
 
 ---
 

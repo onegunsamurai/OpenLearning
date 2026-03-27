@@ -16,7 +16,7 @@ import { Loader2, Plus } from "lucide-react";
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuthStore();
   const { login } = useAuth();
-  const { sessions, loading, error, refetch } = useUserAssessments();
+  const { sessions, loading, error, refetch, deleteSession } = useUserAssessments();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,6 +69,7 @@ export default function DashboardPage() {
                   key={session.sessionId}
                   session={session}
                   index={i}
+                  onDelete={deleteSession}
                 />
               ))}
             </div>

@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { UserAssessmentSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import { Clock, Target, ArrowRight, Play, RotateCcw } from "lucide-react";
+import { Clock, Target, ArrowRight, Play, RotateCcw, Trash2 } from "lucide-react";
 
 const statusConfig: Record<
   string,
@@ -33,15 +34,27 @@ const statusConfig: Record<
 interface AssessmentCardProps {
   session: UserAssessmentSummary;
   index: number;
+  onDelete?: (sessionId: string) => Promise<void>;
 }
 
-export function AssessmentCard({ session, index }: AssessmentCardProps) {
+export function AssessmentCard({ session, index, onDelete }: AssessmentCardProps) {
   const config = statusConfig[session.status] ?? statusConfig.active;
   const date = new Date(session.createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    setDeleting(true);
+    try {
+      await onDelete(session.sessionId);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <motion.div
@@ -52,6 +65,9 @@ export function AssessmentCard({ session, index }: AssessmentCardProps) {
     >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
+          {session.roleName && (
+            <p className="text-sm font-medium">{session.roleName}</p>
+          )}
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
@@ -119,6 +135,18 @@ export function AssessmentCard({ session, index }: AssessmentCardProps) {
               Start New
               <RotateCcw className="h-3.5 w-3.5" />
             </Link>
+          </Button>
+        )}
+        {onDelete && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground hover:text-red-400 gap-1.5 ml-auto"
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label="Delete assessment"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>

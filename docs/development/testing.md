@@ -69,7 +69,7 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `_test_user` | An `AuthUser` with test user ID and username (module-level constant) |
 | `_override_get_current_user` | Dependency override that returns `_test_user`, bypassing real JWT auth |
 | `_override_get_user_api_key` | Dependency override returning `"sk-test-key-for-tests"`, bypassing real API key lookup |
-| `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan, and auth routers (shared across route tests) |
+| `_test_app` | FastAPI app with assessment, gap_analysis, learning_plan, auth, and user routers (shared across route tests) |
 | `seed_session()` | Helper to insert an `AssessmentSession` row |
 | `seed_result()` | Helper to insert an `AssessmentResult` row with sample data |
 | `mock_llm_response()` | Helper returning an `AsyncMock` chat model with given response text |

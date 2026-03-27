@@ -13,6 +13,7 @@ import {
   registerApiAuthRegisterPost,
   loginApiAuthLoginPost,
   listUserAssessmentsApiUserAssessmentsGet,
+  deleteUserAssessmentApiUserAssessmentsSessionIdDelete,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -178,6 +179,20 @@ const realApi = {
 
   getUserAssessments: async (): Promise<UserAssessmentSummary[]> =>
     unwrap(await listUserAssessmentsApiUserAssessmentsGet()),
+
+  deleteAssessment: async (sessionId: string): Promise<void> => {
+    const result = await deleteUserAssessmentApiUserAssessmentsSessionIdDelete({
+      path: { session_id: sessionId },
+    });
+    if (result.error !== undefined) {
+      const err = result.error as { detail?: unknown };
+      const status = result.response?.status ?? 500;
+      throw new ApiError(
+        extractDetail(err?.detail, "Failed to delete assessment"),
+        status,
+      );
+    }
+  },
 
   assessmentResume: async (
     sessionId: string

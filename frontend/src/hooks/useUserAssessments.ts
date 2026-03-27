@@ -9,6 +9,7 @@ interface UseUserAssessmentsResult {
   loading: boolean;
   error: Error | null;
   refetch: () => void;
+  deleteSession: (sessionId: string) => Promise<void>;
 }
 
 export function useUserAssessments(): UseUserAssessmentsResult {
@@ -39,9 +40,14 @@ export function useUserAssessments(): UseUserAssessmentsResult {
     }
   }, []);
 
+  const deleteSession = useCallback(async (sessionId: string) => {
+    await api.deleteAssessment(sessionId);
+    setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
+  }, []);
+
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
-  return { sessions, loading, error, refetch: fetchSessions };
+  return { sessions, loading, error, refetch: fetchSessions, deleteSession };
 }

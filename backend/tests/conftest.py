@@ -26,6 +26,7 @@ from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
 from app.routes.learning_plan import router as learning_plan_router
+from app.routes.user import router as user_router
 
 # ── PostgreSQL test database ──────────────────────────────────────────────
 
@@ -61,6 +62,7 @@ _test_app.include_router(assessment_router, prefix="/api")
 _test_app.include_router(gap_analysis_router, prefix="/api")
 _test_app.include_router(learning_plan_router, prefix="/api")
 _test_app.include_router(auth_router, prefix="/api/auth")
+_test_app.include_router(user_router, prefix="/api/user")
 _test_app.dependency_overrides[get_db] = _override_get_db
 _test_app.dependency_overrides[get_current_user] = _override_get_current_user
 _test_app.dependency_overrides[get_user_api_key] = _override_get_user_api_key
@@ -174,12 +176,14 @@ async def seed_session(
     thread_id: str = "thread-001",
     status: str = "active",
     user_id: str = "test-user-id",
+    role_id: str | None = None,
 ) -> str:
     session = AssessmentSession(
         session_id=session_id,
         thread_id=thread_id,
         skill_ids=["react"],
         target_level="mid",
+        role_id=role_id,
         status=status,
         user_id=user_id,
     )

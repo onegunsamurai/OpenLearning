@@ -1,17 +1,36 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.db import AssessmentSession, get_db
+from app.db import AssessmentResult, AssessmentSession, MaterialResult, get_db
 from app.deps import AuthUser, get_current_user
+from app.knowledge_base.loader import load_knowledge_base
 from app.models.base import CamelModel
 
+logger = logging.getLogger("openlearning.user")
+
 router = APIRouter()
+
+
+def _resolve_role_name(role_id: str | None) -> str | None:
+    """Look up the display name for a role_id from the knowledge base."""
+    if not role_id:
+        return None
+    try:
+        kb = load_knowledge_base(role_id)
+        return kb.display_name
+    except FileNotFoundError:
+        logger.info("Knowledge base entry not found for role_id '%s'", role_id)
+        return None
+    except Exception as exc:
+        logger.warning("Failed to resolve role name for role_id '%s': %s", role_id, exc)
+        return None
 
 
 class UserAssessmentSummary(CamelModel):
@@ -19,6 +38,8 @@ class UserAssessmentSummary(CamelModel):
     status: str
     skill_ids: list[str]
     target_level: str
+    role_id: str | None = None
+    role_name: str | None = None
     created_at: datetime
     completed_at: datetime | None = None
     overall_readiness: int | None = None
@@ -61,6 +82,8 @@ async def list_user_assessments(
                 status=session.status,
                 skill_ids=session.skill_ids,
                 target_level=session.target_level,
+                role_id=session.role_id,
+                role_name=_resolve_role_name(session.role_id),
                 created_at=session.created_at,
                 completed_at=completed_at,
                 overall_readiness=overall_readiness,
@@ -69,3 +92,27 @@ async def list_user_assessments(
         )
 
     return summaries
+
+
+@router.delete(
+    "/assessments/{session_id}",
+    status_code=204,
+    responses={403: {"description": "Not your session"}, 404: {"description": "Session not found"}},
+)
+async def delete_user_assessment(
+    session_id: str,
+    user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Delete an assessment session owned by the current user."""
+    session_row = await db.get(AssessmentSession, session_id)
+    if not session_row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session_row.user_id != user.user_id:
+        raise HTTPException(status_code=403, detail="Not your session")
+
+    # Delete associated rows first (FK constraints)
+    await db.execute(delete(MaterialResult).where(MaterialResult.session_id == session_id))
+    await db.execute(delete(AssessmentResult).where(AssessmentResult.session_id == session_id))
+    await db.delete(session_row)
+    await db.commit()
