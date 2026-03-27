@@ -94,7 +94,7 @@ export function useAssessmentChat({
   }, []);
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, { isRetry = false }: { isRetry?: boolean } = {}) => {
       const sessionId = sessionIdRef.current;
       if (!sessionId) {
         setError(new Error("No active session"));
@@ -108,7 +108,9 @@ export function useAssessmentChat({
       };
       const assistantId = nextId();
 
-      setMessages((prev) => [...prev, userMessage]);
+      if (!isRetry) {
+        setMessages((prev) => [...prev, userMessage]);
+      }
       setStatus("submitted");
       setError(null);
 

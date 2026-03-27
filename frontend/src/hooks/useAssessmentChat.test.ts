@@ -538,6 +538,78 @@ describe("useAssessmentChat", () => {
     });
   });
 
+  describe("retry (isRetry flag)", () => {
+    it("does not duplicate user message when isRetry is true", async () => {
+      mockedApi.assessmentStart.mockResolvedValueOnce({
+        sessionId: "sess-1",
+        question: "Q1",
+        questionType: "open",
+        step: 1,
+        totalSteps: 3,
+      });
+
+      const { result } = renderHook(() => useAssessmentChat(defaultOpts));
+      await act(() => result.current.initialiseChat());
+
+      // First attempt — fails with an error
+      mockedApi.assessmentRespond.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        headers: new Headers(),
+        json: () => Promise.resolve({ detail: "Server error" }),
+      } as unknown as Response);
+      await act(() => result.current.sendMessage("my answer"));
+
+      // Should have: assistant Q1 + user "my answer" = 2 messages
+      expect(result.current.messages).toHaveLength(2);
+      expect(result.current.status).toBe("error");
+
+      const userMsgsBefore = result.current.messages.filter(
+        (m) => m.role === "user"
+      );
+      expect(userMsgsBefore).toHaveLength(1);
+
+      // Retry with isRetry: true — should NOT add a second user message
+      mockedApi.assessmentRespond.mockResolvedValueOnce(
+        createSSEResponse(["data: Reply\n"])
+      );
+      await act(() =>
+        result.current.sendMessage("my answer", { isRetry: true })
+      );
+
+      // Should have: assistant Q1 + user "my answer" + assistant Reply = 3 messages
+      expect(result.current.messages).toHaveLength(3);
+      const userMsgsAfter = result.current.messages.filter(
+        (m) => m.role === "user"
+      );
+      expect(userMsgsAfter).toHaveLength(1);
+      expect(result.current.status).toBe("ready");
+    });
+
+    it("still adds user message when isRetry is false (default)", async () => {
+      mockedApi.assessmentStart.mockResolvedValueOnce({
+        sessionId: "sess-1",
+        question: "Q1",
+        questionType: "open",
+        step: 1,
+        totalSteps: 3,
+      });
+
+      const { result } = renderHook(() => useAssessmentChat(defaultOpts));
+      await act(() => result.current.initialiseChat());
+
+      mockedApi.assessmentRespond.mockResolvedValueOnce(
+        createSSEResponse(["data: Reply\n"])
+      );
+      await act(() => result.current.sendMessage("answer"));
+
+      const userMsgs = result.current.messages.filter(
+        (m) => m.role === "user"
+      );
+      expect(userMsgs).toHaveLength(1);
+    });
+  });
+
   describe("message IDs", () => {
     it("generates unique incrementing IDs", async () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({

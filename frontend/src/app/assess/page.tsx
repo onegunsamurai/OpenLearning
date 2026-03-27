@@ -274,7 +274,7 @@ function AssessPageContent() {
                       const lastUserMsg = [...messages]
                         .reverse()
                         .find((m) => m.role === "user");
-                      if (lastUserMsg) sendMessage(lastUserMsg.content);
+                      if (lastUserMsg) sendMessage(lastUserMsg.content, { isRetry: true });
                       else if (resumeSessionId) {
                         resumeChat(resumeSessionId);
                       } else {
