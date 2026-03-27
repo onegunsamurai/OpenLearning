@@ -1191,6 +1191,12 @@
           "204": {
             "description": "Successful Response"
           },
+          "403": {
+            "description": "Not your session"
+          },
+          "404": {
+            "description": "Session not found"
+          },
           "422": {
             "description": "Validation Error",
             "content": {

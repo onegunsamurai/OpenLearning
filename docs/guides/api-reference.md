@@ -622,7 +622,7 @@ Delete an assessment session and all associated data (results, materials). Only 
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `session_id` | string | UUID of the session to delete |
+| `session_id` | string | ID of the session to delete |
 
 **Response** (204): No content.
 

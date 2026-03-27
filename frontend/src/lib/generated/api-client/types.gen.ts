@@ -1501,6 +1501,14 @@ export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteData = {
 
 export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteErrors = {
     /**
+     * Not your session
+     */
+    403: unknown;
+    /**
+     * Session not found
+     */
+    404: unknown;
+    /**
      * Validation Error
      */
     422: HttpValidationError;

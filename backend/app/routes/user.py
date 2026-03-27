@@ -25,7 +25,11 @@ def _resolve_role_name(role_id: str | None) -> str | None:
     try:
         kb = load_knowledge_base(role_id)
         return kb.display_name
-    except Exception:
+    except FileNotFoundError:
+        logger.info("Knowledge base entry not found for role_id '%s'", role_id)
+        return None
+    except Exception as exc:
+        logger.warning("Failed to resolve role name for role_id '%s': %s", role_id, exc)
         return None
 
 
@@ -90,7 +94,11 @@ async def list_user_assessments(
     return summaries
 
 
-@router.delete("/assessments/{session_id}", status_code=204)
+@router.delete(
+    "/assessments/{session_id}",
+    status_code=204,
+    responses={403: {"description": "Not your session"}, 404: {"description": "Session not found"}},
+)
 async def delete_user_assessment(
     session_id: str,
     user: AuthUser = Depends(get_current_user),

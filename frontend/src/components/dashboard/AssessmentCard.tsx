@@ -51,7 +51,7 @@ export function AssessmentCard({ session, index, onDelete }: AssessmentCardProps
     setDeleting(true);
     try {
       await onDelete(session.sessionId);
-    } catch {
+    } finally {
       setDeleting(false);
     }
   };
