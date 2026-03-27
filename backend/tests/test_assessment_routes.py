@@ -430,6 +430,26 @@ class TestAssessmentRespond:
         finally:
             _mock_graph.reset_mock()
 
+    @pytest.mark.asyncio
+    async def test_respond_graph_error_marks_session_as_error(self, setup_db):
+        """A graph error during streaming must set session status to 'error', not leave it 'active'."""
+        async with _TestSessionFactory() as db:
+            await seed_session(db)
+
+        _mock_graph.ainvoke = AsyncMock(side_effect=RuntimeError("Graph exploded"))
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                await client.post("/api/assessment/sess-001/respond", json={"response": "answer"})
+
+            async with _TestSessionFactory() as db:
+                session_row = await db.get(AssessmentSession, "sess-001")
+                assert session_row.status == "error"
+        finally:
+            _mock_graph.reset_mock()
+
 
 class TestAssessmentGraph:
     @pytest.mark.asyncio
@@ -579,6 +599,41 @@ class TestAssessmentReport:
 
                 session_row = await db.get(AssessmentSession, "sess-001")
                 assert session_row.status == "completed"
+        finally:
+            _mock_graph.reset_mock()
+
+    @pytest.mark.asyncio
+    async def test_report_does_not_complete_errored_session(self, setup_db):
+        """Fetching the report for an errored session must not store a result or change its status.
+
+        Regression test for: failed sessions incorrectly marked as 'Completed' on dashboard.
+        """
+        async with _TestSessionFactory() as db:
+            await seed_session(db, status="error")
+
+        graph_state = MagicMock()
+        graph_state.values = self._make_full_state_values()
+        _mock_graph.aget_state = AsyncMock(return_value=graph_state)
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                await client.get("/api/assessment/sess-001/report")
+
+            async with _TestSessionFactory() as db:
+                session_row = await db.get(AssessmentSession, "sess-001")
+                assert session_row.status == "error", (
+                    "Report endpoint must not mark an errored session as 'completed'"
+                )
+                # No AssessmentResult should be created for errored sessions —
+                # that would cause a completedAt to appear on the dashboard card.
+                result = await db.execute(
+                    select(AssessmentResult).where(AssessmentResult.session_id == "sess-001")
+                )
+                assert result.scalar_one_or_none() is None, (
+                    "Report endpoint must not persist a result row for an errored session"
+                )
         finally:
             _mock_graph.reset_mock()
 

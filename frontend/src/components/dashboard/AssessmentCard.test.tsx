@@ -99,6 +99,43 @@ describe("AssessmentCard", () => {
     });
   });
 
+  describe("error session", () => {
+    it("renders Error badge and Start New link", () => {
+      const session = makeSession({ status: "error" });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+
+      const startLink = screen.getByRole("link", { name: /start new/i });
+      expect(startLink).toHaveAttribute("href", "/");
+    });
+
+    it("does not render readiness score", () => {
+      const session = makeSession({ status: "error", overallReadiness: 0 });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.queryByText("Readiness")).not.toBeInTheDocument();
+    });
+
+    it("does not render View Results link", () => {
+      const session = makeSession({ status: "error" });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.queryByRole("link", { name: /view results/i })).not.toBeInTheDocument();
+    });
+
+    it("does not render completedAt even when present", () => {
+      const session = makeSession({ status: "error", completedAt: "2025-06-16T12:00:00Z" });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.queryByText(/completed/i)).not.toBeInTheDocument();
+    });
+  });
+
   describe("date formatting", () => {
     it("formats createdAt date correctly", () => {
       const session = makeSession({ createdAt: "2025-06-15T10:00:00Z" });

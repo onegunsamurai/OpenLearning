@@ -24,6 +24,10 @@ const statusConfig: Record<
     label: "Timed Out",
     color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   },
+  error: {
+    label: "Error",
+    color: "bg-red-500/20 text-red-400 border-red-500/30",
+  },
 };
 
 interface AssessmentCardProps {
@@ -80,7 +84,7 @@ export function AssessmentCard({ session, index }: AssessmentCardProps) {
           <Target className="h-3.5 w-3.5" />
           {session.skillCount} skill{session.skillCount !== 1 ? "s" : ""}
         </span>
-        {session.completedAt && (
+        {session.status === "completed" && session.completedAt && (
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
             Completed{" "}
@@ -109,7 +113,7 @@ export function AssessmentCard({ session, index }: AssessmentCardProps) {
             </Link>
           </Button>
         )}
-        {session.status === "timed_out" && (
+        {(session.status === "timed_out" || session.status === "error") && (
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <Link href="/">
               Start New
