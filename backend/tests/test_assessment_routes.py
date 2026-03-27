@@ -604,7 +604,7 @@ class TestAssessmentReport:
 
     @pytest.mark.asyncio
     async def test_report_does_not_complete_errored_session(self, setup_db):
-        """Fetching the report for an errored session must not override its status to 'completed'.
+        """Fetching the report for an errored session must not store a result or change its status.
 
         Regression test for: failed sessions incorrectly marked as 'Completed' on dashboard.
         """
@@ -625,6 +625,14 @@ class TestAssessmentReport:
                 session_row = await db.get(AssessmentSession, "sess-001")
                 assert session_row.status == "error", (
                     "Report endpoint must not mark an errored session as 'completed'"
+                )
+                # No AssessmentResult should be created for errored sessions —
+                # that would cause a completedAt to appear on the dashboard card.
+                result = await db.execute(
+                    select(AssessmentResult).where(AssessmentResult.session_id == "sess-001")
+                )
+                assert result.scalar_one_or_none() is None, (
+                    "Report endpoint must not persist a result row for an errored session"
                 )
         finally:
             _mock_graph.reset_mock()

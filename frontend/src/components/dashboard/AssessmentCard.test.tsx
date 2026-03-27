@@ -126,6 +126,14 @@ describe("AssessmentCard", () => {
 
       expect(screen.queryByRole("link", { name: /view results/i })).not.toBeInTheDocument();
     });
+
+    it("does not render completedAt even when present", () => {
+      const session = makeSession({ status: "error", completedAt: "2025-06-16T12:00:00Z" });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.queryByText(/completed/i)).not.toBeInTheDocument();
+    });
   });
 
   describe("date formatting", () => {

@@ -435,11 +435,13 @@ async def assessment_report(
     enriched = state.get("enriched_gap_analysis")
     proficiency_scores = _build_proficiency_scores(state)
 
-    # Store result in DB and mark session completed (idempotent)
+    # Store result in DB and mark session completed — only for active sessions.
+    # Errored or timed-out sessions must not be upgraded to "completed", and the
+    # content pipeline must not be triggered for sessions that never finished.
     existing = await db.execute(
         select(AssessmentResult).where(AssessmentResult.session_id == session_id)
     )
-    if not existing.scalar_one_or_none():
+    if not existing.scalar_one_or_none() and session_row and session_row.status == "active":
         db.add(
             AssessmentResult(
                 session_id=session_id,
@@ -450,8 +452,7 @@ async def assessment_report(
                 enriched_gap_analysis=enriched.model_dump() if enriched else None,
             )
         )
-        if session_row and session_row.status == "active":
-            session_row.status = "completed"
+        session_row.status = "completed"
         await db.commit()
 
         # Trigger content generation pipeline in background
