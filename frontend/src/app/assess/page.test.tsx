@@ -69,11 +69,9 @@ describe("AssessPage session persistence", () => {
     const replaceStateSpy = vi.spyOn(window.history, "replaceState");
     render(<AssessPage />);
 
-    expect(replaceStateSpy).toHaveBeenCalledWith(
-      null,
-      "",
-      expect.stringContaining("session=test-session")
-    );
+    expect(replaceStateSpy).toHaveBeenCalled();
+    const callArgs = replaceStateSpy.mock.calls[0];
+    expect(callArgs[2]).toContain("session=test-session");
     replaceStateSpy.mockRestore();
   });
 });

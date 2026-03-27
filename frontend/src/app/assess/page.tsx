@@ -79,7 +79,7 @@ function AssessPageContent() {
       const url = new URL(window.location.href);
       if (url.searchParams.get("session") !== sessionId) {
         url.searchParams.set("session", sessionId);
-        window.history.replaceState(null, "", url.pathname + url.search);
+        window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
       }
     }
   }, [sessionId, setAssessmentSessionId]);
