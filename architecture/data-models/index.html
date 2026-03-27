@@ -1822,6 +1822,8 @@
     <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>                          <span class="c1"># &quot;active&quot;, &quot;completed&quot;, or &quot;timed_out&quot;</span>
     <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">target_level</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">role_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>           <span class="c1"># knowledge base domain ID</span>
+    <span class="n">role_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>         <span class="c1"># resolved display name from KB</span>
     <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>
     <span class="n">completed_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">overall_readiness</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># 0-100, only set if completed</span>
