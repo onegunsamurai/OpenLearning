@@ -1,4 +1,4 @@
 export const TEST_USER = {
-  email: "e2e-test@openlearning.test",
-  password: "TestPassword123!",
+  email: process.env.E2E_TEST_EMAIL ?? "",
+  password: process.env.E2E_TEST_PASSWORD ?? "",
 } as const;

@@ -190,7 +190,7 @@ Then run `DIFF_FILES` and map changed files to pages using **both** the dynamic 
 
 ### 5c. Run E2E tests
 
-**Auth-required pages** (`/dashboard`, `/assess`, `/gap-analysis`, `/learning-plan`, `/export/[id]`): log in first via `http://localhost:3000/login` using `e2e-test@openlearning.test` / `TestPassword123!`. Register if first run.
+**Auth-required pages** (`/dashboard`, `/assess`, `/gap-analysis`, `/learning-plan`, `/export/[id]`): log in first via `http://localhost:3000/login` using credentials from env vars `$E2E_TEST_EMAIL` / `$E2E_TEST_PASSWORD`. Register if first run.
 
 **For each page in scope:**
 1. `mcp__playwright__browser_navigate` to `http://localhost:3000/<path>`
