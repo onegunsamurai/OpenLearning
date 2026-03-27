@@ -341,8 +341,8 @@ gh api repos/{owner}/{repo}/pulls/{PR-number}/requested_reviewers \
 
 **Poll for review — run the query, then `sleep 30`, then re-run. Repeat up to 20 times (10 minutes total). Count iterations explicitly:**
 ```bash
-gh pr view {PR-number} --json reviews \
-  --jq '.reviews[] | select(.author.login=="copilot-pull-request-reviewer[bot]") | {state, body, submittedAt}'
+gh api repos/{owner}/{repo}/pulls/{PR-number}/reviews \
+  --jq '.[] | select(.user.login=="copilot-pull-request-reviewer[bot]") | {state, body, submittedAt}'
 ```
 
 Wait until a review with state `COMMENTED` or `APPROVED` appears. If 20 iterations pass with no review → display message and ask user whether to wait longer or skip to Stage 10 with no comments.
