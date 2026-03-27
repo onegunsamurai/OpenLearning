@@ -64,6 +64,20 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
+describe("AssessPage session persistence", () => {
+  it("updates URL with session ID so refresh triggers resume", () => {
+    const replaceStateSpy = vi.spyOn(window.history, "replaceState");
+    render(<AssessPage />);
+
+    expect(replaceStateSpy).toHaveBeenCalledWith(
+      null,
+      "",
+      expect.stringContaining("session=test-session")
+    );
+    replaceStateSpy.mockRestore();
+  });
+});
+
 describe("AssessPage progress bar", () => {
   it("shows numeric percentage for normal assessment progress", () => {
     mockProgress = { type: "assessment", totalQuestions: 9, maxQuestions: 25 };
