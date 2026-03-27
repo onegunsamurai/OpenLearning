@@ -1,6 +1,12 @@
 ---
 name: auto-fix
-description: Automated end-to-end bug-fix pipeline — discovers a GitHub issue, fixes it, validates, opens a PR, waits for CI, and iterates on Copilot review feedback
+description: >
+  Automated end-to-end bug-fix pipeline. Trigger when the user says `/auto-fix`,
+  `/auto-fix #N`, "fix a bug end-to-end", "find and fix an open issue",
+  "auto-fix the highest priority bug", or requests an automated PR workflow
+  for a GitHub issue. Also trigger on "run the fix pipeline" or
+  "pick up a bug and open a PR". Do NOT trigger for manual code edits,
+  one-off test runs, or partial workflows (e.g., "just open a PR").
 ---
 
 # Auto-Fix Pipeline
@@ -8,6 +14,28 @@ description: Automated end-to-end bug-fix pipeline — discovers a GitHub issue,
 Full automated pipeline: GitHub issue → code fix → validation → E2E → commit (with approval) → PR → CI → Copilot review → implement fixes.
 
 **Usage:** `/auto-fix` (picks highest-priority open bug) or `/auto-fix #N` (targets specific issue)
+
+---
+
+## Common Commands (referenced by label throughout)
+
+| Label | Command |
+|-------|---------|
+| `DIFF_FILES` | `git diff main...HEAD --name-only` |
+| `DIFF_FULL` | `git diff main...HEAD` |
+| `BRANCH_NAME` | `git branch --show-current` |
+
+---
+
+## Pipeline Rules
+
+1. **No stage may be skipped.** Work through every stage in sequence.
+2. After completing each stage, output a checkpoint:
+   ```
+   ✓ Stage N complete: <one-line summary>
+   → Next: Stage N+1 — <stage name>
+   ```
+3. If a stage HALTs, follow the **Halt Cleanup** procedure at the bottom of this document.
 
 ---
 
@@ -25,9 +53,9 @@ gh issue list --label bug --state open \
   --limit 20
 ```
 
-Pick the issue with the highest priority label: **P0 > P1 > P2 > unlabeled**. If multiple issues share the same priority, pick the oldest (lowest number).
+Pick the issue with the highest priority label: **P0 > P1 > P2 > unlabeled**. If tied, pick the oldest (lowest number).
 
-Display to user: `→ Targeting issue #N: <title>`
+Display: `→ Targeting issue #N: <title>`
 
 Read all comments for extra context:
 ```bash
@@ -54,6 +82,8 @@ Example: Issue #42 "Fix null pointer in assessment loader" → `fix/issue-42-fix
 
 ## Stage 3 — Analyze & Fix
 
+**Max 3 search-and-read cycles.** If you cannot identify a clear root cause after 3 cycles of searching the codebase and reading files, **HALT**: "Unable to identify root cause after 3 investigation cycles. Here is what was examined: <summary of files read, searches performed, and hypotheses considered>. Manual investigation required."
+
 1. Cross-reference the issue description with the codebase to identify affected files:
    - Search for relevant function/class/route names mentioned in the issue
    - Check recent commits touching related areas: `git log --oneline -20 -- <path>`
@@ -75,7 +105,7 @@ Example: Issue #42 "Fix null pointer in assessment loader" → `fix/issue-42-fix
 
 ## Stage 4 — Validation Loop
 
-Repeat the following until all checks pass, **max 3 attempts**. After 3 failures → **HALT** with full diagnostic output.
+Repeat until all checks pass, **max 3 attempts**. After 3 failures → **HALT** with full diagnostic output.
 
 ### 4a. Full CI check
 ```bash
@@ -83,13 +113,9 @@ make check
 ```
 If failing: read the exact error, fix it, then retry. Do not retry without understanding and fixing the cause.
 
-### 4b. Code Review (inline — from `.claude/skills/code-review/SKILL.md`)
+### 4b. Code Review
 
-Diff the branch against main:
-```bash
-git diff main...HEAD --name-only
-git diff main...HEAD
-```
+Run `DIFF_FILES` and `DIFF_FULL`.
 
 Review for:
 - **Correctness:** logic errors, missing `await`, incorrect types, null handling
@@ -101,7 +127,7 @@ Review for:
 
 Auto-fix any findings before continuing.
 
-### 4c. API Sync (inline — from `.claude/skills/api-sync/SKILL.md`)
+### 4c. API Sync
 
 **Only run if** any of these changed: `backend/app/routes/`, `backend/app/models/`, `backend/openapi.json`, `frontend/src/lib/generated/`
 
@@ -117,7 +143,7 @@ cd frontend && npx tsc --noEmit
 
 Verify `frontend/src/lib/types.ts` re-exports all types used by components.
 
-### 4d. Doc Sync (inline — from `.claude/skills/doc-sync/SKILL.md`)
+### 4d. Doc Sync
 
 **Only run if** any of these changed: `backend/app/routes/`, `backend/app/agents/`, `backend/app/models/`, `Makefile`, `scripts/`
 
@@ -145,27 +171,24 @@ curl -s --max-time 3 http://localhost:3000 > /dev/null 2>&1
 ```
 If this fails → **HALT**: "Dev server is not running. Start it first: `make dev`"
 
-### 5b. Run E2E tests (inline — from `.claude/skills/e2e-test-feature/SKILL.md`)
+### 5b. Discover pages in scope
 
-**Gather context:**
+**Dynamic route discovery** — always run this first:
 ```bash
-git branch --show-current
-git diff main...HEAD --name-only
+find frontend/src/app -name "page.tsx" | sed 's|frontend/src/app||;s|/page.tsx||;s|^$|/|'
 ```
 
-Map changed files to pages using this table:
+Then run `DIFF_FILES` and map changed files to pages using **both** the dynamic list above and this backend→frontend mapping table:
+
 | Changed File Pattern | URL to Test |
 |---------------------|-------------|
-| `frontend/src/app/page.tsx` | `/` |
-| `frontend/src/app/login/**` | `/login` |
-| `frontend/src/app/assess/**` | `/assess` |
-| `frontend/src/app/dashboard/**` | `/dashboard` |
-| `frontend/src/app/gap-analysis/**` | `/gap-analysis` |
-| `frontend/src/app/learning-plan/**` | `/learning-plan` |
-| `frontend/src/app/demo/**` | `/demo/assess`, `/demo/report` |
-| `frontend/src/app/export/**` | `/export/[id]` |
+| `frontend/src/app/<path>/**` | `/<path>` (from dynamic discovery) |
 | `frontend/src/components/**` | All pages importing the component |
 | `backend/app/routes/**` | Frontend pages that call those routes |
+
+> **Maintenance note:** if you add new routes to the project, they will be picked up automatically by the `find` command above. The backend mapping row requires manual judgment.
+
+### 5c. Run E2E tests
 
 **Auth-required pages** (`/dashboard`, `/assess`, `/gap-analysis`, `/learning-plan`, `/export/[id]`): log in first via `http://localhost:3000/login` using `e2e-test@openlearning.test` / `TestPassword123!`. Register if first run.
 
@@ -186,11 +209,9 @@ Map changed files to pages using this table:
 
 ## Stage 6 — Review & Commit (**PAUSE FOR APPROVAL**)
 
-### 6a. Final review (inline — from `.claude/commands/review.md`)
+### 6a. Final review
 
-```bash
-git diff main...HEAD
-```
+Run `DIFF_FULL`.
 
 Review for: code style, API design, security, testing, DRY violations. Output structured findings:
 ```
@@ -202,10 +223,8 @@ Fix: <suggested change>
 Auto-fix any Critical or High findings before staging.
 
 ### 6b. Stage changes
-```bash
-git diff main...HEAD --name-only
-```
-Stage specific files only — never `git add -A`:
+
+Run `DIFF_FILES`. Stage specific files only — never `git add -A`:
 ```bash
 git add backend/... frontend/... # list each file explicitly
 ```
@@ -236,7 +255,7 @@ Approve this commit message, or provide an alternative.
 
 Wait for user approval. After approval, commit:
 ```bash
-git commit -m "fix: <approved message>"
+git commit -m "fix: "
 ```
 
 ---
@@ -244,23 +263,20 @@ git commit -m "fix: <approved message>"
 ## Stage 7 — Push & Open PR
 
 ```bash
-git push -u origin fix/issue-NNN-<slug>
+git push -u origin fix/issue-NNN-
 ```
 
 Read `.github/PULL_REQUEST_TEMPLATE.md` and fill it in. Then:
 ```bash
 gh pr create \
-  --title "fix: <issue title>" \
-  --body "$(cat <<'EOF'
-## Summary
-- Fixes #N
-- <bullet: what was broken>
-- <bullet: how it was fixed>
+  --title "fix: " \
+  --body "$(cat <
+-
 
 ## Test plan
 - [ ] `make check` passes (lint + typecheck + test + build)
-- [ ] E2E: <pages tested> pass
-- [ ] Regression test added in <test file>
+- [ ] E2E:  pass
+- [ ] Regression test added in
 
 ## Related
 Closes #N
@@ -277,7 +293,7 @@ Save the PR number from the output. Display PR URL to user.
 ## Stage 8 — Wait for CI
 
 ```bash
-gh pr checks <PR-number> --watch
+gh pr checks  --watch
 ```
 
 This blocks until all checks complete. When done:
@@ -295,10 +311,10 @@ This blocks until all checks complete. When done:
    gh run view <run-id> --log-failed
    ```
 3. Diagnose root cause from logs. Fix the code.
-4. Stage and commit:
+4. Commit with a message that describes the actual failure cause (e.g., `fix: add missing await in assessment route (CI typecheck failure)`). Never use generic messages like "fix CI".
    ```bash
    git add <specific files>
-   git commit -m "fix: resolve CI failure in <backend|frontend> checks"
+   git commit -m "fix: <describe actual failure cause>"
    git push
    ```
 5. Return to `gh pr checks --watch`.
@@ -323,21 +339,21 @@ gh api repos/{owner}/{repo}/pulls/{PR-number}/requested_reviewers \
 
 **If this returns a 422 error:** HALT with message: "Copilot code review is not enabled on this repo. Go to: Settings → Copilot → Code review → Enable for this repo."
 
-**Poll for review** (every 30 seconds, max 10 minutes):
+**Poll for review — run the query, then `sleep 30`, then re-run. Repeat up to 20 times (10 minutes total). Count iterations explicitly:**
 ```bash
 gh pr view {PR-number} --json reviews \
-  --jq '.reviews[] | select(.author.login=="copilot") | {state, body, submittedAt}'
+  --jq '.reviews[] | select(.author.login=="copilot-pull-request-reviewer[bot]") | {state, body, submittedAt}'
 ```
 
-Wait until a review with state `CHANGES_REQUESTED` or `APPROVED` appears. If 10 minutes pass with no review → display message and ask user whether to wait longer or skip to Stage 10 with no comments.
+Wait until a review with state `COMMENTED` or `APPROVED` appears. If 20 iterations pass with no review → display message and ask user whether to wait longer or skip to Stage 10 with no comments.
 
 ---
 
 ## Stage 10 — Implement Copilot Fixes
 
-**If state is `APPROVED`:** Pipeline complete. Go to final output.
+**If state is `APPROVED` and no actionable comments:** Pipeline complete. Go to final output.
 
-**If state is `CHANGES_REQUESTED`:**
+**If state is `COMMENTED`:**
 
 Read the review body:
 ```bash
@@ -359,12 +375,14 @@ For each comment:
 
 Stage and commit:
 ```bash
-git add <specific changed files>
-git commit -m "fix: address Copilot review feedback"
+git add
+git commit -m "fix: address Copilot review feedback — "
 git push
 ```
 
-Return to **Stage 8** (CI wait). Repeat until Copilot approves or submits a review with no `CHANGES_REQUESTED` state.
+Return to **Stage 8** (CI wait).
+
+**After CI passes, re-request Copilot review (repeat Stage 9).** If the second review is `APPROVED` or `COMMENTED` with no new actionable items, proceed to final output. **Max 2 review cycles** — after 2 rounds, proceed to final output regardless and note any unresolved comments.
 
 ---
 
@@ -378,7 +396,7 @@ Issue:   #N — <title>
 Branch:  fix/issue-NNN-<slug>
 PR:      <URL>
 CI:      All checks green
-Review:  Copilot approved
+Review:  Copilot approved / Copilot comments addressed (N rounds)
 
 Stages completed:
   ✓ Bug discovered and analyzed
@@ -400,9 +418,9 @@ Stages completed:
 
 | Condition | Message |
 |-----------|---------|
-| Dirty working tree | "Working tree is dirty. Commit or stash changes first." |
-| Dev server unreachable | "Dev server not running. Start with: `make dev`" |
-| `make check` fails 3× | "make check still failing after 3 attempts. Diagnostic: <output>" |
-| CI fails 2× | "CI still failing after 2 fix attempts. Manual investigation required." |
-| Copilot API 422 | "Enable Copilot code review in repo Settings → Copilot → Code review." |
-| Copilot no response 10min | "Copilot hasn't reviewed after 10 minutes. Continue waiting or skip?" |
+| Dirty working tree | "Working tree is dirty. Commit or stash your changes before running `/auto-fix`." |
+| Unable to identify root cause after 3 investigation cycles | "Unable to identify root cause after 3 investigation cycles. Here is what was examined: <summary of files read, searches performed, and hypotheses considered>. Manual investigation required." |
+| Dev server not running for E2E | "Dev server is not running. Start it first: `make dev`" |
+| E2E still failing after 3 iterations | "E2E tests are still failing after 3 fix attempts. Here are the remaining failures: <summary of failing pages and errors>. Manual investigation required." |
+| No Copilot review after 20 iterations (10 minutes) | "No Copilot review received after 10 minutes. Do you want to keep waiting or skip to final output without Copilot feedback?" |
+| CI still failing after 2 fix attempts | "CI is still failing after 2 fix attempts. Manual investigation required. Here are the full failing logs: <logs>" |
