@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import type { UserAssessmentSummary } from "@/lib/types";
 
@@ -160,6 +161,56 @@ describe("AssessmentCard", () => {
       render(<AssessmentCard session={session} index={0} />);
 
       expect(screen.getByText(/1 skill(?!s)/)).toBeInTheDocument();
+    });
+  });
+
+  describe("role name", () => {
+    it("renders role name when present", () => {
+      const session = makeSession({ roleName: "Frontend Engineer" });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.getByText("Frontend Engineer")).toBeInTheDocument();
+    });
+
+    it("does not render role name when null", () => {
+      const session = makeSession({ roleName: undefined });
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      // Should not have any extra heading-like text
+      expect(screen.queryByText("Frontend Engineer")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("delete button", () => {
+    it("renders delete button when onDelete is provided", () => {
+      const onDelete = vi.fn().mockResolvedValue(undefined);
+      const session = makeSession();
+
+      render(<AssessmentCard session={session} index={0} onDelete={onDelete} />);
+
+      expect(screen.getByRole("button", { name: /delete assessment/i })).toBeInTheDocument();
+    });
+
+    it("does not render delete button when onDelete is not provided", () => {
+      const session = makeSession();
+
+      render(<AssessmentCard session={session} index={0} />);
+
+      expect(screen.queryByRole("button", { name: /delete assessment/i })).not.toBeInTheDocument();
+    });
+
+    it("calls onDelete with session ID when clicked", async () => {
+      const user = userEvent.setup();
+      const onDelete = vi.fn().mockResolvedValue(undefined);
+      const session = makeSession({ sessionId: "sess-del-test" });
+
+      render(<AssessmentCard session={session} index={0} onDelete={onDelete} />);
+
+      await user.click(screen.getByRole("button", { name: /delete assessment/i }));
+
+      expect(onDelete).toHaveBeenCalledWith("sess-del-test");
     });
   });
 });

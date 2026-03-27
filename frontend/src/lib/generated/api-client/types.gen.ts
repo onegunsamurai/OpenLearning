@@ -765,6 +765,14 @@ export type UserAssessmentSummary = {
      */
     targetLevel: string;
     /**
+     * Roleid
+     */
+    roleId?: string | null;
+    /**
+     * Rolename
+     */
+    roleName?: string | null;
+    /**
      * Createdat
      */
     createdAt: string;
@@ -1478,3 +1486,33 @@ export type ListUserAssessmentsApiUserAssessmentsGetResponses = {
 };
 
 export type ListUserAssessmentsApiUserAssessmentsGetResponse = ListUserAssessmentsApiUserAssessmentsGetResponses[keyof ListUserAssessmentsApiUserAssessmentsGetResponses];
+
+export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/user/assessments/{session_id}';
+};
+
+export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteError = DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteErrors[keyof DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteErrors];
+
+export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteResponse = DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteResponses[keyof DeleteUserAssessmentApiUserAssessmentsSessionIdDeleteResponses];

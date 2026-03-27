@@ -197,6 +197,7 @@ async def assessment_start(
             thread_id=thread_id,
             skill_ids=request.skill_ids,
             target_level=request.target_level,
+            role_id=request.role_id,
             status="active",
             user_id=user.user_id,
         )

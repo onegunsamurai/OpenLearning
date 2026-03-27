@@ -45,6 +45,8 @@ class UserAssessmentSummary(CamelModel):
     status: str                          # "active", "completed", or "timed_out"
     skill_ids: list[str]
     target_level: str
+    role_id: str | None = None           # knowledge base domain ID
+    role_name: str | None = None         # resolved display name from KB
     created_at: datetime
     completed_at: datetime | None = None
     overall_readiness: int | None = None # 0-100, only set if completed

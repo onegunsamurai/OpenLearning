@@ -59,6 +59,7 @@ class AssessmentSession(Base):
     thread_id: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
     skill_ids: Mapped[list] = mapped_column(JSONB, nullable=False)
     target_level: Mapped[str] = mapped_column(String(20), nullable=False, default="mid")
+    role_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
     user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
