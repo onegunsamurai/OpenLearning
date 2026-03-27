@@ -329,6 +329,15 @@ async def assessment_respond(
                 return
             except Exception as exc:
                 logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
+                try:
+                    err_session = await db.get(AssessmentSession, session_id)
+                    if err_session and err_session.status == "active":
+                        err_session.status = "error"
+                        await db.commit()
+                except Exception:
+                    logger.exception(
+                        "Failed to mark session as error", extra={"session_id": session_id}
+                    )
                 result = classify_anthropic_error(exc)
                 if result:
                     status, detail, headers = result
@@ -441,7 +450,7 @@ async def assessment_report(
                 enriched_gap_analysis=enriched.model_dump() if enriched else None,
             )
         )
-        if session_row:
+        if session_row and session_row.status == "active":
             session_row.status = "completed"
         await db.commit()
 

@@ -24,6 +24,10 @@ const statusConfig: Record<
     label: "Timed Out",
     color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   },
+  error: {
+    label: "Error",
+    color: "bg-red-500/20 text-red-400 border-red-500/30",
+  },
 };
 
 interface AssessmentCardProps {
@@ -109,7 +113,7 @@ export function AssessmentCard({ session, index }: AssessmentCardProps) {
             </Link>
           </Button>
         )}
-        {session.status === "timed_out" && (
+        {(session.status === "timed_out" || session.status === "error") && (
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <Link href="/">
               Start New
