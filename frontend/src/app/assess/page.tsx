@@ -168,7 +168,7 @@ function AssessPageContent() {
   if (!resumeSessionId && selectedSkillIds.length === 0) return null;
 
   return (
-    <PageShell currentStep={1} noPadding autoPromptApiKey>
+    <PageShell currentStep={1} noPadding autoPromptApiKey sessionId={sessionId || resumeSessionId}>
       <div className="flex h-[calc(100dvh - var(--header-h))] flex-col">
         {/* Header */}
         <div className="border-b border-border px-4 py-3 sm:px-6">

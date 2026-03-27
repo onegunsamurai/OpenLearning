@@ -24,6 +24,7 @@ interface PageShellProps {
   noPadding?: boolean;
   isDemo?: boolean;
   steps?: StepDefinition[];
+  sessionId?: string | null;
   autoPromptApiKey?: boolean;
   onApiKeySet?: () => void;
 }
@@ -35,6 +36,7 @@ export function PageShell({
   noPadding = false,
   isDemo = false,
   steps,
+  sessionId,
   autoPromptApiKey = false,
   onApiKeySet,
 }: PageShellProps) {
@@ -83,7 +85,7 @@ export function PageShell({
               </Link>
             )}
             {currentStep !== undefined && (
-              <StepProgress currentStep={currentStep} steps={steps} />
+              <StepProgress currentStep={currentStep} steps={steps} sessionId={sessionId} />
             )}
             {!isDemo && (
               <div className="flex items-center gap-2">
