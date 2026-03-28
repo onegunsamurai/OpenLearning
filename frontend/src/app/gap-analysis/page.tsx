@@ -51,7 +51,7 @@ function GapAnalysisPageContent() {
   // Redirect to assessment page if the session is not yet complete
   useEffect(() => {
     if (error instanceof ApiError && error.status === 400 && sessionId) {
-      router.push(`/assess?session=${sessionId}`);
+      router.replace(`/assess?session=${sessionId}`);
     }
   }, [error, sessionId, router]);
 

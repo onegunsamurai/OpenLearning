@@ -435,9 +435,10 @@ async def assessment_report(
     learning_plan = state.get("learning_plan")
     enriched = state.get("enriched_gap_analysis")
 
-    # Guard: if the assessment pipeline hasn't completed, don't return empty data.
-    # assessment_complete is set to True by the gap analyzer node at the end of the pipeline.
-    if not state.get("assessment_complete", False):
+    # Guard: the pipeline runs analyze_gaps → enrich_gaps → generate_plan → END.
+    # Both flags must be true: assessment_complete (set in analyze_gaps) AND
+    # enriched gap analysis must have been produced (set in enrich_gaps).
+    if not state.get("assessment_complete", False) or enriched is None or not enriched.summary:
         raise HTTPException(
             status_code=400,
             detail="Assessment not yet complete. Please finish the assessment first.",

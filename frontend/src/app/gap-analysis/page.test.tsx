@@ -13,7 +13,7 @@ const {
   mockStoreState,
 } = vi.hoisted(() => {
   return {
-    mockRouter: { push: vi.fn() },
+    mockRouter: { push: vi.fn(), replace: vi.fn() },
     mockSetCurrentStep: vi.fn(),
     mockSessionReport: {
       report: null as AssessmentReportResponse | null,
@@ -113,6 +113,7 @@ import GapAnalysisPage from "./page";
 
 beforeEach(() => {
   mockRouter.push.mockClear();
+  mockRouter.replace.mockClear();
   mockSetCurrentStep.mockClear();
   mockSessionReport.report = null;
   mockSessionReport.loading = false;
@@ -194,7 +195,7 @@ describe("GapAnalysisPage", () => {
     render(<GapAnalysisPage />);
 
     await waitFor(() => {
-      expect(mockRouter.push).toHaveBeenCalledWith("/assess?session=sess-123");
+      expect(mockRouter.replace).toHaveBeenCalledWith("/assess?session=sess-123");
     });
   });
 });
