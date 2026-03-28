@@ -11,6 +11,7 @@ import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionReport } from "@/hooks/useSessionReport";
+import { ApiError } from "@/lib/api";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { ArrowRight, Loader2, Eye } from "lucide-react";
 
@@ -46,6 +47,13 @@ function GapAnalysisPageContent() {
       router.push("/dashboard");
     }
   }, [sessionId, authLoading, user, router]);
+
+  // Redirect to assessment page if the session is not yet complete
+  useEffect(() => {
+    if (error instanceof ApiError && error.status === 400 && sessionId) {
+      router.replace(`/assess?session=${sessionId}`);
+    }
+  }, [error, sessionId, router]);
 
   const handleContinue = () => {
     setCurrentStep(3);
