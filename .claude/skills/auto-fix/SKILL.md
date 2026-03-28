@@ -382,7 +382,7 @@ git push
 
 Return to **Stage 8** (CI wait).
 
-**After CI passes, re-request Copilot review (repeat Stage 9).** If the second review is `APPROVED` or `COMMENTED` with no new actionable items, proceed to final output. **Max 2 review cycles** — after 2 rounds, proceed to final output regardless and note any unresolved comments.
+**After CI passes, re-request Copilot review (repeat Stage 9).** If the second review is `APPROVED` or `COMMENTED` with no new actionable items, proceed to final output. **Max 2 review cycles** — after 2 rounds, reply to each comment and proceed to final output. Note any unresolved comments.
 
 ---
 
