@@ -643,16 +643,19 @@ class TestAssessmentReport:
         """Fetching the report for a session where assessment hasn't completed must return 400.
 
         Regression test for #107: gap analysis page accessible for incomplete assessments.
+        Uses the real initial-state shape (enriched_gap_analysis with empty summary)
+        to match what make_initial_state() produces.
         """
         async with _TestSessionFactory() as db:
             await seed_session(db)
 
-        # Simulate an in-progress graph where enriched_gap_analysis hasn't been computed yet
+        # Simulate an in-progress graph matching the real initial state: enriched_gap_analysis
+        # exists but has default empty values (overall_readiness=0, summary="", gaps=[]).
         graph_state = MagicMock()
         graph_state.values = {
             "knowledge_graph": _make_kg(),
             "gap_nodes": [],
-            "enriched_gap_analysis": None,
+            "enriched_gap_analysis": EnrichedGapAnalysis(overall_readiness=0, summary="", gaps=[]),
         }
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
@@ -664,6 +667,31 @@ class TestAssessmentReport:
 
             assert response.status_code == 400
             assert "not yet complete" in response.json()["detail"].lower()
+        finally:
+            _mock_graph.reset_mock()
+
+    @pytest.mark.asyncio
+    async def test_report_returns_400_when_gap_analysis_passed_but_enrichment_not(self, setup_db):
+        """Even with assessment_complete=True, return 400 if enrichment hasn't run yet."""
+        async with _TestSessionFactory() as db:
+            await seed_session(db)
+
+        graph_state = MagicMock()
+        graph_state.values = {
+            "knowledge_graph": _make_kg(),
+            "gap_nodes": [],
+            "enriched_gap_analysis": EnrichedGapAnalysis(overall_readiness=0, summary="", gaps=[]),
+            "assessment_complete": True,
+        }
+        _mock_graph.aget_state = AsyncMock(return_value=graph_state)
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                response = await client.get("/api/assessment/sess-001/report")
+
+            assert response.status_code == 400
         finally:
             _mock_graph.reset_mock()
 
