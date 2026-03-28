@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
+import { ApiError } from "@/lib/api";
 import type { AssessmentReportResponse } from "@/lib/api";
 
 // All mocks used inside vi.mock factories must live in vi.hoisted
@@ -183,5 +184,17 @@ describe("GapAnalysisPage", () => {
     render(<GapAnalysisPage />);
 
     expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+  });
+
+  it("redirects to /assess when report returns 400 (incomplete assessment)", async () => {
+    mockSessionReport.error = new ApiError(
+      "Assessment not yet complete. Please finish the assessment first.",
+      400,
+    );
+    render(<GapAnalysisPage />);
+
+    await waitFor(() => {
+      expect(mockRouter.push).toHaveBeenCalledWith("/assess?session=sess-123");
+    });
   });
 });

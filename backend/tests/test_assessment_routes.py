@@ -539,6 +539,7 @@ class TestAssessmentReport:
             "gap_nodes": gap_nodes,
             "enriched_gap_analysis": enriched,
             "learning_plan": lp,
+            "assessment_complete": True,
         }
 
     @pytest.mark.asyncio
@@ -638,6 +639,35 @@ class TestAssessmentReport:
             _mock_graph.reset_mock()
 
     @pytest.mark.asyncio
+    async def test_report_returns_400_for_incomplete_session(self, setup_db):
+        """Fetching the report for a session where assessment hasn't completed must return 400.
+
+        Regression test for #107: gap analysis page accessible for incomplete assessments.
+        """
+        async with _TestSessionFactory() as db:
+            await seed_session(db)
+
+        # Simulate an in-progress graph where enriched_gap_analysis hasn't been computed yet
+        graph_state = MagicMock()
+        graph_state.values = {
+            "knowledge_graph": _make_kg(),
+            "gap_nodes": [],
+            "enriched_gap_analysis": None,
+        }
+        _mock_graph.aget_state = AsyncMock(return_value=graph_state)
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                response = await client.get("/api/assessment/sess-001/report")
+
+            assert response.status_code == 400
+            assert "not yet complete" in response.json()["detail"].lower()
+        finally:
+            _mock_graph.reset_mock()
+
+    @pytest.mark.asyncio
     async def test_report_idempotent(self, setup_db):
         async with _TestSessionFactory() as db:
             await seed_session(db)
@@ -671,7 +701,13 @@ class TestAssessmentReport:
         graph_state.values = {
             "knowledge_graph": _make_kg(),
             "gap_nodes": [],
+            "enriched_gap_analysis": EnrichedGapAnalysis(
+                overall_readiness=100,
+                summary="No significant gaps identified.",
+                gaps=[],
+            ),
             "learning_plan": None,
+            "assessment_complete": True,
         }
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
@@ -681,6 +717,7 @@ class TestAssessmentReport:
             ) as client:
                 response = await client.get("/api/assessment/sess-001/report")
 
+            assert response.status_code == 200
             data = response.json()
             assert data["learningPlan"]["phases"] == []
             assert data["learningPlan"]["summary"] == ""

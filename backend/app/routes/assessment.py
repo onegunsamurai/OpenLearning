@@ -434,6 +434,15 @@ async def assessment_report(
     gap_nodes = state.get("gap_nodes", [])
     learning_plan = state.get("learning_plan")
     enriched = state.get("enriched_gap_analysis")
+
+    # Guard: if the assessment pipeline hasn't completed, don't return empty data.
+    # assessment_complete is set to True by the gap analyzer node at the end of the pipeline.
+    if not state.get("assessment_complete", False):
+        raise HTTPException(
+            status_code=400,
+            detail="Assessment not yet complete. Please finish the assessment first.",
+        )
+
     proficiency_scores = _build_proficiency_scores(state)
 
     # Store result in DB and mark session completed — only for active sessions.
