@@ -432,6 +432,8 @@ async def assessment_report(
     result_row = result_row_res.scalar_one_or_none()
 
     if result_row:
+        if not session_row:
+            raise HTTPException(status_code=404, detail="Session not found")
         return _build_report_from_db(result_row, session_row)
 
     # Fall back to live graph state for active sessions
@@ -700,17 +702,23 @@ def _reconstruct_kg(kg_data: dict | None) -> KnowledgeGraph:
     """Reconstruct a KnowledgeGraph from stored JSONB."""
     if not kg_data or "nodes" not in kg_data:
         return KnowledgeGraph()
-    return KnowledgeGraph(
-        nodes=[
+    nodes: list[KnowledgeNode] = []
+    for n in kg_data["nodes"]:
+        try:
+            bloom_level = BloomLevel(n.get("bloom_level", "remember"))
+        except ValueError:
+            bloom_level = BloomLevel.remember
+        nodes.append(
             KnowledgeNode(
                 concept=n.get("concept", ""),
                 confidence=n.get("confidence", 0),
-                bloom_level=BloomLevel(n.get("bloom_level", "remember")),
+                bloom_level=bloom_level,
                 prerequisites=n.get("prerequisites", []),
                 evidence=n.get("evidence", []),
             )
-            for n in kg_data["nodes"]
-        ],
+        )
+    return KnowledgeGraph(
+        nodes=nodes,
         edges=[(src, dst) for src, dst in kg_data.get("edges", [])],
     )
 
@@ -762,20 +770,39 @@ def _recompute_enriched_gap_analysis(
         target_conf = target_node.confidence if target_node else 0.0
         current_conf = gap_node.confidence
 
+        # Always recompute numeric fields from current/target confidence so they
+        # stay consistent with the freshly reconstructed knowledge graphs.
+        current_level = int(current_conf * 100)
+        target_level_pct = int(target_conf * 100)
+        gap_value = max(target_level_pct - current_level, 0)
+        priority_value = _compute_priority(current_conf, target_conf)
+
         existing = existing_items.get(gap_node.concept)
         if existing:
-            enriched_gaps.append(EnrichedGapItemOut(**existing))
+            # Preserve LLM-generated parts (skill_name, recommendation),
+            # recompute numeric fields to avoid stale values.
+            enriched_gaps.append(
+                EnrichedGapItemOut(
+                    skill_id=gap_node.concept,
+                    skill_name=existing.get("skill_name")
+                    or gap_node.concept.replace("_", " ").title(),
+                    current_level=current_level,
+                    target_level=target_level_pct,
+                    gap=gap_value,
+                    priority=priority_value,
+                    recommendation=existing.get("recommendation")
+                    or "Continue developing this skill area to close the gap.",
+                )
+            )
         else:
-            current_level = int(current_conf * 100)
-            target_level_pct = int(target_conf * 100)
             enriched_gaps.append(
                 EnrichedGapItemOut(
                     skill_id=gap_node.concept,
                     skill_name=gap_node.concept.replace("_", " ").title(),
                     current_level=current_level,
                     target_level=target_level_pct,
-                    gap=max(target_level_pct - current_level, 0),
-                    priority=_compute_priority(current_conf, target_conf),
+                    gap=gap_value,
+                    priority=priority_value,
                     recommendation="Continue developing this skill area to close the gap.",
                 )
             )
