@@ -212,6 +212,150 @@ class TestGapPrioritizer:
         scores = [g.priority_score for g in gaps]
         assert scores == sorted(scores, reverse=True)
 
+    @pytest.mark.asyncio
+    @patch("app.agents.content_nodes.get_db")
+    async def test_uses_assessed_bloom_from_knowledge_graph(
+        self, mock_get_db: AsyncMock, setup_db
+    ) -> None:
+        """Gap nodes store TARGET bloom; prioritizer must read CURRENT bloom from knowledge_graph."""
+        from tests.conftest import _override_get_db
+
+        mock_get_db.side_effect = _override_get_db
+
+        # gap_nodes has bloom_level="understand" (the TARGET, as gap_analyzer stores it)
+        # knowledge_graph has the concept assessed at bloom_level="remember" (CURRENT)
+        # taxonomy target for http_fundamentals is "understand" (2)
+        # So bloom distance should be 2 - 1 = 1, and the gap should be included.
+        assessment_data = {
+            "session_id": "sess-test",
+            "knowledge_graph": {
+                "nodes": [
+                    {
+                        "concept": "http_fundamentals",
+                        "confidence": 0.3,
+                        "bloom_level": "remember",
+                        "prerequisites": [],
+                        "evidence": [],
+                    },
+                ],
+                "edges": [],
+            },
+            "gap_nodes": [
+                {
+                    "concept": "http_fundamentals",
+                    "confidence": 0.3,
+                    "bloom_level": "understand",  # TARGET bloom, not current
+                    "prerequisites": [],
+                    "evidence": ["Partial understanding"],
+                },
+            ],
+            "learning_plan": None,
+            "proficiency_scores": [],
+        }
+
+        state: LearningMaterialState = {
+            "session_id": "sess-test",
+            "domain": "backend_engineering",
+            "assessment_result_data": assessment_data,
+        }
+        result = await gap_prioritizer(state)
+        gaps = result["prioritized_gaps"]
+
+        assert len(gaps) == 1
+        assert gaps[0].concept_id == "http_fundamentals"
+        assert gaps[0].current_bloom == 1  # remember
+        assert gaps[0].target_bloom == 2  # understand
+        assert gaps[0].bloom_distance == 1
+
+    @pytest.mark.asyncio
+    @patch("app.agents.content_nodes.get_db")
+    async def test_skips_when_assessed_bloom_meets_target(
+        self, mock_get_db: AsyncMock, setup_db
+    ) -> None:
+        """When the candidate's assessed bloom meets the taxonomy target, skip the gap."""
+        from tests.conftest import _override_get_db
+
+        mock_get_db.side_effect = _override_get_db
+
+        # knowledge_graph shows candidate already at "understand" for http_fundamentals
+        # taxonomy target for http_fundamentals is also "understand" (2)
+        # So target_bloom <= current_bloom → correctly skip
+        assessment_data = {
+            "session_id": "sess-test",
+            "knowledge_graph": {
+                "nodes": [
+                    {
+                        "concept": "http_fundamentals",
+                        "confidence": 0.3,
+                        "bloom_level": "understand",
+                        "prerequisites": [],
+                        "evidence": [],
+                    },
+                ],
+                "edges": [],
+            },
+            "gap_nodes": [
+                {
+                    "concept": "http_fundamentals",
+                    "confidence": 0.3,
+                    "bloom_level": "understand",
+                    "prerequisites": [],
+                    "evidence": [],
+                },
+            ],
+            "learning_plan": None,
+            "proficiency_scores": [],
+        }
+
+        state: LearningMaterialState = {
+            "session_id": "sess-test",
+            "domain": "backend_engineering",
+            "assessment_result_data": assessment_data,
+        }
+        result = await gap_prioritizer(state)
+        gaps = result["prioritized_gaps"]
+
+        assert len(gaps) == 0
+
+    @pytest.mark.asyncio
+    @patch("app.agents.content_nodes.get_db")
+    async def test_defaults_to_remember_for_unassessed_concepts(
+        self, mock_get_db: AsyncMock, setup_db
+    ) -> None:
+        """Un-assessed concepts (not in knowledge_graph) default to 'remember' bloom level."""
+        from tests.conftest import _override_get_db
+
+        mock_get_db.side_effect = _override_get_db
+
+        # knowledge_graph has NO entry for http_fundamentals
+        # Should default current bloom to "remember" (1); taxonomy target is "understand" (2)
+        assessment_data = {
+            "session_id": "sess-test",
+            "knowledge_graph": {"nodes": [], "edges": []},
+            "gap_nodes": [
+                {
+                    "concept": "http_fundamentals",
+                    "confidence": 0.0,
+                    "bloom_level": "understand",  # TARGET bloom
+                    "prerequisites": [],
+                    "evidence": [],
+                },
+            ],
+            "learning_plan": None,
+            "proficiency_scores": [],
+        }
+
+        state: LearningMaterialState = {
+            "session_id": "sess-test",
+            "domain": "backend_engineering",
+            "assessment_result_data": assessment_data,
+        }
+        result = await gap_prioritizer(state)
+        gaps = result["prioritized_gaps"]
+
+        assert len(gaps) == 1
+        assert gaps[0].current_bloom == 1  # defaulted to remember
+
 
 # ---------------------------------------------------------------------------
 # Objective Generator Tests
