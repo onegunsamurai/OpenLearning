@@ -177,12 +177,14 @@ async def seed_session(
     status: str = "active",
     user_id: str = "test-user-id",
     role_id: str | None = None,
+    skill_ids: list[str] | None = None,
+    target_level: str = "mid",
 ) -> str:
     session = AssessmentSession(
         session_id=session_id,
         thread_id=thread_id,
-        skill_ids=["react"],
-        target_level="mid",
+        skill_ids=skill_ids if skill_ids is not None else ["react"],
+        target_level=target_level,
         role_id=role_id,
         status=status,
         user_id=user_id,
@@ -199,6 +201,7 @@ async def seed_result(
     gap_nodes: list | None = None,
     learning_plan: dict | None = None,
     proficiency_scores: list | None = None,
+    enriched_gap_analysis: dict | None = None,
 ) -> None:
     result = AssessmentResult(
         session_id=session_id,
@@ -208,6 +211,7 @@ async def seed_result(
         proficiency_scores=(
             proficiency_scores if proficiency_scores is not None else FULL_PROFICIENCY_SCORES
         ),
+        enriched_gap_analysis=enriched_gap_analysis,
     )
     db.add(result)
     await db.commit()

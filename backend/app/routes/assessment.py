@@ -13,10 +13,19 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import PlainTextResponse, StreamingResponse
 
+from app.agents.gap_analyzer import analyze_gaps
+from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
 from app.db import AssessmentResult, AssessmentSession, get_db
 from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.graph.router import MAX_TOPICS
-from app.graph.state import THOROUGHNESS_CAPS, Thoroughness, make_initial_state
+from app.graph.state import (
+    THOROUGHNESS_CAPS,
+    BloomLevel,
+    KnowledgeGraph,
+    KnowledgeNode,
+    Thoroughness,
+    make_initial_state,
+)
 from app.knowledge_base.loader import (
     get_all_topics,
     get_target_graph,
@@ -423,7 +432,9 @@ async def assessment_report(
     result_row = result_row_res.scalar_one_or_none()
 
     if result_row:
-        return _build_report_from_db(result_row)
+        if not session_row:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return _build_report_from_db(result_row, session_row)
 
     # Fall back to live graph state for active sessions
     graph = req.app.state.graph
@@ -687,7 +698,137 @@ def _build_learning_plan_out(learning_plan) -> LearningPlanOut:
     )
 
 
-def _build_report_from_db(result_row: AssessmentResult) -> AssessmentReportResponse:
+def _reconstruct_kg(kg_data: dict | None) -> KnowledgeGraph:
+    """Reconstruct a KnowledgeGraph from stored JSONB."""
+    if not kg_data or "nodes" not in kg_data:
+        return KnowledgeGraph()
+    nodes: list[KnowledgeNode] = []
+    for n in kg_data["nodes"]:
+        try:
+            bloom_level = BloomLevel(n.get("bloom_level", "remember"))
+        except ValueError:
+            bloom_level = BloomLevel.remember
+        nodes.append(
+            KnowledgeNode(
+                concept=n.get("concept", ""),
+                confidence=n.get("confidence", 0),
+                bloom_level=bloom_level,
+                prerequisites=n.get("prerequisites", []),
+                evidence=n.get("evidence", []),
+            )
+        )
+    return KnowledgeGraph(
+        nodes=nodes,
+        edges=[(src, dst) for src, dst in kg_data.get("edges", [])],
+    )
+
+
+def _recompute_enriched_gap_analysis(
+    session_row: AssessmentSession,
+    result_row: AssessmentResult,
+) -> EnrichedGapAnalysisOut:
+    """Recompute gap analysis from stored knowledge graph and knowledge base.
+
+    Re-runs the pure-Python gap detection against the current algorithm, then
+    merges with existing LLM-generated enrichment data (recommendations and
+    summary) so no LLM call is needed.
+    """
+    current_kg = _reconstruct_kg(result_row.knowledge_graph)
+    stored_enriched = result_row.enriched_gap_analysis
+
+    # Reconstruct target graph from session metadata
+    role_id = session_row.role_id
+    target_level = session_row.target_level
+    skill_ids = session_row.skill_ids or []
+
+    try:
+        if role_id:
+            domain = role_id
+            target_kg = get_target_graph_for_concepts(domain, target_level, skill_ids)
+        else:
+            domain = map_skills_to_domain(skill_ids)
+            target_kg = get_target_graph(domain, target_level)
+    except (FileNotFoundError, ValueError):
+        # Knowledge base no longer exists or level invalid — fall back to stored data
+        return _build_enriched_gap_out(stored_enriched)
+
+    # Re-run gap detection with the current algorithm (no tolerance threshold)
+    state = {"knowledge_graph": current_kg, "target_graph": target_kg}
+    gap_result = analyze_gaps(state)
+    fresh_gap_nodes: list[KnowledgeNode] = gap_result["gap_nodes"]
+
+    # Build lookup of existing enrichment items by skill_id
+    existing_items: dict[str, dict] = {}
+    if stored_enriched and "gaps" in stored_enriched:
+        for item in stored_enriched["gaps"]:
+            existing_items[item.get("skill_id", "")] = item
+
+    # Merge: keep existing LLM recommendations, add new gaps with computed priority
+    enriched_gaps: list[EnrichedGapItemOut] = []
+    for gap_node in fresh_gap_nodes:
+        target_node = target_kg.get_node(gap_node.concept)
+        target_conf = target_node.confidence if target_node else 0.0
+        current_conf = gap_node.confidence
+
+        # Always recompute numeric fields from current/target confidence so they
+        # stay consistent with the freshly reconstructed knowledge graphs.
+        current_level = int(current_conf * 100)
+        target_level_pct = int(target_conf * 100)
+        gap_value = max(target_level_pct - current_level, 0)
+        priority_value = _compute_priority(current_conf, target_conf)
+
+        existing = existing_items.get(gap_node.concept)
+        if existing:
+            # Preserve LLM-generated parts (skill_name, recommendation),
+            # recompute numeric fields to avoid stale values.
+            enriched_gaps.append(
+                EnrichedGapItemOut(
+                    skill_id=gap_node.concept,
+                    skill_name=existing.get("skill_name")
+                    or gap_node.concept.replace("_", " ").title(),
+                    current_level=current_level,
+                    target_level=target_level_pct,
+                    gap=gap_value,
+                    priority=priority_value,
+                    recommendation=existing.get("recommendation")
+                    or "Continue developing this skill area to close the gap.",
+                )
+            )
+        else:
+            enriched_gaps.append(
+                EnrichedGapItemOut(
+                    skill_id=gap_node.concept,
+                    skill_name=gap_node.concept.replace("_", " ").title(),
+                    current_level=current_level,
+                    target_level=target_level_pct,
+                    gap=gap_value,
+                    priority=priority_value,
+                    recommendation="Continue developing this skill area to close the gap.",
+                )
+            )
+
+    # Sort by priority (critical first), then by gap size descending
+    priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    enriched_gaps.sort(key=lambda g: (priority_order.get(g.priority, 4), -g.gap))
+
+    # Recompute overall readiness from fresh data
+    overall_readiness = _compute_overall_readiness(
+        current_kg.nodes, target_kg.nodes, current_kg, target_kg
+    )
+
+    summary = stored_enriched.get("summary", "") if stored_enriched else ""
+
+    return EnrichedGapAnalysisOut(
+        overall_readiness=overall_readiness,
+        summary=summary,
+        gaps=enriched_gaps,
+    )
+
+
+def _build_report_from_db(
+    result_row: AssessmentResult,
+    session_row: AssessmentSession,
+) -> AssessmentReportResponse:
     """Build report response from a stored AssessmentResult row."""
     # Rebuild proficiency scores from stored JSONB
     proficiency_scores = [ProficiencyScoreOut(**s) for s in (result_row.proficiency_scores or [])]
@@ -708,9 +849,12 @@ def _build_report_from_db(result_row: AssessmentResult) -> AssessmentReportRespo
             ]
         )
 
+    # Recompute gap analysis from stored knowledge graph + knowledge base
+    gap_analysis = _recompute_enriched_gap_analysis(session_row, result_row)
+
     return AssessmentReportResponse(
         knowledge_graph=kg_out,
-        gap_analysis=_build_enriched_gap_out(result_row.enriched_gap_analysis),
+        gap_analysis=gap_analysis,
         learning_plan=_build_learning_plan_out(result_row.learning_plan),
         proficiency_scores=proficiency_scores,
     )

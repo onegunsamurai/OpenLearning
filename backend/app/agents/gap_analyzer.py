@@ -42,7 +42,7 @@ def analyze_gaps(state: AssessmentState) -> dict:
     """Diff current knowledge graph vs target graph.
 
     Pure Python — no LLM call. Finds concepts where
-    current_confidence < target_confidence - 0.2 (tolerance).
+    current_confidence < target_confidence.
     Un-assessed concepts infer confidence from assessed prerequisites.
     Results are topologically sorted by prerequisites.
     """
@@ -55,8 +55,8 @@ def analyze_gaps(state: AssessmentState) -> dict:
         current_confidence = get_effective_confidence(target_node.concept, current_kg, target_kg)
         current_node = current_kg.get_node(target_node.concept)
 
-        # Gap exists if current is more than 0.2 below target
-        if current_confidence < target_node.confidence - 0.2:
+        # Gap exists if current is below target
+        if current_confidence < target_node.confidence:
             gap_nodes.append(
                 KnowledgeNode(
                     concept=target_node.concept,

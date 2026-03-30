@@ -207,7 +207,8 @@ class TestGapAnalysis:
         assert "a" in gap_concepts
         assert "b" in gap_concepts
 
-    def test_no_gap_when_close_to_target(self):
+    def test_small_gap_is_reported(self):
+        """Skills with small but real gaps must appear in the report (issue #132)."""
         target = KnowledgeGraph(
             nodes=[
                 KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
@@ -216,7 +217,25 @@ class TestGapAnalysis:
         )
         current = KnowledgeGraph(
             nodes=[
-                KnowledgeNode(concept="a", confidence=0.6, bloom_level=BloomLevel.apply),
+                KnowledgeNode(concept="a", confidence=0.62, bloom_level=BloomLevel.apply),
+            ],
+            edges=[],
+        )
+        state = {"knowledge_graph": current, "target_graph": target}
+        result = analyze_gaps(state)
+        assert len(result["gap_nodes"]) == 1
+        assert result["gap_nodes"][0].concept == "a"
+
+    def test_no_gap_when_at_or_above_target(self):
+        target = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
+            ],
+            edges=[],
+        )
+        current = KnowledgeGraph(
+            nodes=[
+                KnowledgeNode(concept="a", confidence=0.7, bloom_level=BloomLevel.apply),
             ],
             edges=[],
         )
@@ -225,15 +244,15 @@ class TestGapAnalysis:
         assert len(result["gap_nodes"]) == 0
 
     def test_inferred_confidence_removes_gap(self):
-        """When prerequisite is assessed high, dependent infers above threshold — no gap."""
+        """When prerequisite is assessed high, dependent infers above target — no gap."""
         target = KnowledgeGraph(
             nodes=[
                 KnowledgeNode(
-                    concept="a", confidence=0.6, bloom_level=BloomLevel.apply, prerequisites=[]
+                    concept="a", confidence=0.4, bloom_level=BloomLevel.apply, prerequisites=[]
                 ),
                 KnowledgeNode(
                     concept="b",
-                    confidence=0.6,
+                    confidence=0.4,
                     bloom_level=BloomLevel.apply,
                     prerequisites=["a"],
                 ),
@@ -243,7 +262,7 @@ class TestGapAnalysis:
         current = KnowledgeGraph(
             nodes=[
                 KnowledgeNode(concept="a", confidence=0.9, bloom_level=BloomLevel.apply),
-                # b not assessed — inferred: 0.9 * 0.5 = 0.45, threshold: 0.6 - 0.2 = 0.4
+                # b not assessed — inferred: 0.9 * 0.5 = 0.45, target: 0.4
                 # 0.45 > 0.4 → NOT a gap
             ],
             edges=[],
@@ -252,7 +271,7 @@ class TestGapAnalysis:
         result = analyze_gaps(state)
         gap_concepts = [n.concept for n in result["gap_nodes"]]
         assert "a" not in gap_concepts  # assessed above target
-        assert "b" not in gap_concepts  # inferred above threshold
+        assert "b" not in gap_concepts  # inferred above target
 
     def test_inferred_confidence_stored_in_gap_node(self):
         """Gap node carries inferred confidence, not 0.0."""
@@ -273,7 +292,7 @@ class TestGapAnalysis:
         current = KnowledgeGraph(
             nodes=[
                 KnowledgeNode(concept="a", confidence=0.5, bloom_level=BloomLevel.apply),
-                # b inferred: 0.5 * 0.5 = 0.25, threshold: 0.8 - 0.2 = 0.6 → gap at 0.25
+                # b inferred: 0.5 * 0.5 = 0.25, target: 0.8 → gap at 0.25
             ],
             edges=[],
         )

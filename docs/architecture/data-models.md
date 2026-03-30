@@ -140,7 +140,8 @@ These are simplified output projections defined directly in the route module (no
 class AssessmentStartRequest(CamelModel):
     skill_ids: list[str]
     target_level: str = "mid"
-    role_id: str | None = None  # Validated: must be in list_domains() or None
+    role_id: str | None = None       # Validated: must be in list_domains() or None
+    thoroughness: str = "standard"   # "quick", "standard", or "thorough"
 
 class AssessmentRespondRequest(CamelModel):
     response: str
@@ -151,6 +152,7 @@ class AssessmentStartResponse(CamelModel):
     question_type: str = "calibration"
     step: int = 1
     total_steps: int = 3
+    estimated_questions: int | None = None
 
 # Response for /assessment/{id}/graph
 class KnowledgeNodeOut(CamelModel):
