@@ -189,11 +189,9 @@ Return a masked preview of the stored API key.
 }
 ```
 
-**Response** (404 — no API key stored):
+**Response** (204 — no API key stored):
 
-```json
-{"detail": "No API key stored"}
-```
+No content body.
 
 ---
 
@@ -360,6 +358,43 @@ Returns detailed information for a single role, including mapped skill IDs and p
 
 ---
 
+### GET `/api/roles/{role_id}/concepts`
+
+Return concepts for a role up to a given level, topologically sorted by prerequisites.
+
+**Path parameter**: `role_id` — the domain identifier (e.g., `backend_engineering`)
+
+**Query parameter**: `level` — target level (default: `"mid"`). One of `junior`, `mid`, `senior`, `staff`.
+
+**Response** (200): `RoleConceptsResponse`
+
+```json
+{
+  "concepts": [
+    {
+      "id": "http_fundamentals",
+      "displayName": "HTTP Fundamentals",
+      "level": "junior",
+      "prerequisites": []
+    },
+    {
+      "id": "rest_api_design",
+      "displayName": "REST API Design",
+      "level": "mid",
+      "prerequisites": ["http_fundamentals"]
+    }
+  ]
+}
+```
+
+**Response** (400 — invalid level):
+
+```json
+{"detail": "Invalid level: unknown"}
+```
+
+---
+
 ### POST `/api/assessment/start`
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
@@ -374,7 +409,8 @@ Start a new assessment session. Returns the first calibration question.
 {
   "skillIds": ["nodejs", "rest-api", "sql"],
   "targetLevel": "mid",
-  "roleId": "backend_engineering"
+  "roleId": "backend_engineering",
+  "thoroughness": "standard"
 }
 ```
 
@@ -383,6 +419,7 @@ Start a new assessment session. Returns the first calibration question.
 | `skillIds` | list[string] | Yes | Skill IDs to assess |
 | `targetLevel` | string | No (default: `"mid"`) | Target career level |
 | `roleId` | string | No | Role/domain ID — when provided, bypasses skill-to-domain mapping and uses the role's knowledge base directly |
+| `thoroughness` | string | No (default: `"standard"`) | Assessment depth: `"quick"`, `"standard"`, or `"thorough"`. Controls max questions per topic |
 
 **Response**: `AssessmentStartResponse`
 
@@ -392,7 +429,8 @@ Start a new assessment session. Returns the first calibration question.
   "question": "Can you explain what HTTP status codes are and give some examples?",
   "questionType": "calibration",
   "step": 1,
-  "totalSteps": 3
+  "totalSteps": 3,
+  "estimatedQuestions": 20
 }
 ```
 

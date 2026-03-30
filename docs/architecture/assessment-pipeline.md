@@ -6,7 +6,7 @@ The assessment pipeline is a LangGraph state machine that adaptively evaluates a
 
 ## Pipeline Overview
 
-The pipeline has **15 nodes** organized into four phases:
+The pipeline has **16 nodes** organized into four phases:
 
 ```mermaid
 graph TD
@@ -15,7 +15,8 @@ graph TD
     CM --> CH[calibrate_hard]
     CH --> CV[calibrate_evaluate]
 
-    CV --> GQ[generate_question]
+    CV --> BA[build_agenda]
+    BA --> GQ[generate_question]
     GQ --> AR[await_response]
     AR --> ER[evaluate_response]
     ER --> UG[update_graph]
@@ -47,6 +48,7 @@ Three calibration questions at increasing difficulty determine the candidate's s
 | `calibrate_medium` | `calibrator.generate_calibration_question` | Generates a medium question, interrupts for response |
 | `calibrate_hard` | `calibrator.generate_calibration_question` | Generates a hard question, interrupts for response |
 | `calibrate_evaluate` | `calibrator.evaluate_calibration` | Evaluates all 3 responses to determine starting level |
+| `build_agenda` | `pipeline.build_agenda_node` | Builds the topic agenda from the knowledge base and selects the first topic |
 
 ### Calibration Evaluation
 
@@ -139,7 +141,7 @@ After each knowledge graph update, the router determines the next action.
 
 ```mermaid
 graph TD
-    A{Topics >= 8 OR<br/>Questions >= 25?}
+    A{Topics >= 10 OR<br/>Questions >= max?}
     A -->|Yes| CONCLUDE[conclude]
     A -->|No| B{Confidence > 0.7 AND<br/>Bloom < Create AND<br/>Questions on topic < 4?}
     B -->|Yes| DEEPER[deeper]
@@ -156,8 +158,8 @@ graph TD
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| `MAX_TOPICS` | 8 | Maximum topics to evaluate before concluding |
-| `MAX_TOTAL_QUESTIONS` | 25 | Hard limit on total questions |
+| `MAX_TOPICS` | 10 | Maximum topics to evaluate before concluding |
+| `MAX_TOTAL_QUESTIONS` | dynamic | `min(agenda_length, MAX_TOPICS) * max_questions_per_topic` |
 | `HIGH_CONFIDENCE` | 0.7 | Threshold for "high confidence" routing |
 | `MAX_QUESTIONS_PER_TOPIC` | 4 | Maximum questions on a single topic |
 | `MIN_EVIDENCE_FOR_CONFIDENCE` | 2 | Minimum evidence items before trusting confidence |
@@ -189,7 +191,7 @@ The starting Bloom level for the new topic is determined by the calibrated level
 
 Pure Python (no LLM call). Compares the current knowledge graph against the target graph:
 
-- A **gap** exists where `current_confidence < target_confidence - 0.2`
+- A **gap** exists where `current_confidence < target_confidence`
 - Gaps are **topologically sorted** by prerequisites so foundational concepts come first
 
 ### Gap Enrichment

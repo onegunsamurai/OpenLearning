@@ -19,7 +19,14 @@ from app.graph.state import (
     LearningPlan,
     Resource,
 )
-from tests.conftest import _mock_graph, _test_app, _TestSessionFactory, seed_session
+from tests.conftest import (
+    FULL_LEARNING_PLAN,
+    _mock_graph,
+    _test_app,
+    _TestSessionFactory,
+    seed_result,
+    seed_session,
+)
 
 
 def _make_interrupt_data(
@@ -774,6 +781,108 @@ class TestAssessmentReport:
             assert scores[0]["score"] == 85  # 0.85 * 100
         finally:
             _mock_graph.reset_mock()
+
+    @pytest.mark.asyncio
+    async def test_report_recomputes_stale_gap_analysis(self, setup_db):
+        """DB-cached gap analysis from old tolerance threshold is recomputed on read.
+
+        Regression test for issue #132: gap analysis silently drops selected
+        skills that fall within the old 0.2 tolerance threshold.
+        """
+        # Seed a completed session with role_id so target graph can be reconstructed
+        async with _TestSessionFactory() as db:
+            await seed_session(
+                db,
+                session_id="sess-stale",
+                thread_id="thread-stale",
+                status="completed",
+                role_id="backend_engineering",
+                skill_ids=["http_fundamentals", "rest_api_basics"],
+            )
+
+            # Knowledge graph: http_fundamentals at 0.62 (small gap vs 0.7 target),
+            # rest_api_basics at 0.3 (large gap vs 0.7 target).
+            stale_kg = {
+                "nodes": [
+                    {
+                        "concept": "http_fundamentals",
+                        "confidence": 0.62,
+                        "bloom_level": "understand",
+                        "prerequisites": [],
+                        "evidence": ["Some understanding"],
+                    },
+                    {
+                        "concept": "rest_api_basics",
+                        "confidence": 0.3,
+                        "bloom_level": "remember",
+                        "prerequisites": ["http_fundamentals"],
+                        "evidence": ["Partial"],
+                    },
+                ],
+                "edges": [("http_fundamentals", "rest_api_basics")],
+            }
+
+            # Stale enriched analysis: only rest_api_basics (http_fundamentals was
+            # filtered out by the old 0.2 tolerance: 0.62 >= 0.7 - 0.2 = 0.5)
+            stale_enriched = {
+                "overall_readiness": 65,
+                "summary": "Needs work on REST APIs.",
+                "gaps": [
+                    {
+                        "skill_id": "rest_api_basics",
+                        "skill_name": "REST API Basics",
+                        "current_level": 30,
+                        "target_level": 70,
+                        "gap": 40,
+                        "priority": "medium",
+                        "recommendation": "Study RESTful design patterns.",
+                    }
+                ],
+            }
+
+            await seed_result(
+                db,
+                session_id="sess-stale",
+                knowledge_graph=stale_kg,
+                gap_nodes=[],
+                learning_plan=FULL_LEARNING_PLAN,
+                proficiency_scores=[
+                    {
+                        "skill_id": "http_fundamentals",
+                        "skill_name": "HTTP Fundamentals",
+                        "score": 62,
+                        "confidence": 0.62,
+                        "reasoning": "Basic understanding",
+                    }
+                ],
+                enriched_gap_analysis=stale_enriched,
+            )
+
+        async with AsyncClient(
+            transport=ASGITransport(app=_test_app), base_url="http://test"
+        ) as client:
+            response = await client.get("/api/assessment/sess-stale/report")
+
+        assert response.status_code == 200
+        data = response.json()
+        gap_analysis = data["gapAnalysis"]
+        gap_ids = {g["skillId"] for g in gap_analysis["gaps"]}
+
+        # Both skills should appear — the small gap must not be silently dropped
+        assert "rest_api_basics" in gap_ids, "Large gap should still be present"
+        assert "http_fundamentals" in gap_ids, (
+            "Small gap (0.62 vs 0.7 target) must not be filtered out"
+        )
+
+        # Existing LLM recommendation should be preserved for rest_api_basics
+        rest_gap = next(g for g in gap_analysis["gaps"] if g["skillId"] == "rest_api_basics")
+        assert rest_gap["recommendation"] == "Study RESTful design patterns."
+
+        # New gap should have computed priority
+        http_gap = next(g for g in gap_analysis["gaps"] if g["skillId"] == "http_fundamentals")
+        assert http_gap["priority"] == "low"  # gap = 0.08, which is <= 0.2
+        assert http_gap["currentLevel"] == 62
+        assert http_gap["targetLevel"] == 70
 
 
 class TestAssessmentResume:
