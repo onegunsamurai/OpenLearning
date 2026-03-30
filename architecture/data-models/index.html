@@ -1902,7 +1902,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">target_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mid&quot;</span>
-    <span class="n">role_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Validated: must be in list_domains() or None</span>
+    <span class="n">role_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># Validated: must be in list_domains() or None</span>
+    <span class="n">thoroughness</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span>   <span class="c1"># &quot;quick&quot;, &quot;standard&quot;, or &quot;thorough&quot;</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentRespondRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>
@@ -1913,6 +1914,7 @@
     <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
     <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">total_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">estimated_questions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="c1"># Response for /assessment/{id}/graph</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeNodeOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>

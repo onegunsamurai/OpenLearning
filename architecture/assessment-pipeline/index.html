@@ -1561,14 +1561,15 @@
 <p>The assessment pipeline is a LangGraph state machine that adaptively evaluates a candidate's knowledge across multiple topics and Bloom taxonomy levels. This page covers every node, routing decision, and data structure in the pipeline.</p>
 <p><strong>Source</strong>: <code>backend/app/graph/pipeline.py</code>, <code>backend/app/graph/router.py</code>, <code>backend/app/graph/state.py</code></p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
-<p>The pipeline has <strong>15 nodes</strong> organized into four phases:</p>
+<p>The pipeline has <strong>16 nodes</strong> organized into four phases:</p>
 <pre class="mermaid"><code>graph TD
     START([Start]) --&gt; CE[calibrate_easy]
     CE --&gt; CM[calibrate_medium]
     CM --&gt; CH[calibrate_hard]
     CH --&gt; CV[calibrate_evaluate]
 
-    CV --&gt; GQ[generate_question]
+    CV --&gt; BA[build_agenda]
+    BA --&gt; GQ[generate_question]
     GQ --&gt; AR[await_response]
     AR --&gt; ER[evaluate_response]
     ER --&gt; UG[update_graph]
@@ -1617,6 +1618,11 @@
 <td><code>calibrate_evaluate</code></td>
 <td><code>calibrator.evaluate_calibration</code></td>
 <td>Evaluates all 3 responses to determine starting level</td>
+</tr>
+<tr>
+<td><code>build_agenda</code></td>
+<td><code>pipeline.build_agenda_node</code></td>
+<td>Builds the topic agenda from the knowledge base and selects the first topic</td>
 </tr>
 </tbody>
 </table>
@@ -1777,7 +1783,7 @@
 </table>
 <h3 id="decision-tree">Decision Tree<a class="headerlink" href="#decision-tree" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>graph TD
-    A{Topics &gt;= 8 OR&lt;br/&gt;Questions &gt;= 25?}
+    A{Topics &gt;= 10 OR&lt;br/&gt;Questions &gt;= max?}
     A --&gt;|Yes| CONCLUDE[conclude]
     A --&gt;|No| B{Confidence &gt; 0.7 AND&lt;br/&gt;Bloom &lt; Create AND&lt;br/&gt;Questions on topic &lt; 4?}
     B --&gt;|Yes| DEEPER[deeper]
@@ -1800,13 +1806,13 @@
 <tbody>
 <tr>
 <td><code>MAX_TOPICS</code></td>
-<td>8</td>
+<td>10</td>
 <td>Maximum topics to evaluate before concluding</td>
 </tr>
 <tr>
 <td><code>MAX_TOTAL_QUESTIONS</code></td>
-<td>25</td>
-<td>Hard limit on total questions</td>
+<td>dynamic</td>
+<td><code>min(agenda_length, MAX_TOPICS) * max_questions_per_topic</code></td>
 </tr>
 <tr>
 <td><code>HIGH_CONFIDENCE</code></td>
@@ -1870,7 +1876,7 @@
 <p><strong>Source</strong>: <code>backend/app/agents/gap_analyzer.py</code> → <code>analyze_gaps()</code></p>
 <p>Pure Python (no LLM call). Compares the current knowledge graph against the target graph:</p>
 <ul>
-<li>A <strong>gap</strong> exists where <code>current_confidence &lt; target_confidence - 0.2</code></li>
+<li>A <strong>gap</strong> exists where <code>current_confidence &lt; target_confidence</code></li>
 <li>Gaps are <strong>topologically sorted</strong> by prerequisites so foundational concepts come first</li>
 </ul>
 <h3 id="gap-enrichment">Gap Enrichment<a class="headerlink" href="#gap-enrichment" title="Permanent link">&para;</a></h3>
