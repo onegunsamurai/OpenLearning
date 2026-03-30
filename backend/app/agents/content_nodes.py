@@ -101,6 +101,14 @@ async def gap_prioritizer(state: LearningMaterialState) -> dict:
     taxonomy = get_taxonomy_index(domain)
     gap_nodes = assessment_data.get("gap_nodes", [])
 
+    # Build lookup for candidate's assessed bloom from the knowledge graph.
+    # gap_nodes[].bloom_level stores the TARGET bloom (from gap_analyzer),
+    # so we source the actual current bloom from knowledge_graph nodes.
+    kg_nodes = (assessment_data.get("knowledge_graph") or {}).get("nodes") or []
+    assessed_bloom: dict[str, str] = {
+        n["concept"]: n.get("bloom_level", "remember") for n in kg_nodes if n.get("concept")
+    }
+
     # Load IRT weights from DB
     irt_weights: dict[str, float] = {}
     async for db in get_db():
@@ -119,7 +127,7 @@ async def gap_prioritizer(state: LearningMaterialState) -> dict:
             continue
 
         current_confidence = gap.get("confidence", 0.0)
-        current_bloom_str = gap.get("bloom_level", "remember")
+        current_bloom_str = assessed_bloom.get(concept_id, "remember")
         current_bloom = BLOOM_INT.get(current_bloom_str, 1)
         target_bloom = taxonomy.bloom_target_int(concept_id)
         if target_bloom <= current_bloom:
@@ -190,7 +198,7 @@ def _topological_sort(concept_ids: list[str], taxonomy: TaxonomyIndex) -> list[s
 async def objective_generator(state: LearningMaterialState) -> dict:
     """Generate learning objectives with topological prerequisite ordering."""
     prioritized_gaps = state["prioritized_gaps"]
-    domain = state.get("domain", "backend_engineering")
+    domain = state["domain"]
     taxonomy = get_taxonomy_index(domain)
 
     concept_ids = [g.concept_id for g in prioritized_gaps]
