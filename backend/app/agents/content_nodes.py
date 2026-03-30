@@ -104,7 +104,7 @@ async def gap_prioritizer(state: LearningMaterialState) -> dict:
     # Build lookup for candidate's assessed bloom from the knowledge graph.
     # gap_nodes[].bloom_level stores the TARGET bloom (from gap_analyzer),
     # so we source the actual current bloom from knowledge_graph nodes.
-    kg_nodes = assessment_data.get("knowledge_graph", {}).get("nodes", [])
+    kg_nodes = (assessment_data.get("knowledge_graph") or {}).get("nodes") or []
     assessed_bloom: dict[str, str] = {
         n["concept"]: n.get("bloom_level", "remember") for n in kg_nodes if n.get("concept")
     }

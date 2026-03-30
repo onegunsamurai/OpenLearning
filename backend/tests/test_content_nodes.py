@@ -356,6 +356,42 @@ class TestGapPrioritizer:
         assert len(gaps) == 1
         assert gaps[0].current_bloom == 1  # defaulted to remember
 
+    @pytest.mark.asyncio
+    @patch("app.agents.content_nodes.get_db")
+    async def test_handles_null_knowledge_graph(self, mock_get_db: AsyncMock, setup_db) -> None:
+        """knowledge_graph can be None (nullable DB column); must not crash."""
+        from tests.conftest import _override_get_db
+
+        mock_get_db.side_effect = _override_get_db
+
+        assessment_data = {
+            "session_id": "sess-test",
+            "knowledge_graph": None,
+            "gap_nodes": [
+                {
+                    "concept": "http_fundamentals",
+                    "confidence": 0.0,
+                    "bloom_level": "understand",
+                    "prerequisites": [],
+                    "evidence": [],
+                },
+            ],
+            "learning_plan": None,
+            "proficiency_scores": [],
+        }
+
+        state: LearningMaterialState = {
+            "session_id": "sess-test",
+            "domain": "backend_engineering",
+            "assessment_result_data": assessment_data,
+        }
+        result = await gap_prioritizer(state)
+        gaps = result["prioritized_gaps"]
+
+        # Should still work, defaulting all concepts to "remember"
+        assert len(gaps) == 1
+        assert gaps[0].current_bloom == 1
+
 
 # ---------------------------------------------------------------------------
 # Objective Generator Tests
