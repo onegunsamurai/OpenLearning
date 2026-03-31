@@ -134,7 +134,7 @@ OpenLearning/
 │   │   ├── deps.py              # Auth dependencies (JWT cookie extraction, user validation, API key injection)
 │   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── repositories/        # Data access layer (session_repo, result_repo, user_repo, material_repo)
-│   │   ├── services/            # AI service layer (structured LLM output, retry, JSON parsing, session cleanup)
+│   │   ├── services/            # Service layer (assessment orchestration, AI/LLM integration, SSE adapter, session cleanup)
 │   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader

@@ -21,7 +21,7 @@ from app.graph.state import (
     Response,
     make_initial_state,
 )
-from app.main import register_anthropic_error_handlers
+from app.main import register_anthropic_error_handlers, register_assessment_error_handlers
 from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
@@ -71,6 +71,7 @@ _mock_graph = AsyncMock()
 _test_app.state.graph = _mock_graph
 
 register_anthropic_error_handlers(_test_app)
+register_assessment_error_handlers(_test_app)
 
 # ── Sample data constants ───────────────────────────────────────────────
 
