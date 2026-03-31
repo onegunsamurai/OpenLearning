@@ -141,7 +141,7 @@ def _get_engine():
     return _engine
 
 
-def _get_session_factory():
+def get_session_factory():
     global _async_session_factory
     if _async_session_factory is None:
         _async_session_factory = async_sessionmaker(_get_engine(), expire_on_commit=False)
@@ -157,6 +157,6 @@ async def init_db() -> None:
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency yielding an async DB session."""
-    factory = _get_session_factory()
+    factory = get_session_factory()
     async with factory() as session:
         yield session

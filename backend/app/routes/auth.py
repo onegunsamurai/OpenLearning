@@ -11,7 +11,6 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from jose import jwt
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,6 +28,7 @@ from app.models.auth import (
     ValidateKeyResponse,
 )
 from app.password import hash_password, verify_password
+from app.repositories import user_repo
 
 logger = logging.getLogger("openlearning.auth")
 
@@ -189,15 +189,9 @@ async def github_callback(
         return RedirectResponse(url=f"{settings.frontend_url}/?error=auth_failed", status_code=302)
 
     # Upsert user via AuthMethod
-    result = await db.execute(
-        select(AuthMethod).where(
-            AuthMethod.provider == "github", AuthMethod.provider_id == str(github_id)
-        )
-    )
-    auth_method = result.scalar_one_or_none()
+    auth_method = await user_repo.get_auth_method(db, "github", str(github_id))
     if auth_method:
-        user_result = await db.execute(select(User).where(User.id == auth_method.user_id))
-        user = user_result.scalar_one()
+        user = await user_repo.get_user_by_auth_method(db, auth_method)
         user.display_name = github_username
         user.avatar_url = avatar_url
     else:
@@ -236,18 +230,12 @@ async def auth_me(
     db: AsyncSession = Depends(get_db),
 ) -> AuthMeResponse:
     """Return the current user's profile."""
-    result = await db.execute(select(User).where(User.id == user.user_id))
-    db_user = result.scalar_one_or_none()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+    db_user = await user_repo.get_user_or_404(db, user.user_id)
     has_api_key = bool(db_user.encrypted_api_key)
 
     # Find email from auth_methods if present
     email: str | None = None
-    am_result = await db.execute(
-        select(AuthMethod).where(AuthMethod.user_id == db_user.id, AuthMethod.provider == "email")
-    )
-    email_method = am_result.scalar_one_or_none()
+    email_method = await user_repo.get_auth_method_by_user(db, db_user.id, "email")
     if email_method:
         email = email_method.provider_id
 
@@ -275,10 +263,7 @@ async def set_api_key(
     db: AsyncSession = Depends(get_db),
 ) -> OkResponse:
     """Store an encrypted API key for the current user."""
-    result = await db.execute(select(User).where(User.id == user.user_id))
-    db_user = result.scalar_one_or_none()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+    db_user = await user_repo.get_user_or_404(db, user.user_id)
     db_user.encrypted_api_key = encrypt_api_key(request.api_key)
     await db.commit()
     return OkResponse(ok=True)
@@ -295,8 +280,7 @@ async def get_api_key(
     db: AsyncSession = Depends(get_db),
 ) -> ApiKeyResponse | Response:
     """Return a masked preview of the stored API key."""
-    result = await db.execute(select(User).where(User.id == user.user_id))
-    db_user = result.scalar_one_or_none()
+    db_user = await user_repo.get_user_by_id(db, user.user_id)
     if not db_user or not db_user.encrypted_api_key:
         return Response(status_code=204)
     # Decrypt to get last 4 chars for preview
@@ -311,8 +295,7 @@ async def delete_api_key(
     db: AsyncSession = Depends(get_db),
 ) -> OkResponse:
     """Remove the stored API key for the current user."""
-    result = await db.execute(select(User).where(User.id == user.user_id))
-    db_user = result.scalar_one_or_none()
+    db_user = await user_repo.get_user_by_id(db, user.user_id)
     if db_user:
         db_user.encrypted_api_key = None
         await db.commit()
@@ -374,10 +357,7 @@ async def register(
     email = request.email.lower()
 
     # Check for existing email auth method
-    result = await db.execute(
-        select(AuthMethod).where(AuthMethod.provider == "email", AuthMethod.provider_id == email)
-    )
-    if result.scalar_one_or_none():
+    if await user_repo.get_auth_method(db, "email", email):
         raise HTTPException(status_code=409, detail="An account with this email already exists")
 
     # Create user + auth method
@@ -422,10 +402,7 @@ async def login(
     settings = get_settings()
     email = request.email.lower()
 
-    result = await db.execute(
-        select(AuthMethod).where(AuthMethod.provider == "email", AuthMethod.provider_id == email)
-    )
-    auth_method = result.scalar_one_or_none()
+    auth_method = await user_repo.get_auth_method(db, "email", email)
     if not auth_method or not auth_method.credential:
         verify_password("", _DUMMY_BCRYPT_HASH)
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -433,8 +410,7 @@ async def login(
     if not verify_password(request.password, auth_method.credential):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    user_result = await db.execute(select(User).where(User.id == auth_method.user_id))
-    user = user_result.scalar_one()
+    user = await user_repo.get_user_by_auth_method(db, auth_method)
 
     token = _create_jwt(user, settings.jwt_secret_key)
     response = JSONResponse(content={"ok": True})

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import AssessmentSession, MaterialResult, get_db
+from app.db import get_db
 from app.deps import AuthUser, get_current_user
 from app.models.materials import MaterialOut, MaterialsResponse
+from app.repositories import material_repo, session_repo
 
 router = APIRouter()
 
@@ -23,18 +23,10 @@ async def get_materials(
 ) -> MaterialsResponse:
     """Retrieve generated learning materials for a given assessment session."""
     # Verify session exists and belongs to requesting user
-    session_result = await db.execute(
-        select(AssessmentSession).where(AssessmentSession.session_id == session_id)
-    )
-    session_row = session_result.scalar_one_or_none()
-    if not session_row:
-        raise HTTPException(status_code=404, detail="Session not found")
-    if session_row.user_id != user.user_id:
-        raise HTTPException(status_code=404, detail="Session not found")
+    await session_repo.get_session_with_ownership(db, session_id, user.user_id)
 
     # Fetch materials
-    result = await db.execute(select(MaterialResult).where(MaterialResult.session_id == session_id))
-    rows = result.scalars().all()
+    rows = await material_repo.get_materials_by_session(db, session_id)
 
     return MaterialsResponse(
         session_id=session_id,

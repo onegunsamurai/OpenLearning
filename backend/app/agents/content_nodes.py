@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from app.agents.schemas import BloomValidatorOutput, ContentGeneratorOutput
-from app.db import AssessmentResult, ConceptConfig, MaterialResult, get_db
+from app.db import ConceptConfig, MaterialResult, get_session_factory
 from app.graph.content_state import (
     ContentPlan,
     ContentSection,
@@ -32,6 +32,7 @@ from app.prompts.content import (
     CONTENT_GENERATOR_SYSTEM_PROMPT,
     CONTENT_GENERATOR_USER_PROMPT,
 )
+from app.repositories import result_repo
 from app.services.ai import ainvoke_structured
 
 logger = logging.getLogger("openlearning.content")
@@ -52,11 +53,9 @@ async def input_reader(state: LearningMaterialState) -> dict:
     """Load AssessmentResult by session_id and initialize TaxonomyIndex."""
     session_id = state["session_id"]
 
-    async for db in get_db():
-        result = await db.execute(
-            select(AssessmentResult).where(AssessmentResult.session_id == session_id)
-        )
-        row = result.scalar_one_or_none()
+    factory = get_session_factory()
+    async with factory() as db:
+        row = await result_repo.get_result_by_session(db, session_id)
         if not row:
             raise ValueError(f"No AssessmentResult found for session_id={session_id}")
 
@@ -111,7 +110,8 @@ async def gap_prioritizer(state: LearningMaterialState) -> dict:
 
     # Load IRT weights from DB
     irt_weights: dict[str, float] = {}
-    async for db in get_db():
+    factory = get_session_factory()
+    async with factory() as db:
         concept_ids = [g.get("concept", "") for g in gap_nodes]
         if concept_ids:
             result = await db.execute(
@@ -521,6 +521,7 @@ async def _persist_materials(
             )
         )
 
-    async for db in get_db():
+    factory = get_session_factory()
+    async with factory() as db:
         db.add_all(rows)
         await db.commit()

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from fastapi import Cookie, Depends, HTTPException
 from jose import JWTError, jwt
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.crypto import decrypt_api_key
-from app.db import User, get_db
+from app.db import get_db
+from app.repositories import user_repo
 
 JWT_ALGORITHM = "HS256"
 
@@ -74,8 +74,7 @@ async def get_user_api_key(
     db: AsyncSession = Depends(get_db),
 ) -> str:
     """Return the decrypted API key for the current user. Raises 400 if not configured."""
-    result = await db.execute(select(User).where(User.id == user.user_id))
-    db_user = result.scalar_one_or_none()
+    db_user = await user_repo.get_user_by_id(db, user.user_id)
     if not db_user or not db_user.encrypted_api_key:
         raise HTTPException(
             status_code=400,

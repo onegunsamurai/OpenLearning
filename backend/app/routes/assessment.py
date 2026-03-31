@@ -7,7 +7,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from langgraph.types import Command
-from sqlalchemy import func, select
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import PlainTextResponse, StreamingResponse
 
@@ -43,6 +43,7 @@ from app.models.assessment_api import (
     ResourceOut,
 )
 from app.models.gap_analysis import GapAnalysis, GapItem
+from app.repositories import result_repo, session_repo
 from app.routes.export_utils import build_assessment_markdown
 from app.services.ai import api_key_scope, classify_anthropic_error
 from app.services.content_trigger import trigger_content_pipeline
@@ -50,17 +51,6 @@ from app.services.content_trigger import trigger_content_pipeline
 logger = logging.getLogger("openlearning.assessment")
 
 router = APIRouter()
-
-
-async def _get_thread_id(session_id: str, db: AsyncSession) -> str:
-    """Look up thread_id for a session, or raise 404."""
-    result = await db.execute(
-        select(AssessmentSession.thread_id).where(AssessmentSession.session_id == session_id)
-    )
-    thread_id = result.scalar_one_or_none()
-    if not thread_id:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return thread_id
 
 
 @router.post(
@@ -165,17 +155,13 @@ async def assessment_respond(
     db: AsyncSession = Depends(get_db),
     api_key: str = Depends(get_user_api_key),
 ) -> StreamingResponse:
-    thread_id = await _get_thread_id(session_id, db)
-
     # Touch updated_at to prevent session timeout during active assessments
-    session_row = await db.get(AssessmentSession, session_id)
-    if session_row:
-        if session_row.user_id != user.user_id:
-            raise HTTPException(status_code=403, detail="Not your session")
-        if session_row.status == "timed_out":
-            raise HTTPException(status_code=410, detail="Session has timed out")
-        session_row.updated_at = func.now()
-        await db.commit()
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
+    thread_id = session_row.thread_id
+    if session_row.status == "timed_out":
+        raise HTTPException(status_code=410, detail="Session has timed out")
+    session_row.updated_at = func.now()
+    await db.commit()
 
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
@@ -231,7 +217,7 @@ async def assessment_respond(
             except Exception as exc:
                 logger.exception("Error in assessment SSE stream", extra={"session_id": session_id})
                 try:
-                    err_session = await db.get(AssessmentSession, session_id)
+                    err_session = await session_repo.get_session(db, session_id)
                     if err_session and err_session.status == "active":
                         err_session.status = "error"
                         await db.commit()
@@ -271,11 +257,8 @@ async def assessment_graph(
     db: AsyncSession = Depends(get_db),
     user: AuthUser = Depends(get_current_user),
 ) -> KnowledgeGraphOut:
-    thread_id = await _get_thread_id(session_id, db)
-
-    session_row = await db.get(AssessmentSession, session_id)
-    if session_row and session_row.user_id != user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
+    thread_id = session_row.thread_id
 
     graph = req.app.state.graph
     config = {"configurable": {"thread_id": thread_id}}
@@ -309,22 +292,14 @@ async def assessment_report(
     db: AsyncSession = Depends(get_db),
     user: AuthUser = Depends(get_current_user),
 ) -> AssessmentReportResponse:
-    thread_id = await _get_thread_id(session_id, db)
-
     # Ownership check
-    session_row = await db.get(AssessmentSession, session_id)
-    if session_row and session_row.user_id != user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
+    thread_id = session_row.thread_id
 
     # Try DB-stored result first (optimized for completed sessions)
-    result_row_res = await db.execute(
-        select(AssessmentResult).where(AssessmentResult.session_id == session_id)
-    )
-    result_row = result_row_res.scalar_one_or_none()
+    result_row = await result_repo.get_result_by_session(db, session_id)
 
     if result_row:
-        if not session_row:
-            raise HTTPException(status_code=404, detail="Session not found")
         return _build_report_from_db(result_row, session_row)
 
     # Fall back to live graph state for active sessions
@@ -351,10 +326,7 @@ async def assessment_report(
     # Store result in DB and mark session completed — only for active sessions.
     # Errored or timed-out sessions must not be upgraded to "completed", and the
     # content pipeline must not be triggered for sessions that never finished.
-    existing = await db.execute(
-        select(AssessmentResult).where(AssessmentResult.session_id == session_id)
-    )
-    if not existing.scalar_one_or_none() and session_row and session_row.status == "active":
+    if not result_row and session_row.status == "active":
         db.add(
             AssessmentResult(
                 session_id=session_id,
@@ -386,18 +358,12 @@ async def assessment_export(
     db: AsyncSession = Depends(get_db),
     user: AuthUser = Depends(get_current_user),
 ) -> PlainTextResponse:
-    thread_id = await _get_thread_id(session_id, db)
-
     # Fetch session row for metadata + ownership check
-    session_row = await db.get(AssessmentSession, session_id)
-    if session_row and session_row.user_id != user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
+    thread_id = session_row.thread_id
 
     # Try DB-stored result first
-    result_row_res = await db.execute(
-        select(AssessmentResult).where(AssessmentResult.session_id == session_id)
-    )
-    result_row = result_row_res.scalar_one_or_none()
+    result_row = await result_repo.get_result_by_session(db, session_id)
 
     if result_row:
         knowledge_graph = result_row.knowledge_graph
@@ -424,7 +390,7 @@ async def assessment_export(
 
     markdown = build_assessment_markdown(
         session_id=session_id,
-        target_level=session_row.target_level if session_row else "unknown",
+        target_level=session_row.target_level,
         completed_at=completed_at,
         knowledge_graph=knowledge_graph,
         gap_nodes=gap_nodes,
@@ -454,11 +420,7 @@ async def assessment_resume(
     _api_key: str = Depends(get_user_api_key),
 ) -> AssessmentStartResponse:
     """Resume an active assessment session by loading the pending interrupt."""
-    session_row = await db.get(AssessmentSession, session_id)
-    if not session_row:
-        raise HTTPException(status_code=404, detail="Session not found")
-    if session_row.user_id != user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
     if session_row.status == "timed_out":
         raise HTTPException(status_code=410, detail="Session has timed out")
     if session_row.status == "completed":

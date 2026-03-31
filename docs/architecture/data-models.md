@@ -623,6 +623,19 @@ Unique constraint: `(session_id, concept_id)`
 - `User` → `AssessmentSession`: one-to-many via `user_id`
 - `AssessmentSession` → `AssessmentResult`: one-to-one via `session_id`
 
+### Repository Layer
+
+Database query logic is abstracted from route handlers into dedicated repository modules in `backend/app/repositories/`. Each function takes an `AsyncSession` as its first parameter and provides a clean separation between data access and request handling.
+
+| Module | Key Functions |
+|--------|--------------|
+| `session_repo` | `get_session`, `get_session_with_ownership`, `list_user_sessions`, `delete_session_cascade`, `timeout_stale_sessions` |
+| `result_repo` | `get_result_by_session` |
+| `user_repo` | `get_user_by_id`, `get_user_or_404`, `get_auth_method`, `get_auth_method_by_user`, `get_user_by_auth_method` |
+| `material_repo` | `get_materials_by_session` |
+
+Convenience variants (e.g. `get_session_with_ownership`, `get_user_or_404`) raise `HTTPException` directly, eliminating repeated 404/403 boilerplate in route handlers.
+
 ### LangGraph Checkpoints
 
 Pipeline state is persisted in the same PostgreSQL database via `AsyncPostgresSaver`. LangGraph manages its own checkpoint tables and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.

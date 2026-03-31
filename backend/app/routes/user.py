@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, select
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
-from app.db import AssessmentResult, AssessmentSession, MaterialResult, get_db
+from app.db import get_db
 from app.deps import AuthUser, get_current_user
 from app.knowledge_base.loader import load_knowledge_base
 from app.models.user import UserAssessmentSummary
+from app.repositories import session_repo
 
 logger = logging.getLogger("openlearning.user")
 
@@ -42,14 +41,7 @@ async def list_user_assessments(
     db: AsyncSession = Depends(get_db),
 ) -> list[UserAssessmentSummary]:
     """List all assessment sessions for the current user."""
-    query = (
-        select(AssessmentSession)
-        .options(joinedload(AssessmentSession.result))
-        .where(AssessmentSession.user_id == user.user_id)
-        .order_by(AssessmentSession.created_at.desc())
-    )
-    rows = await db.execute(query)
-    sessions = rows.unique().scalars().all()
+    sessions = await session_repo.list_user_sessions(db, user.user_id)
 
     summaries = []
     for session in sessions:
@@ -91,14 +83,6 @@ async def delete_user_assessment(
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete an assessment session owned by the current user."""
-    session_row = await db.get(AssessmentSession, session_id)
-    if not session_row:
-        raise HTTPException(status_code=404, detail="Session not found")
-    if session_row.user_id != user.user_id:
-        raise HTTPException(status_code=403, detail="Not your session")
-
-    # Delete associated rows first (FK constraints)
-    await db.execute(delete(MaterialResult).where(MaterialResult.session_id == session_id))
-    await db.execute(delete(AssessmentResult).where(AssessmentResult.session_id == session_id))
-    await db.delete(session_row)
+    session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
+    await session_repo.delete_session_cascade(db, session_row)
     await db.commit()
