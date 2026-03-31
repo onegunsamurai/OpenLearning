@@ -373,7 +373,7 @@ async def assessment_report(
 
     return AssessmentReportResponse(
         knowledge_graph=_build_kg_out(kg),
-        gap_analysis=_build_enriched_gap_out(enriched),
+        gap_analysis=_build_gap_analysis_out(enriched),
         learning_plan=_build_learning_plan_out(learning_plan),
         proficiency_scores=proficiency_scores,
     )
@@ -513,7 +513,7 @@ def _build_kg_out(kg) -> KnowledgeGraphOut:
     )
 
 
-def _build_enriched_gap_out(enriched) -> GapAnalysis:
+def _build_gap_analysis_out(enriched) -> GapAnalysis:
     """Build GapAnalysis from state or DB data."""
     if not enriched:
         return GapAnalysis(overall_readiness=0, summary="", gaps=[])
@@ -614,7 +614,7 @@ def _reconstruct_kg(kg_data: dict | None) -> KnowledgeGraph:
     )
 
 
-def _recompute_enriched_gap_analysis(
+def _recompute_gap_analysis(
     session_row: AssessmentSession,
     result_row: AssessmentResult,
 ) -> GapAnalysis:
@@ -641,7 +641,7 @@ def _recompute_enriched_gap_analysis(
             target_kg = get_target_graph(domain, target_level)
     except (FileNotFoundError, ValueError):
         # Knowledge base no longer exists or level invalid — fall back to stored data
-        return _build_enriched_gap_out(stored_enriched)
+        return _build_gap_analysis_out(stored_enriched)
 
     # Re-run gap detection with the current algorithm (no tolerance threshold)
     state = {"knowledge_graph": current_kg, "target_graph": target_kg}
@@ -741,7 +741,7 @@ def _build_report_from_db(
         )
 
     # Recompute gap analysis from stored knowledge graph + knowledge base
-    gap_analysis = _recompute_enriched_gap_analysis(session_row, result_row)
+    gap_analysis = _recompute_gap_analysis(session_row, result_row)
 
     return AssessmentReportResponse(
         knowledge_graph=kg_out,
