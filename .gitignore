@@ -63,3 +63,6 @@ e2e-screenshots/
 
 # claude code local settings (may contain API keys)
 .claude/settings.local.json
+
+# Pipeline temp files
+.pipeline/last-gate-report.json

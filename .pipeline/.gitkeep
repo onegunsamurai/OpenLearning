@@ -1,0 +1,3 @@
+# Pipeline working directory
+# Gate reports and temporary artifacts are stored here
+# Add to .gitignore: .pipeline/last-gate-report.json

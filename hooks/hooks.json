@@ -1,0 +1,18 @@
+{
+  "hooks": [
+    {
+      "id": "pre:bash:commit-gate",
+      "type": "PreToolUse",
+      "matcher": "Bash",
+      "description": "Enforce quality gate before git commit",
+      "command": "node hooks/pipeline/pre-commit-gate.js"
+    },
+    {
+      "id": "post:bash:doc-sync-reminder",
+      "type": "PostToolUse",
+      "matcher": "Bash",
+      "description": "Remind to check doc sync after code commits",
+      "command": "node hooks/pipeline/post-commit-doc-check.js"
+    }
+  ]
+}
