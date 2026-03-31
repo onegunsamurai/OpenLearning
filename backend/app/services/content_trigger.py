@@ -4,10 +4,10 @@ import asyncio
 import logging
 
 from fastapi import FastAPI
-from sqlalchemy import select
 
-from app.db import AssessmentSession, get_db
+from app.db import get_session_factory
 from app.knowledge_base.loader import map_skills_to_domain
+from app.repositories import session_repo
 
 logger = logging.getLogger("openlearning.content")
 
@@ -26,11 +26,9 @@ async def _run_content_pipeline(session_id: str, app: FastAPI) -> None:
     try:
         # Determine domain from session's skill_ids
         domain = "backend_engineering"
-        async for db in get_db():
-            result = await db.execute(
-                select(AssessmentSession).where(AssessmentSession.session_id == session_id)
-            )
-            session_row = result.scalar_one_or_none()
+        factory = get_session_factory()
+        async with factory() as db:
+            session_row = await session_repo.get_session(db, session_id)
             if session_row and session_row.skill_ids:
                 domain = map_skills_to_domain(session_row.skill_ids)
 

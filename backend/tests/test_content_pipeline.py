@@ -32,21 +32,21 @@ class TestContentPipelineIntegration:
     """Integration tests that run the full pipeline with mocked LLM calls."""
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     @patch("app.agents.content_nodes._persist_materials")
     @patch("app.agents.content_nodes.ainvoke_structured")
     async def test_full_pipeline_happy_path(
         self,
         mock_ainvoke: AsyncMock,
         mock_persist: AsyncMock,
-        mock_get_db: AsyncMock,
+        mock_factory: AsyncMock,
         setup_db,
     ) -> None:
         from langgraph.checkpoint.memory import MemorySaver
 
-        from tests.conftest import _override_get_db, _TestSessionFactory, seed_result, seed_session
+        from tests.conftest import _TestSessionFactory, seed_result, seed_session
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         # Seed test data
         async with _TestSessionFactory() as db:
@@ -112,21 +112,21 @@ class TestContentPipelineIntegration:
         assert mat.quality_flag is None
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     @patch("app.agents.content_nodes._persist_materials")
     @patch("app.agents.content_nodes.ainvoke_structured")
     async def test_pipeline_with_retry(
         self,
         mock_ainvoke: AsyncMock,
         mock_persist: AsyncMock,
-        mock_get_db: AsyncMock,
+        mock_factory: AsyncMock,
         setup_db,
     ) -> None:
         from langgraph.checkpoint.memory import MemorySaver
 
-        from tests.conftest import _override_get_db, _TestSessionFactory, seed_result, seed_session
+        from tests.conftest import _TestSessionFactory, seed_result, seed_session
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         async with _TestSessionFactory() as db:
             await seed_session(db, "sess-retry", "thread-retry", "completed")

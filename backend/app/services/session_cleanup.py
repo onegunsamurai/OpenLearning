@@ -4,9 +4,8 @@ import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import update
-
-from app.db import AssessmentSession, _get_session_factory
+from app.db import get_session_factory
+from app.repositories import session_repo
 
 logger = logging.getLogger("openlearning.session_cleanup")
 
@@ -24,21 +23,14 @@ async def cleanup_stale_sessions(
         await asyncio.sleep(interval_seconds)
         try:
             cutoff = datetime.now(UTC) - timedelta(minutes=timeout_minutes)
-            factory = _get_session_factory()
-            async with factory() as session:
-                result = await session.execute(
-                    update(AssessmentSession)
-                    .where(
-                        AssessmentSession.status == "active",
-                        AssessmentSession.updated_at < cutoff,
-                    )
-                    .values(status="timed_out")
-                )
-                await session.commit()
-                if result.rowcount:
+            factory = get_session_factory()
+            async with factory() as db:
+                count = await session_repo.timeout_stale_sessions(db, cutoff)
+                await db.commit()
+                if count:
                     logger.info(
                         "Marked stale sessions as timed_out",
-                        extra={"count": result.rowcount},
+                        extra={"count": count},
                     )
         except Exception:
             logger.exception("Error during session cleanup")

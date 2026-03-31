@@ -125,13 +125,13 @@ def _mock_validator_output(
 
 class TestInputReader:
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_loads_assessment_result(
-        self, mock_get_db: AsyncMock, setup_db, sample_assessment_data: dict
+        self, mock_factory: AsyncMock, setup_db, sample_assessment_data: dict
     ) -> None:
-        from tests.conftest import _override_get_db, _TestSessionFactory, seed_result, seed_session
+        from tests.conftest import _TestSessionFactory, seed_result, seed_session
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         async with _TestSessionFactory() as db:
             await seed_session(db, "sess-test", "thread-test", "completed")
@@ -151,11 +151,11 @@ class TestInputReader:
         assert result["assessment_result_data"]["session_id"] == "sess-test"
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
-    async def test_raises_on_missing_session(self, mock_get_db: AsyncMock, setup_db) -> None:
-        from tests.conftest import _override_get_db
+    @patch("app.agents.content_nodes.get_session_factory")
+    async def test_raises_on_missing_session(self, mock_factory: AsyncMock, setup_db) -> None:
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         state: LearningMaterialState = {
             "session_id": "nonexistent",
@@ -172,13 +172,13 @@ class TestInputReader:
 
 class TestGapPrioritizer:
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_computes_priority_scores(
-        self, mock_get_db: AsyncMock, setup_db, sample_assessment_data: dict
+        self, mock_factory: AsyncMock, setup_db, sample_assessment_data: dict
     ) -> None:
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         state: LearningMaterialState = {
             "session_id": "sess-test",
@@ -193,13 +193,13 @@ class TestGapPrioritizer:
             assert gap.priority_score > 0
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_sorts_descending(
-        self, mock_get_db: AsyncMock, setup_db, sample_assessment_data: dict
+        self, mock_factory: AsyncMock, setup_db, sample_assessment_data: dict
     ) -> None:
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         state: LearningMaterialState = {
             "session_id": "sess-test",
@@ -213,14 +213,14 @@ class TestGapPrioritizer:
         assert scores == sorted(scores, reverse=True)
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_uses_assessed_bloom_from_knowledge_graph(
-        self, mock_get_db: AsyncMock, setup_db
+        self, mock_factory: AsyncMock, setup_db
     ) -> None:
         """Gap nodes store TARGET bloom; prioritizer must read CURRENT bloom from knowledge_graph."""
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         # gap_nodes has bloom_level="understand" (the TARGET, as gap_analyzer stores it)
         # knowledge_graph has the concept assessed at bloom_level="remember" (CURRENT)
@@ -268,14 +268,14 @@ class TestGapPrioritizer:
         assert gaps[0].bloom_distance == 1
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_skips_when_assessed_bloom_meets_target(
-        self, mock_get_db: AsyncMock, setup_db
+        self, mock_factory: AsyncMock, setup_db
     ) -> None:
         """When the candidate's assessed bloom meets the taxonomy target, skip the gap."""
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         # knowledge_graph shows candidate already at "understand" for http_fundamentals
         # taxonomy target for http_fundamentals is also "understand" (2)
@@ -318,14 +318,14 @@ class TestGapPrioritizer:
         assert len(gaps) == 0
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
+    @patch("app.agents.content_nodes.get_session_factory")
     async def test_defaults_to_remember_for_unassessed_concepts(
-        self, mock_get_db: AsyncMock, setup_db
+        self, mock_factory: AsyncMock, setup_db
     ) -> None:
         """Un-assessed concepts (not in knowledge_graph) default to 'remember' bloom level."""
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         # knowledge_graph has NO entry for http_fundamentals
         # Should default current bloom to "remember" (1); taxonomy target is "understand" (2)
@@ -357,12 +357,12 @@ class TestGapPrioritizer:
         assert gaps[0].current_bloom == 1  # defaulted to remember
 
     @pytest.mark.asyncio
-    @patch("app.agents.content_nodes.get_db")
-    async def test_handles_null_knowledge_graph(self, mock_get_db: AsyncMock, setup_db) -> None:
+    @patch("app.agents.content_nodes.get_session_factory")
+    async def test_handles_null_knowledge_graph(self, mock_factory: AsyncMock, setup_db) -> None:
         """knowledge_graph can be None (nullable DB column); must not crash."""
-        from tests.conftest import _override_get_db
+        from tests.conftest import _TestSessionFactory
 
-        mock_get_db.side_effect = _override_get_db
+        mock_factory.return_value = _TestSessionFactory
 
         assessment_data = {
             "session_id": "sess-test",
