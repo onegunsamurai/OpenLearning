@@ -158,6 +158,24 @@ class TestRespondToAssessment:
             await respond_to_assessment(db, graph, "s-1", _user, "answer", "sk-test")
 
     @pytest.mark.asyncio
+    async def test_completed_session_raises(self):
+        db = AsyncMock()
+        graph = AsyncMock()
+        session = MagicMock()
+        session.thread_id = "t-1"
+        session.status = "completed"
+
+        with (
+            patch(
+                "app.services.assessment_service.session_repo.get_session_with_ownership",
+                new_callable=AsyncMock,
+                return_value=session,
+            ),
+            pytest.raises(SessionAlreadyCompletedError),
+        ):
+            await respond_to_assessment(db, graph, "s-1", _user, "answer", "sk-test")
+
+    @pytest.mark.asyncio
     async def test_yields_question_event_on_interrupt(self):
         db = AsyncMock()
         graph = AsyncMock()

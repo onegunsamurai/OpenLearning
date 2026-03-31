@@ -8,7 +8,7 @@ adapter converts them to the ``data: …\n\n`` lines expected by the frontend.
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncIterable, AsyncIterator
 
 from app.models.events import AssessmentEvent, CompleteEvent, ErrorEvent, QuestionEvent
 
@@ -16,9 +16,7 @@ from app.models.events import AssessmentEvent, CompleteEvent, ErrorEvent, Questi
 class SSEAdapter:
     """Translates an async stream of ``AssessmentEvent`` to SSE strings."""
 
-    async def adapt(
-        self, events: AsyncGenerator[AssessmentEvent, None]
-    ) -> AsyncGenerator[str, None]:
+    async def adapt(self, events: AsyncIterable[AssessmentEvent]) -> AsyncIterator[str]:
         async for event in events:
             match event:
                 case QuestionEvent(text=text, meta=meta):

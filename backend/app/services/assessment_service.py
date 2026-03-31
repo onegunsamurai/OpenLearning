@@ -47,7 +47,7 @@ from app.models.assessment_api import (
     AssessmentStartResponse,
     KnowledgeGraphOut,
 )
-from app.models.events import CompleteEvent, ErrorEvent, QuestionEvent
+from app.models.events import AssessmentEvent, CompleteEvent, ErrorEvent, QuestionEvent
 from app.repositories import result_repo, session_repo
 from app.routes.export_utils import build_assessment_markdown
 from app.services.ai import api_key_scope, classify_anthropic_error
@@ -60,8 +60,6 @@ from app.services.assessment_mappers import (
 )
 
 logger = logging.getLogger("openlearning.assessment")
-
-AssessmentEvent = QuestionEvent | CompleteEvent | ErrorEvent
 
 
 # ---------------------------------------------------------------------------
@@ -199,17 +197,20 @@ async def respond_to_assessment(
     response: str,
     api_key: str,
 ) -> AsyncGenerator[AssessmentEvent, None]:
-    """Validate the session and return a domain-event generator.
+    """Validate the session eagerly, then return a lazy event generator.
 
-    Validation (ownership, status, timestamp) runs eagerly so that
-    HTTP errors are raised **before** ``StreamingResponse`` starts.
-    The returned async generator is then consumed by the SSEAdapter.
+    This is an ``async def`` that **returns** (not yields) an async generator.
+    Validation (ownership, status, timestamp) runs eagerly so that domain
+    exceptions are raised **before** ``StreamingResponse`` starts.
+    The returned ``_assessment_event_stream`` generator is consumed by SSEAdapter.
     """
     # --- eager validation (runs before streaming starts) ---
     session_row = await session_repo.get_session_with_ownership(db, session_id, user.user_id)
     thread_id = session_row.thread_id
     if session_row.status == "timed_out":
         raise SessionTimedOutError("Session has timed out")
+    if session_row.status == "completed":
+        raise SessionAlreadyCompletedError("Session is already completed")
     session_row.updated_at = func.now()
     await db.commit()
 
