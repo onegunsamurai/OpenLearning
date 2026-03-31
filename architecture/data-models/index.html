@@ -1018,6 +1018,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#repository-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#langgraph-checkpoints" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1747,6 +1758,17 @@
     <span class="md-ellipsis">
       
         Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repository-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository Layer
       
     </span>
   </a>
@@ -2542,6 +2564,35 @@
 <li><code>User</code> → <code>AssessmentSession</code>: one-to-many via <code>user_id</code></li>
 <li><code>AssessmentSession</code> → <code>AssessmentResult</code>: one-to-one via <code>session_id</code></li>
 </ul>
+<h3 id="repository-layer">Repository Layer<a class="headerlink" href="#repository-layer" title="Permanent link">&para;</a></h3>
+<p>Database query logic is abstracted from route handlers into dedicated repository modules in <code>backend/app/repositories/</code>. Each function takes an <code>AsyncSession</code> as its first parameter and provides a clean separation between data access and request handling.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Key Functions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session_repo</code></td>
+<td><code>get_session</code>, <code>get_session_with_ownership</code>, <code>list_user_sessions</code>, <code>delete_session_cascade</code>, <code>timeout_stale_sessions</code></td>
+</tr>
+<tr>
+<td><code>result_repo</code></td>
+<td><code>get_result_by_session</code></td>
+</tr>
+<tr>
+<td><code>user_repo</code></td>
+<td><code>get_user_by_id</code>, <code>get_user_or_404</code>, <code>get_auth_method</code>, <code>get_auth_method_by_user</code>, <code>get_user_by_auth_method</code></td>
+</tr>
+<tr>
+<td><code>material_repo</code></td>
+<td><code>get_materials_by_session</code></td>
+</tr>
+</tbody>
+</table>
+<p>Convenience variants (e.g. <code>get_session_with_ownership</code>, <code>get_user_or_404</code>) raise <code>HTTPException</code> directly, eliminating repeated 404/403 boilerplate in route handlers.</p>
 <h3 id="langgraph-checkpoints">LangGraph Checkpoints<a class="headerlink" href="#langgraph-checkpoints" title="Permanent link">&para;</a></h3>
 <p>Pipeline state is persisted in the same PostgreSQL database via <code>AsyncPostgresSaver</code>. LangGraph manages its own checkpoint tables and stores the full state at each interrupt point, enabling resumption of assessments across server restarts.</p>
 
