@@ -1,6 +1,6 @@
 "use client";
 
-import type { EnrichedGapItemOut } from "@/lib/types";
+import type { GapItem } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ const priorityColors: Record<string, string> = {
 };
 
 interface GapCardProps {
-  gap: EnrichedGapItemOut;
+  gap: GapItem;
   index: number;
 }
 

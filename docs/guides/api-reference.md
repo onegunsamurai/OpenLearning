@@ -519,9 +519,13 @@ Get the full assessment report. Stores results in the database (idempotent).
       { "concept": "http_fundamentals", "confidence": 0.85, "bloomLevel": "apply", "prerequisites": [] }
     ]
   },
-  "gapNodes": [
-    { "concept": "distributed_systems", "currentConfidence": 0.3, "targetBloomLevel": "analyze", "prerequisites": ["networking"] }
-  ],
+  "gapAnalysis": {
+    "overallReadiness": 72,
+    "summary": "Strong foundations with gaps in distributed systems and security.",
+    "gaps": [
+      { "skillId": "distributed_systems", "skillName": "Distributed Systems", "currentLevel": 30, "targetLevel": 80, "gap": 50, "priority": "critical", "recommendation": "Focus on distributed systems fundamentals." }
+    ]
+  },
   "learningPlan": {
     "summary": "Focus on distributed systems and security fundamentals.",
     "totalHours": 24.0,

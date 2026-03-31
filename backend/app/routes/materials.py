@@ -1,32 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import AssessmentSession, MaterialResult, get_db
 from app.deps import AuthUser, get_current_user
-from app.models.base import CamelModel
+from app.models.materials import MaterialOut, MaterialsResponse
 
 router = APIRouter()
-
-
-class MaterialOut(CamelModel):
-    concept_id: str
-    domain: str
-    bloom_score: float
-    quality_score: float
-    iteration_count: int
-    quality_flag: str | None = None
-    material: dict
-    generated_at: datetime
-
-
-class MaterialsResponse(CamelModel):
-    session_id: str
-    materials: list[MaterialOut]
 
 
 @router.get(

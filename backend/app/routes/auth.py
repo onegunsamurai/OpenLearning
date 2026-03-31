@@ -11,7 +11,6 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse, RedirectResponse
 from jose import jwt
-from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +19,15 @@ from app.config import get_settings
 from app.crypto import decrypt_api_key, encrypt_api_key
 from app.db import AuthMethod, User, get_db
 from app.deps import JWT_ALGORITHM, AuthUser, get_current_user
-from app.models.base import CamelModel
+from app.models.auth import (
+    ApiKeyResponse,
+    ApiKeySetRequest,
+    AuthMeResponse,
+    LoginRequest,
+    OkResponse,
+    RegisterRequest,
+    ValidateKeyResponse,
+)
 from app.password import hash_password, verify_password
 
 logger = logging.getLogger("openlearning.auth")
@@ -33,44 +40,6 @@ GITHUB_USER_URL = "https://api.github.com/user"
 JWT_EXPIRY_DAYS = 7
 
 _DUMMY_BCRYPT_HASH = hash_password("timing-equalization-dummy")
-
-
-# ── Response models ────────────────────────────────────────────────────────
-
-
-class AuthMeResponse(CamelModel):
-    user_id: str
-    display_name: str
-    avatar_url: str
-    has_api_key: bool
-    email: str | None = None
-
-
-class RegisterRequest(CamelModel):
-    email: EmailStr
-    password: str
-
-
-class LoginRequest(CamelModel):
-    email: EmailStr
-    password: str
-
-
-class ApiKeySetRequest(CamelModel):
-    api_key: str
-
-
-class ApiKeyResponse(CamelModel):
-    api_key_preview: str
-
-
-class OkResponse(CamelModel):
-    ok: bool
-
-
-class ValidateKeyResponse(CamelModel):
-    valid: bool
-    error: str | None = None
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
