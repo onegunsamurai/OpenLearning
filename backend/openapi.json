@@ -1245,14 +1245,14 @@
             "$ref": "#/components/schemas/KnowledgeGraphOut"
           },
           "gapAnalysis": {
-            "$ref": "#/components/schemas/EnrichedGapAnalysisOut"
+            "$ref": "#/components/schemas/GapAnalysis"
           },
           "learningPlan": {
             "$ref": "#/components/schemas/LearningPlanOut"
           },
           "proficiencyScores": {
             "items": {
-              "$ref": "#/components/schemas/ProficiencyScoreOut"
+              "$ref": "#/components/schemas/ProficiencyScore"
             },
             "type": "array",
             "title": "Proficiencyscores"
@@ -1430,81 +1430,6 @@
           "level"
         ],
         "title": "ConceptSummary"
-      },
-      "EnrichedGapAnalysisOut": {
-        "properties": {
-          "overallReadiness": {
-            "type": "integer",
-            "title": "Overallreadiness"
-          },
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          },
-          "gaps": {
-            "items": {
-              "$ref": "#/components/schemas/EnrichedGapItemOut"
-            },
-            "type": "array",
-            "title": "Gaps"
-          }
-        },
-        "type": "object",
-        "required": [
-          "overallReadiness",
-          "summary",
-          "gaps"
-        ],
-        "title": "EnrichedGapAnalysisOut"
-      },
-      "EnrichedGapItemOut": {
-        "properties": {
-          "skillId": {
-            "type": "string",
-            "title": "Skillid"
-          },
-          "skillName": {
-            "type": "string",
-            "title": "Skillname"
-          },
-          "currentLevel": {
-            "type": "integer",
-            "title": "Currentlevel"
-          },
-          "targetLevel": {
-            "type": "integer",
-            "title": "Targetlevel"
-          },
-          "gap": {
-            "type": "integer",
-            "title": "Gap"
-          },
-          "priority": {
-            "type": "string",
-            "enum": [
-              "critical",
-              "high",
-              "medium",
-              "low"
-            ],
-            "title": "Priority"
-          },
-          "recommendation": {
-            "type": "string",
-            "title": "Recommendation"
-          }
-        },
-        "type": "object",
-        "required": [
-          "skillId",
-          "skillName",
-          "currentLevel",
-          "targetLevel",
-          "gap",
-          "priority",
-          "recommendation"
-        ],
-        "title": "EnrichedGapItemOut"
       },
       "GapAnalysis": {
         "properties": {
@@ -2038,39 +1963,6 @@
           "reasoning"
         ],
         "title": "ProficiencyScore"
-      },
-      "ProficiencyScoreOut": {
-        "properties": {
-          "skillId": {
-            "type": "string",
-            "title": "Skillid"
-          },
-          "skillName": {
-            "type": "string",
-            "title": "Skillname"
-          },
-          "score": {
-            "type": "integer",
-            "title": "Score"
-          },
-          "confidence": {
-            "type": "number",
-            "title": "Confidence"
-          },
-          "reasoning": {
-            "type": "string",
-            "title": "Reasoning"
-          }
-        },
-        "type": "object",
-        "required": [
-          "skillId",
-          "skillName",
-          "score",
-          "confidence",
-          "reasoning"
-        ],
-        "title": "ProficiencyScoreOut"
       },
       "RegisterRequest": {
         "properties": {

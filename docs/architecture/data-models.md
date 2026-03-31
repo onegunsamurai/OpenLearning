@@ -37,7 +37,7 @@ class ProficiencyScore(CamelModel):
 
 ### User Dashboard
 
-**Source**: `backend/app/routes/user.py`
+**Source**: `backend/app/models/user.py`
 
 ```python
 class UserAssessmentSummary(CamelModel):
@@ -129,11 +129,11 @@ class RoleDetail(CamelModel):
 
 **Source**: `backend/app/models/roles.py`
 
-### Assessment Route Models
+### Assessment API Models
 
-These are simplified output projections defined directly in the route module (not in `models/`). They differ from the pipeline state types in `graph/state.py`.
+Simplified output projections for the assessment API. They differ from the pipeline state types in `graph/state.py`.
 
-**Source**: `backend/app/routes/assessment.py`
+**Source**: `backend/app/models/assessment_api.py`
 
 ```python
 # Request/Response for /assessment/start
@@ -164,7 +164,7 @@ class KnowledgeNodeOut(CamelModel):
 class KnowledgeGraphOut(CamelModel):
     nodes: list[KnowledgeNodeOut]
 
-class ProficiencyScoreOut(CamelModel):
+class ProficiencyScore(CamelModel):     # shared with gap_analysis module
     skill_id: str
     skill_name: str
     score: int
@@ -185,12 +185,6 @@ class LearningPhaseOut(CamelModel):
     estimated_hours: float
 
 # Response for /assessment/{id}/report
-class GapNodeOut(CamelModel):
-    concept: str
-    current_confidence: float
-    target_bloom_level: str
-    prerequisites: list[str]
-
 class LearningPlanOut(CamelModel):
     summary: str
     total_hours: float
@@ -198,16 +192,14 @@ class LearningPlanOut(CamelModel):
 
 class AssessmentReportResponse(CamelModel):
     knowledge_graph: KnowledgeGraphOut
-    gap_nodes: list[GapNodeOut]
+    gap_analysis: GapAnalysis              # reuses GapAnalysis from gap_analysis module
     learning_plan: LearningPlanOut
-    proficiency_scores: list[ProficiencyScoreOut]
+    proficiency_scores: list[ProficiencyScore]
 ```
 
-### Auth Route Models
+### Auth Models
 
-These are defined directly in the route module (not in `models/`), following the same pattern as the assessment route models above.
-
-**Source**: `backend/app/routes/auth.py`
+**Source**: `backend/app/models/auth.py`
 
 ```python
 class AuthMeResponse(CamelModel):

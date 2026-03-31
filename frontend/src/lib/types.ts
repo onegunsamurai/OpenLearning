@@ -17,8 +17,6 @@ export type {
   ValidateKeyResponse,
   RegisterRequest,
   LoginRequest,
-  EnrichedGapAnalysisOut,
-  EnrichedGapItemOut,
   UserAssessmentSummary,
   AssessmentReportResponse,
   LearningPlanOut,

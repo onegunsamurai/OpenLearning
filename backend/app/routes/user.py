@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
@@ -11,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from app.db import AssessmentResult, AssessmentSession, MaterialResult, get_db
 from app.deps import AuthUser, get_current_user
 from app.knowledge_base.loader import load_knowledge_base
-from app.models.base import CamelModel
+from app.models.user import UserAssessmentSummary
 
 logger = logging.getLogger("openlearning.user")
 
@@ -31,19 +30,6 @@ def _resolve_role_name(role_id: str | None) -> str | None:
     except Exception as exc:
         logger.warning("Failed to resolve role name for role_id '%s': %s", role_id, exc)
         return None
-
-
-class UserAssessmentSummary(CamelModel):
-    session_id: str
-    status: str
-    skill_ids: list[str]
-    target_level: str
-    role_id: str | None = None
-    role_name: str | None = None
-    created_at: datetime
-    completed_at: datetime | None = None
-    overall_readiness: int | None = None
-    skill_count: int
 
 
 @router.get(

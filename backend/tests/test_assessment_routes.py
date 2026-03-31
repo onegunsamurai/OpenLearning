@@ -74,7 +74,7 @@ def _make_kg() -> KnowledgeGraph:
 class TestAssessmentStart:
     @pytest.mark.asyncio
     async def test_start_empty_skills_returns_400(self, setup_db):
-        with patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]):
+        with patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -86,7 +86,7 @@ class TestAssessmentStart:
 
     @pytest.mark.asyncio
     async def test_start_unknown_role_returns_422(self, setup_db):
-        with patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]):
+        with patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -105,7 +105,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
             patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
@@ -134,7 +134,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
             patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
@@ -163,7 +163,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["frontend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["frontend_engineering"]),
             patch(
                 "app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"
             ) as mock_map,
@@ -196,7 +196,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]),
             patch(
                 "app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"
             ) as mock_map,
@@ -222,7 +222,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
             patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),
@@ -249,7 +249,7 @@ class TestAssessmentStart:
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
 
         with (
-            patch("app.routes.assessment.list_domains", return_value=["backend_engineering"]),
+            patch("app.knowledge_base.loader.list_domains", return_value=["backend_engineering"]),
             patch("app.routes.assessment.map_skills_to_domain", return_value="backend_engineering"),
             patch("app.routes.assessment.get_target_graph", return_value=_make_kg()),
             patch("app.routes.assessment.get_all_topics", return_value=["t1", "t2"]),

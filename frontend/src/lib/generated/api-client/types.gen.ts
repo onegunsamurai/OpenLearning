@@ -29,12 +29,12 @@ export type ApiKeySetRequest = {
  */
 export type AssessmentReportResponse = {
     knowledgeGraph: KnowledgeGraphOut;
-    gapAnalysis: EnrichedGapAnalysisOut;
+    gapAnalysis: GapAnalysis;
     learningPlan: LearningPlanOut;
     /**
      * Proficiencyscores
      */
-    proficiencyScores: Array<ProficiencyScoreOut>;
+    proficiencyScores: Array<ProficiencyScore>;
 };
 
 /**
@@ -145,58 +145,6 @@ export type ConceptSummary = {
      * Prerequisites
      */
     prerequisites?: Array<string>;
-};
-
-/**
- * EnrichedGapAnalysisOut
- */
-export type EnrichedGapAnalysisOut = {
-    /**
-     * Overallreadiness
-     */
-    overallReadiness: number;
-    /**
-     * Summary
-     */
-    summary: string;
-    /**
-     * Gaps
-     */
-    gaps: Array<EnrichedGapItemOut>;
-};
-
-/**
- * EnrichedGapItemOut
- */
-export type EnrichedGapItemOut = {
-    /**
-     * Skillid
-     */
-    skillId: string;
-    /**
-     * Skillname
-     */
-    skillName: string;
-    /**
-     * Currentlevel
-     */
-    currentLevel: number;
-    /**
-     * Targetlevel
-     */
-    targetLevel: number;
-    /**
-     * Gap
-     */
-    gap: number;
-    /**
-     * Priority
-     */
-    priority: 'critical' | 'high' | 'medium' | 'low';
-    /**
-     * Recommendation
-     */
-    recommendation: string;
 };
 
 /**
@@ -544,32 +492,6 @@ export type Phase = {
  * ProficiencyScore
  */
 export type ProficiencyScore = {
-    /**
-     * Skillid
-     */
-    skillId: string;
-    /**
-     * Skillname
-     */
-    skillName: string;
-    /**
-     * Score
-     */
-    score: number;
-    /**
-     * Confidence
-     */
-    confidence: number;
-    /**
-     * Reasoning
-     */
-    reasoning: string;
-};
-
-/**
- * ProficiencyScoreOut
- */
-export type ProficiencyScoreOut = {
     /**
      * Skillid
      */
