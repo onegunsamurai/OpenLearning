@@ -629,12 +629,12 @@ Database query logic is abstracted from route handlers into dedicated repository
 
 | Module | Key Functions |
 |--------|--------------|
-| `session_repo` | `get_session`, `get_session_or_404`, `get_session_with_ownership`, `get_thread_id_or_404`, `list_user_sessions`, `delete_session_cascade`, `timeout_stale_sessions` |
+| `session_repo` | `get_session`, `get_session_with_ownership`, `list_user_sessions`, `delete_session_cascade`, `timeout_stale_sessions` |
 | `result_repo` | `get_result_by_session` |
 | `user_repo` | `get_user_by_id`, `get_user_or_404`, `get_auth_method`, `get_auth_method_by_user`, `get_user_by_auth_method` |
 | `material_repo` | `get_materials_by_session` |
 
-Convenience variants (e.g. `get_session_or_404`, `get_session_with_ownership`) raise `HTTPException` directly, eliminating repeated 404/403 boilerplate in route handlers.
+Convenience variants (e.g. `get_session_with_ownership`, `get_user_or_404`) raise `HTTPException` directly, eliminating repeated 404/403 boilerplate in route handlers.
 
 ### LangGraph Checkpoints
 
