@@ -680,10 +680,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assessment-route-models" class="md-nav__link">
+  <a href="#assessment-api-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assessment Route Models
+        Assessment API Models
       
     </span>
   </a>
@@ -691,10 +691,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auth-route-models" class="md-nav__link">
+  <a href="#auth-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auth Route Models
+        Auth Models
       
     </span>
   </a>
@@ -1416,10 +1416,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assessment-route-models" class="md-nav__link">
+  <a href="#assessment-api-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assessment Route Models
+        Assessment API Models
       
     </span>
   </a>
@@ -1427,10 +1427,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auth-route-models" class="md-nav__link">
+  <a href="#auth-models" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auth Route Models
+        Auth Models
       
     </span>
   </a>
@@ -1816,7 +1816,7 @@
     <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>
 </code></pre></div>
 <h3 id="user-dashboard">User Dashboard<a class="headerlink" href="#user-dashboard" title="Permanent link">&para;</a></h3>
-<p><strong>Source</strong>: <code>backend/app/routes/user.py</code></p>
+<p><strong>Source</strong>: <code>backend/app/models/user.py</code></p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">UserAssessmentSummary</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>                          <span class="c1"># &quot;active&quot;, &quot;completed&quot;, or &quot;timed_out&quot;</span>
@@ -1895,9 +1895,9 @@
     <span class="n">levels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">RoleLevelSummary</span><span class="p">]</span>
 </code></pre></div>
 <p><strong>Source</strong>: <code>backend/app/models/roles.py</code></p>
-<h3 id="assessment-route-models">Assessment Route Models<a class="headerlink" href="#assessment-route-models" title="Permanent link">&para;</a></h3>
-<p>These are simplified output projections defined directly in the route module (not in <code>models/</code>). They differ from the pipeline state types in <code>graph/state.py</code>.</p>
-<p><strong>Source</strong>: <code>backend/app/routes/assessment.py</code></p>
+<h3 id="assessment-api-models">Assessment API Models<a class="headerlink" href="#assessment-api-models" title="Permanent link">&para;</a></h3>
+<p>Simplified output projections for the assessment API. They differ from the pipeline state types in <code>graph/state.py</code>.</p>
+<p><strong>Source</strong>: <code>backend/app/models/assessment_api.py</code></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Request/Response for /assessment/start</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -1926,7 +1926,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeGraphOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">KnowledgeNodeOut</span><span class="p">]</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ProficiencyScoreOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProficiencyScore</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>     <span class="c1"># shared with gap_analysis module</span>
     <span class="n">skill_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">skill_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">score</span><span class="p">:</span> <span class="nb">int</span>
@@ -1947,12 +1947,6 @@
     <span class="n">estimated_hours</span><span class="p">:</span> <span class="nb">float</span>
 
 <span class="c1"># Response for /assessment/{id}/report</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">GapNodeOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">current_confidence</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">target_bloom_level</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">prerequisites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-
 <span class="k">class</span><span class="w"> </span><span class="nc">LearningPlanOut</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">total_hours</span><span class="p">:</span> <span class="nb">float</span>
@@ -1960,13 +1954,12 @@
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentReportResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">knowledge_graph</span><span class="p">:</span> <span class="n">KnowledgeGraphOut</span>
-    <span class="n">gap_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GapNodeOut</span><span class="p">]</span>
+    <span class="n">gap_analysis</span><span class="p">:</span> <span class="n">GapAnalysis</span>              <span class="c1"># reuses GapAnalysis from gap_analysis module</span>
     <span class="n">learning_plan</span><span class="p">:</span> <span class="n">LearningPlanOut</span>
-    <span class="n">proficiency_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProficiencyScoreOut</span><span class="p">]</span>
+    <span class="n">proficiency_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProficiencyScore</span><span class="p">]</span>
 </code></pre></div>
-<h3 id="auth-route-models">Auth Route Models<a class="headerlink" href="#auth-route-models" title="Permanent link">&para;</a></h3>
-<p>These are defined directly in the route module (not in <code>models/</code>), following the same pattern as the assessment route models above.</p>
-<p><strong>Source</strong>: <code>backend/app/routes/auth.py</code></p>
+<h3 id="auth-models">Auth Models<a class="headerlink" href="#auth-models" title="Permanent link">&para;</a></h3>
+<p><strong>Source</strong>: <code>backend/app/models/auth.py</code></p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AuthMeResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
