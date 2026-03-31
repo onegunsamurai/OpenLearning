@@ -112,3 +112,36 @@ def register_anthropic_error_handlers(application: FastAPI) -> None:
 
 
 register_anthropic_error_handlers(app)
+
+
+def register_assessment_error_handlers(application: FastAPI) -> None:
+    """Register global exception handlers for assessment domain errors."""
+    from app.exceptions import (
+        AssessmentError,
+        AssessmentNotCompleteError,
+        AssessmentValidationError,
+        GraphInterruptError,
+        SessionAlreadyCompletedError,
+        SessionTimedOutError,
+    )
+
+    _status_map: dict[type[AssessmentError], int] = {
+        SessionTimedOutError: 410,
+        SessionAlreadyCompletedError: 409,
+        AssessmentNotCompleteError: 400,
+        AssessmentValidationError: 400,
+        GraphInterruptError: 500,
+    }
+
+    for exc_type, status in _status_map.items():
+
+        def _make_handler(code: int):
+            async def _handler(_request: Request, exc: AssessmentError) -> JSONResponse:
+                return JSONResponse(status_code=code, content={"detail": exc.detail})
+
+            return _handler
+
+        application.add_exception_handler(exc_type, _make_handler(status))
+
+
+register_assessment_error_handlers(app)
