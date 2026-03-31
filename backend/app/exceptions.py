@@ -23,6 +23,10 @@ class SessionAlreadyCompletedError(AssessmentError):
     """Session is already in completed state (maps to HTTP 409)."""
 
 
+class AssessmentValidationError(AssessmentError):
+    """Invalid input for an assessment operation (maps to HTTP 400)."""
+
+
 class AssessmentNotCompleteError(AssessmentError):
     """Assessment pipeline hasn't finished yet (maps to HTTP 400)."""
 

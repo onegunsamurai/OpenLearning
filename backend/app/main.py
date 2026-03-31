@@ -119,6 +119,7 @@ def register_assessment_error_handlers(application: FastAPI) -> None:
     from app.exceptions import (
         AssessmentError,
         AssessmentNotCompleteError,
+        AssessmentValidationError,
         GraphInterruptError,
         SessionAlreadyCompletedError,
         SessionTimedOutError,
@@ -128,6 +129,7 @@ def register_assessment_error_handlers(application: FastAPI) -> None:
         SessionTimedOutError: 410,
         SessionAlreadyCompletedError: 409,
         AssessmentNotCompleteError: 400,
+        AssessmentValidationError: 400,
         GraphInterruptError: 500,
     }
 

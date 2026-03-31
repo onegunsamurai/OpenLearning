@@ -24,6 +24,7 @@ from app.db import AssessmentResult, AssessmentSession
 from app.deps import AuthUser
 from app.exceptions import (
     AssessmentNotCompleteError,
+    AssessmentValidationError,
     GraphInterruptError,
     SessionAlreadyCompletedError,
     SessionTimedOutError,
@@ -115,9 +116,7 @@ async def start_assessment(
 ) -> AssessmentStartResponse:
     """Create a new assessment session and return the first question."""
     if not request.skill_ids:
-        from fastapi import HTTPException
-
-        raise HTTPException(status_code=400, detail="At least one skill is required")
+        raise AssessmentValidationError("At least one skill is required")
 
     # Map skills to domain (skip mapping if role_id provided)
     domain = request.role_id if request.role_id else map_skills_to_domain(request.skill_ids)

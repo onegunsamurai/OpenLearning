@@ -1,12 +1,11 @@
-"""Pure data-transformation functions for assessment domain objects.
+"""Data-transformation helpers for assessment domain objects.
 
-These mappers convert between graph state objects, DB JSONB dicts, and
-API response models.  They contain **no I/O and no side effects**.
+These mappers primarily convert between graph state objects, DB JSONB dicts,
+and API response models.  Some helpers also perform recomputation that
+depends on the knowledge base.
 """
 
 from __future__ import annotations
-
-import logging
 
 from app.agents.gap_analyzer import analyze_gaps
 from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
@@ -27,9 +26,6 @@ from app.models.assessment_api import (
     ResourceOut,
 )
 from app.models.gap_analysis import GapAnalysis, GapItem
-
-logger = logging.getLogger("openlearning.assessment")
-
 
 # ---------------------------------------------------------------------------
 # DTO builders
