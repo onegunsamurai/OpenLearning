@@ -15,7 +15,7 @@
 | `AssessmentComplete.tsx` | Extract `SkillScoreCard` sub-component (refactor, no new logic) |
 | `gap-analysis/page.tsx` | Add conditional branch when `gapAnalysis.gaps.length === 0` to render success state |
 | New: `NoGapsSuccess` component | Renders congratulatory UI with CTAs for learning-plan page |
-| New success state in gap-analysis | Renders congratulatory UI with CTAs ("Try a harder level", "Add more skills", "Share your results") |
+| New success state in gap-analysis | Renders congratulatory UI with CTAs ("Try a harder level", "Add more skills") |
 
 ### Data flow (unchanged)
 
@@ -54,10 +54,10 @@ No new trust boundaries are introduced. All data rendered in the new success sta
 |---|---|---|---|
 | **Spoofing** | New UI components | **N/A** | No new auth surfaces. Pages already require authentication via `useAuth`/`useAuthStore` with redirect to `/login` if unauthenticated. No change needed. |
 | **Tampering** | CTA navigation links | **LOW** | CTAs use `router.push()` for internal navigation. An attacker cannot tamper with these since they are hardcoded paths, not user-supplied. |
-| **Tampering** | "Share your results" CTA | **LOW** | If implemented via `navigator.share()` or clipboard copy, the data copied is the user's own assessment data. No server-side mutation. |
+| **Tampering** | CTA buttons | **LOW** | CTAs use `router.push()` for internal navigation and `reset()` for store cleanup. No server-side mutation. |
 | **Repudiation** | New UI states | **N/A** | No new actions that require audit trails. Viewing a success page is a read-only operation. |
 | **Information Disclosure** | Rendered skill names, scores | **LOW** | Skill names (`skillName`) and scores (`score`, `overallReadiness`) come from LLM-generated backend responses. These are already displayed on existing pages. React's JSX auto-escapes text content, preventing injection. The data is the authenticated user's own data. |
-| **Information Disclosure** | "Share your results" CTA | **MEDIUM** | If "Share your results" exposes a shareable URL or copies data to clipboard, it could inadvertently leak the user's assessment data (skill names, scores, session ID). This is the primary concern for this change. |
+| **Information Disclosure** | Session ID in URL | **LOW** | Session IDs are already visible in URL query params (`?session=<uuid>`). No new exposure introduced by success state CTAs. Backend enforces session ownership on the report endpoint. |
 | **Denial of Service** | New components | **N/A** | No new API calls, no new server-side processing. Purely presentational. |
 | **Elevation of Privilege** | New components | **N/A** | No authorization changes. The same `useSessionReport(sessionId)` hook is used, and the backend enforces ownership checks on the report endpoint. |
 
@@ -73,15 +73,15 @@ No new trust boundaries are introduced. All data rendered in the new success sta
 
 **Requirement:** Do NOT use `dangerouslySetInnerHTML` in new components. Continue using standard JSX text interpolation.
 
-#### T-2: Session ID exposure via "Share your results" CTA (MEDIUM)
+#### T-2: Session ID in URL query parameters (LOW)
 
-**Description:** The proposed "Share your results" CTA could expose the user's `sessionId` (a UUID) in a shared URL, clipboard content, or social media post. The session ID is used to fetch the full assessment report via `/api/assessment/report/{sessionId}`. If the report endpoint does not enforce ownership (i.e., anyone with the session ID can fetch the report), sharing the session ID effectively shares all assessment data.
+**Description:** Session IDs (UUIDs) are present in URL query parameters (`?session=<uuid>`) on the gap-analysis and learning-plan pages. This is an existing pattern, not new to this change. The session ID is used to fetch the full assessment report via `/api/assessment/report/{sessionId}`.
 
-**Current state:** The `useSessionReport` hook calls `api.assessmentReport(sessionId)` which hits a backend endpoint. Need to verify the backend enforces that only the session owner can access the report.
+**Current state:** The `useSessionReport` hook calls `api.assessmentReport(sessionId)` which hits a backend endpoint. The backend enforces session ownership.
 
-**Risk:** MEDIUM — The session ID is already present in the URL query parameter (`?session=<uuid>`) on the gap-analysis and learning-plan pages. The "Share" CTA does not introduce new exposure beyond what URL bar visibility already provides, but it makes sharing more intentional and likely.
+**Risk:** LOW — No new share functionality is introduced in this PR. The CTAs navigate internally ("Try a Harder Level", "View Learning Plan", "Start New Assessment") using `router.push()` with hardcoded paths.
 
-**Requirement:** (1) If "Share your results" copies/shares a URL containing the session ID, the backend MUST enforce ownership on the report endpoint. (2) Alternatively, the "Share" CTA can share only a static congratulatory message without session-specific data or URLs.
+**Requirement:** No action needed for this PR. If a "Share your results" CTA is added in the future, it should share a generic message without session IDs.
 
 #### T-3: Open redirect via CTA navigation (LOW)
 
@@ -100,7 +100,7 @@ No new trust boundaries are introduced. All data rendered in the new success sta
 | `/gap-analysis?session=<id>` | Page route | Yes (redirect to login) | Modified: adds success-state rendering branch |
 | `/learning-plan?session=<id>` | Page route | Yes (redirect to login) | Modified: adds success-state rendering branch |
 | `AssessmentComplete` component | UI component | Yes (parent page enforces) | Modified: extract `SkillScoreCard` sub-component |
-| "Share your results" CTA | User action | Yes (on authenticated page) | **NEW**: copies data to clipboard or triggers Web Share API |
+| "View Learning Plan" CTA | Navigation | Yes (on authenticated page) | **NEW**: `router.push()` to `/learning-plan` route |
 | "Try a harder level" CTA | Navigation | Yes (on authenticated page) | **NEW**: `router.push()` to internal route |
 | "Add more skills" CTA | Navigation | Yes (on authenticated page) | **NEW**: `router.push()` to internal route |
 
@@ -187,8 +187,8 @@ The codebase has zero instances of `dangerouslySetInnerHTML` in production code.
 | Risk | Rating | Blocking? | Notes |
 |---|---|---|---|
 | XSS via LLM content | LOW | No | React auto-escapes; just maintain existing pattern |
-| Session ID leak via Share | MEDIUM | No | Design the share CTA to avoid exposing session IDs |
+| Session ID in URL | LOW | No | Existing pattern; no new share functionality introduced |
 | Open redirect via CTAs | LOW | No | Hardcoded paths; no user input controls navigation |
 | New dependency vulns | LOW | No | No new deps expected |
 
-**Overall assessment:** This is a low-risk, frontend-only presentational change. There are no CRITICAL threats. The only MEDIUM-priority item is the "Share your results" CTA design, which should be addressed by sharing a generic message rather than session-specific URLs. No changes block architecture approval.
+**Overall assessment:** This is a low-risk, frontend-only presentational change. There are no CRITICAL or MEDIUM threats. All CTAs use hardcoded internal navigation. No changes block architecture approval.

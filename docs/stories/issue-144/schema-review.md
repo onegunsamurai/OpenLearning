@@ -61,11 +61,11 @@ The barrel file already re-exports all types the frontend needs:
 The frontend can detect the "no gaps" success state using existing data:
 
 ```typescript
-// Gap analysis success: user has 100% readiness and no gaps
-const isFullyProficient = gapAnalysis.overallReadiness === 100 && gapAnalysis.gaps.length === 0;
+// Gap analysis success: no gaps identified
+const isFullyProficient = gapAnalysis.gaps.length === 0;
 
-// Learning plan success: no phases needed (follows from no gaps)
-const noLearningNeeded = learningPlan.phases.length === 0;
+// Learning plan success: gates on the same condition (gaps.length === 0)
+const noLearningNeeded = report.gapAnalysis.gaps.length === 0;
 
 // Per-skill scores are available via proficiencyScores for the success UI
 ```
@@ -81,4 +81,4 @@ const noLearningNeeded = learningPlan.phases.length === 0;
 
 ## Conclusion
 
-This is a pure frontend presentation change. The backend APIs (`GET /api/assessment/{session_id}/report`, `POST /api/gap-analysis`, `POST /api/learning-plan`) already return the correct data for the 100% proficiency case. The frontend implementation should branch on `overallReadiness === 100` and `gaps.length === 0` to render the success state UIs.
+This is a pure frontend presentation change. The backend APIs (`GET /api/assessment/{session_id}/report`, `POST /api/gap-analysis`, `POST /api/learning-plan`) already return the correct data for the 100% proficiency case. The frontend implementation branches on `gaps.length === 0` to render the success state UIs (`NoGapsHero` on gap-analysis, `NoGapsSuccess` on learning-plan).

@@ -104,4 +104,12 @@ describe("NoGapsSuccess", () => {
     render(<NoGapsSuccess {...defaultProps} targetLevel="expert" />);
     expect(screen.getByText(/expert level/)).toBeInTheDocument();
   });
+
+  it("shows generic copy when targetLevel is empty", () => {
+    render(<NoGapsSuccess {...defaultProps} targetLevel="" />);
+    expect(
+      screen.getByText(/demonstrated mastery across all assessed skills/)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/at the {2}level/)).not.toBeInTheDocument();
+  });
 });

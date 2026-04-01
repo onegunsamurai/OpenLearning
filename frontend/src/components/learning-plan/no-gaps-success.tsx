@@ -20,7 +20,7 @@ export function NoGapsSuccess({
 }: NoGapsSuccessProps) {
   const atMaxLevel = isMaxLevel(targetLevel);
   const levelLabel =
-    LEVEL_LABELS[targetLevel as Level] ?? targetLevel;
+    LEVEL_LABELS[targetLevel as Level] ?? (targetLevel || "");
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 py-8">
@@ -41,8 +41,9 @@ export function NoGapsSuccess({
           No Learning Plan Needed!
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          You&apos;ve demonstrated mastery at the {levelLabel} level. All skills
-          met or exceeded the target proficiency — there are no gaps to address.
+          {levelLabel
+            ? `You've demonstrated mastery at the ${levelLabel} level. All skills met or exceeded the target proficiency — there are no gaps to address.`
+            : "You've demonstrated mastery across all assessed skills. All skills met or exceeded the target proficiency — there are no gaps to address."}
         </p>
       </motion.div>
 

@@ -32,7 +32,6 @@ export interface NoGapsHeroProps {
   overallReadiness: number;
   summary: string;
   targetLevel: string;
-  sessionId: string;
   onStartOver: () => void;
   onContinue: () => void;
 }
@@ -43,5 +42,4 @@ export interface NoGapsSuccessProps {
   scores: ProficiencyScore[];
   targetLevel: string;
   onStartOver: () => void;
-  sessionId?: string | null;
 }

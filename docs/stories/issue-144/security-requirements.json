@@ -29,28 +29,17 @@
     },
     {
       "id": "SR-2",
-      "title": "Share CTA must not expose session-bound URLs",
-      "priority": "MEDIUM",
-      "threat": "T-2: Session ID exposure via share functionality",
-      "cwe": ["CWE-200", "CWE-639"],
+      "title": "No share functionality exposes session-bound URLs",
+      "priority": "LOW",
+      "status": "not-applicable",
+      "threat": "T-2: Session ID in URL (existing pattern)",
+      "cwe": ["CWE-200"],
       "owasp": "A01:2021",
-      "mitigation": "The 'Share your results' CTA should share only a generic congratulatory message without session IDs, report URLs, or user-specific assessment data. Use navigator.share() or navigator.clipboard.writeText() with a static message template.",
+      "mitigation": "No share CTA was implemented in this PR. CTAs are internal navigation only ('Try a Harder Level', 'View Learning Plan', 'Start New Assessment'). If share functionality is added in the future, it must not expose session IDs or report URLs.",
       "validation": {
         "type": "code-review",
-        "checks": [
-          {
-            "description": "Share handler does not include sessionId in shared content",
-            "check": "review-share-handler",
-            "verify": "Shared text/URL does not contain session UUID or /api/ paths"
-          },
-          {
-            "description": "No report endpoint URL in clipboard/share payload",
-            "check": "grep-zero-matches",
-            "pattern": "sessionId|session_id|/api/assessment",
-            "scope": ["share-handler-function-body"],
-            "expectedMatches": 0
-          }
-        ]
+        "check": "verify-no-share-handler",
+        "verify": "No navigator.share() or clipboard API calls exist in new components"
       }
     },
     {

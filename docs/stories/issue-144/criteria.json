@@ -40,12 +40,12 @@
       "id": "AC-4",
       "page": "gap-analysis",
       "category": "happy-path",
-      "description": "Radar chart still renders in success state",
+      "description": "GapSummary readiness ring renders in success state",
       "given": "report.gapAnalysis.gaps is empty",
       "when": "the gap analysis page renders",
-      "then": "the RadarChart component and GapSummary component still render",
+      "then": "the NoGapsHero component renders with GapSummary showing the readiness ring",
       "testable": true,
-      "testStrategy": "render page with empty gaps, assert radar chart and gap summary components present"
+      "testStrategy": "render page with empty gaps, assert NoGapsHero and GapSummary components present"
     },
     {
       "id": "AC-5",
@@ -63,18 +63,18 @@
       "page": "learning-plan",
       "category": "happy-path",
       "description": "Success state replaces empty phases",
-      "given": "report.learningPlan.phases is empty",
+      "given": "report.gapAnalysis.gaps is empty (gaps.length === 0)",
       "when": "the learning plan page renders",
-      "then": "the empty sidebar and PlanTimeline are replaced by a success state with a success icon and mastery message",
+      "then": "the empty sidebar and PlanTimeline are replaced by NoGapsSuccess with a trophy icon and mastery message",
       "testable": true,
-      "testStrategy": "render page with empty phases array, assert success component present, assert phase navigation absent"
+      "testStrategy": "render page with empty gaps array, assert NoGapsSuccess component present, assert phase navigation absent"
     },
     {
       "id": "AC-7",
       "page": "learning-plan",
       "category": "happy-path",
       "description": "Achievement-oriented metrics replace zero stats",
-      "given": "report.learningPlan.phases is empty",
+      "given": "report.gapAnalysis.gaps is empty (gaps.length === 0)",
       "when": "the learning plan page renders",
       "then": "the PlanHeader zero-value stats (0 Phases, 0 Hours, 0 Concepts) are hidden or replaced with achievement metrics",
       "testable": true,
@@ -85,7 +85,7 @@
       "page": "learning-plan",
       "category": "happy-path",
       "description": "Proficiency scores shown on learning plan success state",
-      "given": "report.learningPlan.phases is empty AND report.proficiencyScores is non-empty",
+      "given": "report.gapAnalysis.gaps is empty AND report.proficiencyScores is non-empty",
       "when": "the learning plan page renders in success state",
       "then": "the user's assessed skills and scores are displayed",
       "testable": true,
