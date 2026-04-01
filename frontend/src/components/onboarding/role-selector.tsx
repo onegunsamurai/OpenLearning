@@ -3,17 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { RoleSummary } from "@/lib/types";
 import { api } from "@/lib/api";
+import { LEVELS, LEVEL_LABELS } from "@/lib/constants";
 import { Loader2, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
-
-const LEVELS = ["junior", "mid", "senior", "staff"] as const;
-
-const LEVEL_LABELS: Record<string, string> = {
-  junior: "Junior",
-  mid: "Mid",
-  senior: "Senior",
-  staff: "Staff",
-};
 
 interface RoleSelectorProps {
   selectedRoleId: string | null;

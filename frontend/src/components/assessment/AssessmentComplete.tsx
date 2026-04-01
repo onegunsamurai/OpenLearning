@@ -2,7 +2,7 @@
 
 import { ProficiencyScore } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { SkillScoreCard } from "@/components/shared/skill-score-card";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -15,9 +15,9 @@ export function AssessmentComplete({
   scores,
   onContinue,
 }: AssessmentCompleteProps) {
-  const avgScore = Math.round(
-    scores.reduce((sum, s) => sum + s.score, 0) / scores.length
-  );
+  const avgScore = scores.length > 0
+    ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length)
+    : 0;
 
   return (
     <motion.div
@@ -37,22 +37,7 @@ export function AssessmentComplete({
 
       <div className="space-y-3">
         {scores.map((score, i) => (
-          <motion.div
-            key={score.skillId}
-            className="rounded-lg border border-border bg-card p-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">{score.skillName}</span>
-              <span className="text-sm font-mono text-cyan">{score.score}%</span>
-            </div>
-            <Progress value={score.score} className="h-2" />
-            <p className="mt-1 text-xs text-muted-foreground">
-              {score.reasoning}
-            </p>
-          </motion.div>
+          <SkillScoreCard key={score.skillId} score={score} index={i} />
         ))}
       </div>
 

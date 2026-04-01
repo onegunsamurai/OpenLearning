@@ -22,6 +22,7 @@ const {
     mockSearchParams: { get: vi.fn().mockReturnValue(null) },
     mockStoreState: {
       assessmentSessionId: "sess-123" as string | null,
+      targetLevel: "mid",
     },
   };
 });
@@ -50,10 +51,29 @@ vi.mock("@/components/error/api-error-display", () => ({
   ),
 }));
 
+vi.mock("@/components/learning-plan/no-gaps-success", () => ({
+  NoGapsSuccess: ({
+    onStartOver,
+    targetLevel,
+    scores,
+  }: {
+    onStartOver: () => void;
+    targetLevel: string;
+    scores: { skillId: string }[];
+  }) => (
+    <div data-testid="no-gaps-success">
+      <span>targetLevel:{targetLevel}</span>
+      <span>{scores.length} scores</span>
+      <button onClick={onStartOver}>Start Over</button>
+    </div>
+  ),
+}));
+
 vi.mock("@/lib/store", () => ({
   useAppStore: () => ({
     assessmentSessionId: mockStoreState.assessmentSessionId,
     reset: mockReset,
+    targetLevel: mockStoreState.targetLevel,
   }),
 }));
 
@@ -75,7 +95,17 @@ const sampleReport: AssessmentReportResponse = {
   gapAnalysis: {
     overallReadiness: 50,
     summary: "Needs work",
-    gaps: [],
+    gaps: [
+      {
+        skillId: "typescript",
+        skillName: "TypeScript",
+        currentLevel: 40,
+        targetLevel: 80,
+        gap: 40,
+        priority: "high",
+        recommendation: "Study generics",
+      },
+    ],
   },
   learningPlan: {
     summary: "Master TypeScript in 4 weeks",
@@ -101,6 +131,29 @@ const sampleReport: AssessmentReportResponse = {
   },
 };
 
+const noGapsReport: AssessmentReportResponse = {
+  proficiencyScores: [
+    {
+      skillId: "react",
+      skillName: "React",
+      score: 95,
+      confidence: 0.9,
+      reasoning: "Excellent",
+    },
+  ],
+  knowledgeGraph: { nodes: [] },
+  gapAnalysis: {
+    overallReadiness: 100,
+    summary: "No gaps",
+    gaps: [],
+  },
+  learningPlan: {
+    summary: "No learning needed",
+    totalHours: 0,
+    phases: [],
+  },
+};
+
 import LearningPlanPage from "./page";
 
 beforeEach(() => {
@@ -112,6 +165,7 @@ beforeEach(() => {
   mockSessionReport.refetch.mockClear();
   mockSearchParams.get.mockReturnValue(null);
   mockStoreState.assessmentSessionId = "sess-123";
+  mockStoreState.targetLevel = "mid";
 });
 
 describe("LearningPlanPage", () => {
@@ -254,5 +308,50 @@ describe("LearningPlanPage", () => {
 
     expect(mockReset).toHaveBeenCalled();
     expect(mockRouter.push).toHaveBeenCalledWith("/");
+  });
+
+  describe("no-gaps success state", () => {
+    it("renders NoGapsSuccess when gaps array is empty", () => {
+      mockSessionReport.report = noGapsReport;
+      render(<LearningPlanPage />);
+      expect(screen.getByTestId("no-gaps-success")).toBeInTheDocument();
+    });
+
+    it("does not render PlanHeader or PlanTimeline when no phases", () => {
+      mockSessionReport.report = noGapsReport;
+      render(<LearningPlanPage />);
+      expect(screen.queryByTestId("plan-header")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("plan-timeline")).not.toBeInTheDocument();
+    });
+
+    it("still renders normal layout when phases exist", () => {
+      mockSessionReport.report = sampleReport;
+      render(<LearningPlanPage />);
+      expect(screen.queryByTestId("no-gaps-success")).not.toBeInTheDocument();
+      expect(screen.getByTestId("plan-header")).toBeInTheDocument();
+    });
+
+    it("passes targetLevel from store", () => {
+      mockStoreState.targetLevel = "staff";
+      mockSessionReport.report = noGapsReport;
+      render(<LearningPlanPage />);
+      expect(screen.getByText("targetLevel:staff")).toBeInTheDocument();
+    });
+
+    it("passes proficiency scores", () => {
+      mockSessionReport.report = noGapsReport;
+      render(<LearningPlanPage />);
+      expect(screen.getByText("1 scores")).toBeInTheDocument();
+    });
+
+    it("start over in success state calls reset and navigates", async () => {
+      const user = userEvent.setup();
+      mockSessionReport.report = noGapsReport;
+      render(<LearningPlanPage />);
+
+      await user.click(screen.getByText("Start Over"));
+      expect(mockReset).toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith("/");
+    });
   });
 });

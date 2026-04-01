@@ -3,16 +3,10 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { SkillTag } from "./SkillTag";
+import { LEVEL_LABELS, type Level } from "@/lib/constants";
 import { Search } from "lucide-react";
 import { motion } from "motion/react";
 import type { ConceptSummary } from "@/lib/types";
-
-const LEVEL_LABELS: Record<string, string> = {
-  junior: "Junior",
-  mid: "Mid",
-  senior: "Senior",
-  staff: "Staff",
-};
 
 interface ConceptBrowserProps {
   concepts: ConceptSummary[];
@@ -40,7 +34,7 @@ export function ConceptBrowser({
   const groupedByLevel = levels
     .map((level) => ({
       level,
-      label: LEVEL_LABELS[level] ?? level,
+      label: LEVEL_LABELS[level as Level] ?? level,
       concepts: filtered.filter((c) => c.level === level),
     }))
     .filter((g) => g.concepts.length > 0);
