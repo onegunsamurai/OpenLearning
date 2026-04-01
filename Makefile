@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend test-e2e test-e2e-headed test-e2e-report fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean
+.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend test-e2e test-e2e-headed test-e2e-report fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean worktree-create worktree-remove worktree-list
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -87,3 +87,13 @@ docker-down:
 
 docker-clean:
 	docker compose down -v
+
+# --- Worktree management (parallel Claude Code sessions) ---
+worktree-create:
+	@bash scripts/worktree-create.sh $(ISSUE)
+
+worktree-remove:
+	@bash scripts/worktree-remove.sh $(ISSUE)
+
+worktree-list:
+	@bash scripts/worktree-list.sh

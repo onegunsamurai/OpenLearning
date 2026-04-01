@@ -11,7 +11,25 @@ Run the complete agentic development pipeline from user story to merge-ready PR.
 
 You are an orchestrator. Execute each phase in order, using Task to delegate to specialized agents. DO NOT skip phases. DO NOT proceed past a gate until it passes.
 
-### Phase 0: Analysis & requirements
+### Phase 0: Worktree isolation
+
+Before any work begins, create an isolated worktree so parallel pipelines don't conflict:
+
+1. **If a GitHub issue number is known** (from the user story or explicit reference):
+   ```bash
+   bash scripts/worktree-create.sh <issue-number>
+   cd .claude/worktrees/issue-<number>
+   ```
+
+2. **If no issue exists yet**, create one first:
+   ```bash
+   gh issue create --title "<short feature title>" --label enhancement
+   ```
+   Then create the worktree with the new issue number.
+
+All subsequent phases operate from the worktree directory. `make` targets, `git` commands, and file paths work identically to the main worktree.
+
+### Phase 0.5: Analysis & requirements
 ```
 Task: story-analyzer
 Input: The user story provided as argument
@@ -123,6 +141,7 @@ If all pass → Generate PR summary with:
 - Security review summary
 - Breaking changes (if any)
 - Deployment notes
+- Worktree cleanup command: `make worktree-remove ISSUE=<number> --delete-branch`
 
 ## Rules
 - NEVER skip a phase. The pipeline exists for a reason.
