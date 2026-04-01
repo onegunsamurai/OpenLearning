@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import json
 import logging
 
+from anthropic import APIError
 from fastapi import APIRouter, Depends, HTTPException
-from langchain_core.messages import HumanMessage, SystemMessage
 
+from app.agents.schemas import GapAnalysisOutput
 from app.deps import AuthUser, get_current_user, get_user_api_key
 from app.models.gap_analysis import GapAnalysis, GapAnalysisRequest
 from app.prompts.gap_analyzer import GAP_ANALYZER_SYSTEM_PROMPT
-from app.services.ai import get_chat_model, parse_json_response
+from app.services.ai import ainvoke_structured, api_key_scope
 
 logger = logging.getLogger("openlearning.gap_analysis")
 
@@ -29,31 +32,18 @@ async def gap_analysis(
             indent=2,
         )
         prompt = (
+            f"{GAP_ANALYZER_SYSTEM_PROMPT}\n\n"
             f"Here are the proficiency scores from a skill assessment:\n\n"
             f"{scores_json}\n\n"
             f"Generate a comprehensive gap analysis."
         )
 
-        model = get_chat_model(api_key=api_key)
-        response = await model.ainvoke(
-            [
-                SystemMessage(content=GAP_ANALYZER_SYSTEM_PROMPT),
-                HumanMessage(content=prompt),
-            ]
-        )
+        with api_key_scope(api_key):
+            result = await ainvoke_structured(GapAnalysisOutput, prompt, agent_name="gap_analysis")
 
-        text = response.content
-        if not isinstance(text, str):
-            raise ValueError("Unexpected response format")
-
-        parsed = parse_json_response(text)
-
-        if not isinstance(parsed.get("overallReadiness"), int | float) or not isinstance(
-            parsed.get("gaps"), list
-        ):
-            raise ValueError("Invalid response format")
-
-        return GapAnalysis(**parsed)
-    except (ValueError, KeyError, json.JSONDecodeError) as e:
+        return GapAnalysis.model_validate(result.model_dump())
+    except (HTTPException, APIError):
+        raise
+    except Exception as e:
         logger.exception("Gap analysis generation failed")
         raise HTTPException(status_code=500, detail="Failed to generate gap analysis") from e

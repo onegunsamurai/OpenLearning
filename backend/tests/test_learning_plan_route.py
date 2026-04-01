@@ -2,43 +2,45 @@
 
 from __future__ import annotations
 
-import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.agents.schemas import (
+    LearningPlanModuleOutput,
+    LearningPlanOutput,
+    LearningPlanPhaseOutput,
+)
 from tests.conftest import _test_app
 
 
-def _valid_plan_response() -> str:
-    return json.dumps(
-        {
-            "title": "TypeScript Mastery Plan",
-            "summary": "A focused plan for TypeScript improvement",
-            "totalHours": 30,
-            "totalWeeks": 4,
-            "phases": [
-                {
-                    "phase": 1,
-                    "name": "Foundations",
-                    "description": "Build core TypeScript skills",
-                    "modules": [
-                        {
-                            "id": "mod-1",
-                            "title": "TypeScript Basics",
-                            "description": "Core type system",
-                            "type": "theory",
-                            "phase": 1,
-                            "skillIds": ["typescript"],
-                            "durationHours": 8,
-                            "objectives": ["Understand type annotations"],
-                            "resources": ["https://typescriptlang.org"],
-                        }
-                    ],
-                }
-            ],
-        }
+def _valid_plan_output() -> LearningPlanOutput:
+    return LearningPlanOutput(
+        title="TypeScript Mastery Plan",
+        summary="A focused plan for TypeScript improvement",
+        total_hours=30,
+        total_weeks=4,
+        phases=[
+            LearningPlanPhaseOutput(
+                phase=1,
+                name="Foundations",
+                description="Build core TypeScript skills",
+                modules=[
+                    LearningPlanModuleOutput(
+                        id="mod-1",
+                        title="TypeScript Basics",
+                        description="Core type system",
+                        type="theory",
+                        phase=1,
+                        skill_ids=["typescript"],
+                        duration_hours=8,
+                        objectives=["Understand type annotations"],
+                        resources=["https://typescriptlang.org"],
+                    )
+                ],
+            )
+        ],
     )
 
 
@@ -93,12 +95,11 @@ class TestLearningPlanRoute:
 
     @pytest.mark.asyncio
     async def test_success_returns_plan(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = _valid_plan_response()
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            return_value=_valid_plan_output(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -110,58 +111,12 @@ class TestLearningPlanRoute:
         assert len(data["phases"]) == 1
 
     @pytest.mark.asyncio
-    async def test_llm_malformed_json_returns_500(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = "not json"
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
-            async with AsyncClient(
-                transport=ASGITransport(app=_test_app), base_url="http://test"
-            ) as client:
-                response = await client.post("/api/learning-plan", json=_gap_analysis_payload())
-
-        assert response.status_code == 500
-
-    @pytest.mark.asyncio
-    async def test_llm_missing_phases_returns_500(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = json.dumps({"title": "Plan", "summary": "No phases"})
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
-            async with AsyncClient(
-                transport=ASGITransport(app=_test_app), base_url="http://test"
-            ) as client:
-                response = await client.post("/api/learning-plan", json=_gap_analysis_payload())
-
-        assert response.status_code == 500
-
-    @pytest.mark.asyncio
-    async def test_llm_missing_title_returns_500(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = json.dumps({"phases": [], "summary": "No title"})
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
-            async with AsyncClient(
-                transport=ASGITransport(app=_test_app), base_url="http://test"
-            ) as client:
-                response = await client.post("/api/learning-plan", json=_gap_analysis_payload())
-
-        assert response.status_code == 500
-
-    @pytest.mark.asyncio
-    async def test_llm_non_string_content_returns_500(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = ["not", "a", "string"]
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
+    async def test_llm_error_returns_500(self):
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=Exception("LLM call failed"),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -171,12 +126,11 @@ class TestLearningPlanRoute:
 
     @pytest.mark.asyncio
     async def test_response_camel_case(self):
-        mock_model = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.content = _valid_plan_response()
-        mock_model.ainvoke.return_value = mock_response
-
-        with patch("app.routes.learning_plan.get_chat_model", return_value=mock_model):
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            return_value=_valid_plan_output(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -187,3 +141,17 @@ class TestLearningPlanRoute:
         assert "totalWeeks" in data
         assert "skillIds" in data["phases"][0]["modules"][0]
         assert "durationHours" in data["phases"][0]["modules"][0]
+
+    @pytest.mark.asyncio
+    async def test_ainvoke_structured_called_with_correct_schema(self):
+        mock_ainvoke = AsyncMock(return_value=_valid_plan_output())
+        with patch("app.routes.learning_plan.ainvoke_structured", mock_ainvoke):
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                await client.post("/api/learning-plan", json=_gap_analysis_payload())
+
+        mock_ainvoke.assert_called_once()
+        call_args = mock_ainvoke.call_args
+        assert call_args[0][0] is LearningPlanOutput
+        assert call_args[1]["agent_name"] == "learning_plan"

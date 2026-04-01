@@ -7,6 +7,8 @@ Agents map these to the CamelModel state types after invocation.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 # --- Calibration ---
@@ -166,4 +168,75 @@ class BloomValidatorOutput(BaseModel):
     critique: str = Field(
         default="",
         description="Specific actionable critique if any score is below 0.75",
+    )
+
+
+# --- Standalone Gap Analysis (used by /api/gap-analysis route) ---
+
+
+class GapAnalysisItemOutput(BaseModel):
+    """A single skill gap in a gap analysis."""
+
+    skill_id: str = Field(description="Unique identifier for the skill")
+    skill_name: str = Field(description="Human-readable skill name")
+    current_level: int = Field(description="Assessed proficiency score (0-100)")
+    target_level: int = Field(
+        description="Recommended proficiency target for a competent professional (typically 70-90)"
+    )
+    gap: int = Field(description="Difference: target_level - current_level, minimum 0")
+    priority: Literal["critical", "high", "medium", "low"] = Field(
+        description='Priority: "critical" (gap > 40), "high" (gap > 25), "medium" (gap > 10), "low" (gap <= 10)'
+    )
+    recommendation: str = Field(description="Specific 1-sentence action item")
+
+
+class GapAnalysisOutput(BaseModel):
+    """Output schema for standalone gap analysis generation."""
+
+    overall_readiness: int = Field(
+        description="Weighted average of (current_level / target_level) * 100 across all skills"
+    )
+    summary: str = Field(description="2-3 sentence executive summary of the candidate's readiness")
+    gaps: list[GapAnalysisItemOutput] = Field(
+        description="Skill gaps sorted by priority (critical first) then by gap size (largest first)"
+    )
+
+
+# --- Standalone Learning Plan (used by /api/learning-plan route) ---
+
+
+class LearningPlanModuleOutput(BaseModel):
+    """A single learning module in a standalone learning plan phase."""
+
+    id: str = Field(description="Unique module identifier (e.g. mod-1)")
+    title: str = Field(description="Module title")
+    description: str = Field(description="What the learner will do")
+    type: Literal["theory", "quiz", "lab"] = Field(
+        description='Module type: "theory" (reading/video), "quiz" (practice problems), "lab" (hands-on project)'
+    )
+    phase: int = Field(description="Phase number this module belongs to")
+    skill_ids: list[str] = Field(description="Skill IDs addressed by this module")
+    duration_hours: int = Field(description="Estimated hours to complete")
+    objectives: list[str] = Field(description="Specific learning objectives")
+    resources: list[str] = Field(description="Learning resources (docs, courses, books)")
+
+
+class LearningPlanPhaseOutput(BaseModel):
+    """A single phase in a standalone learning plan."""
+
+    phase: int = Field(description="Phase order number starting from 1")
+    name: str = Field(description="Phase name")
+    description: str = Field(description="Phase description")
+    modules: list[LearningPlanModuleOutput] = Field(description="Modules in this phase")
+
+
+class LearningPlanOutput(BaseModel):
+    """Output schema for standalone learning plan generation."""
+
+    title: str = Field(description="Learning plan title")
+    summary: str = Field(description="2-3 sentence plan overview")
+    total_hours: int = Field(description="Total estimated hours for the entire plan (40-80)")
+    total_weeks: int = Field(description="Total estimated weeks (4-12)")
+    phases: list[LearningPlanPhaseOutput] = Field(
+        description="3-4 phases ordered by dependency and priority"
     )

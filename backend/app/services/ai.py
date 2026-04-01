@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import json
 import logging
-import re
 import time
 from contextlib import contextmanager
 from contextvars import ContextVar, Token
@@ -54,17 +52,6 @@ def get_chat_model(api_key: str | None = None) -> ChatAnthropic:
         temperature=0,
         anthropic_api_key=key,
     )
-
-
-def parse_json_response(text: str) -> dict:
-    """Parse JSON from AI response, stripping markdown code fences if present.
-
-    Used by non-assessment routes (gap_analysis, learning_plan).
-    Assessment pipeline agents use ainvoke_structured() instead.
-    """
-    cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip())
-    cleaned = re.sub(r"\s*```$", "", cleaned)
-    return json.loads(cleaned)
 
 
 def get_structured_model(
