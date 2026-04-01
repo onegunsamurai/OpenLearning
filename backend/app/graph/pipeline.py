@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Coroutine
+from typing import Any
+
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
@@ -20,8 +23,12 @@ from app.graph.state import AssessmentState, BloomLevel, Question, Response, Top
 # --- Calibration nodes (one interrupt per node) ---
 
 
-def _make_calibration_node(difficulty_index: int, step: int):
+CalibrationNode = Callable[[AssessmentState], Coroutine[Any, Any, dict]]
+
+
+def _make_calibration_node(difficulty_index: int) -> CalibrationNode:
     """Factory that creates a calibration node for a given difficulty level."""
+    step = difficulty_index + 1
 
     async def _calibrate(state: AssessmentState) -> dict:
         question = await generate_calibration_question(state, DIFFICULTY_LEVELS[difficulty_index])
@@ -42,9 +49,9 @@ def _make_calibration_node(difficulty_index: int, step: int):
     return _calibrate
 
 
-calibrate_easy = _make_calibration_node(0, 1)
-calibrate_medium = _make_calibration_node(1, 2)
-calibrate_hard = _make_calibration_node(2, 3)
+calibrate_easy = _make_calibration_node(0)
+calibrate_medium = _make_calibration_node(1)
+calibrate_hard = _make_calibration_node(2)
 
 
 async def calibrate_evaluate(state: AssessmentState) -> dict:
