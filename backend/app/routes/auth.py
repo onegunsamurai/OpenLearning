@@ -32,7 +32,7 @@ router = APIRouter()
 async def github_login(redirect: str = Query(default="/")) -> RedirectResponse:
     """Redirect the user to GitHub OAuth authorization."""
     settings = get_settings()
-    if not settings.github_client_id:
+    if not settings.github_client_id or not settings.github_client_secret:
         raise HTTPException(status_code=501, detail="GitHub OAuth is not configured")
 
     redirect_path = auth_service.validate_redirect(redirect)
@@ -56,7 +56,7 @@ async def github_callback(
 ) -> RedirectResponse:
     """Handle the GitHub OAuth callback: exchange code, upsert user, set JWT cookie."""
     settings = get_settings()
-    if not settings.github_client_id:
+    if not settings.github_client_id or not settings.github_client_secret:
         raise HTTPException(status_code=501, detail="GitHub OAuth is not configured")
 
     # Verify state

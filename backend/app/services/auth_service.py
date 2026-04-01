@@ -51,7 +51,7 @@ def verify_oauth_state(state: str, secret: str) -> str:
     return payload
 
 
-def validate_redirect(redirect: str) -> str:
+def validate_redirect(redirect: str | None) -> str:
     """Ensure redirect is a safe relative path (no scheme, no netloc, no backslashes)."""
     if not redirect or not redirect.startswith("/"):
         return "/"

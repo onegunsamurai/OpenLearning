@@ -71,7 +71,7 @@ async def delete_api_key(
 @router.post("/validate-key", response_model=ValidateKeyResponse, response_model_by_alias=True)
 async def validate_key(
     request: ApiKeySetRequest,
-    user: AuthUser = Depends(get_current_user),
+    _user: AuthUser = Depends(get_current_user),
 ) -> ValidateKeyResponse:
     """Validate an Anthropic API key without storing it."""
     import anthropic
