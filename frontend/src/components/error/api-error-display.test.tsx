@@ -109,6 +109,41 @@ describe("ApiErrorDisplay", () => {
     expect(screen.getByText("Service Unavailable")).toBeInTheDocument();
   });
 
+  it("renders 503 overloaded error with message and retry button", () => {
+    const onRetry = vi.fn();
+    const error = new ApiError(
+      "The AI service is currently overloaded. Please try again in a moment.",
+      503
+    );
+    render(<ApiErrorDisplay error={error} onRetry={onRetry} />);
+    expect(screen.getByText("Service Overloaded")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "The AI service is currently overloaded. Please try again in a moment."
+      )
+    ).toBeInTheDocument();
+    // Without retryAfter, retry button should be enabled immediately
+    const retryBtn = screen.getByText("Retry").closest("button");
+    expect(retryBtn).not.toBeDisabled();
+    expect(screen.queryByText("Update API Key")).not.toBeInTheDocument();
+  });
+
+  it("renders 503 error with countdown when retryAfter is provided", () => {
+    vi.useFakeTimers();
+    const onRetry = vi.fn();
+    const error = new ApiError(
+      "The AI service is currently overloaded. Please try again in a moment.",
+      503,
+      30
+    );
+    render(<ApiErrorDisplay error={error} onRetry={onRetry} />);
+    expect(screen.getByText("Service Overloaded")).toBeInTheDocument();
+    expect(screen.getByText("Auto-retrying in 30s...")).toBeInTheDocument();
+    const retryBtn = screen.getByText("Retry").closest("button");
+    expect(retryBtn).toBeDisabled();
+    vi.useRealTimers();
+  });
+
   it("renders 500 error", () => {
     const error = new ApiError("Something went wrong", 500);
     render(<ApiErrorDisplay error={error} onRetry={vi.fn()} />);

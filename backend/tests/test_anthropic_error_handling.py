@@ -72,6 +72,18 @@ def _make_internal_server_error():
     )
 
 
+def _make_overloaded_error(retry_after: str | None = None):
+    """Create a realistic OverloadedError (HTTP 529)."""
+    from anthropic._exceptions import OverloadedError
+
+    headers = {"retry-after": retry_after} if retry_after else {}
+    return OverloadedError(
+        message="Overloaded",
+        response=_make_httpx_response(529, headers=headers),
+        body={"error": {"type": "overloaded_error", "message": "Overloaded"}},
+    )
+
+
 class TestGapAnalysisAnthropicErrors:
     """Test that Anthropic errors in gap-analysis route are handled globally."""
 
@@ -159,6 +171,34 @@ class TestGapAnalysisAnthropicErrors:
 
         assert response.status_code == 502
         assert "Unable to reach" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_overloaded_error_returns_503(self, setup_db):
+        with patch(
+            "app.routes.gap_analysis.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_overloaded_error(),
+        ):
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/api/gap-analysis",
+                    json={
+                        "proficiencyScores": [
+                            {
+                                "skillId": "react",
+                                "skillName": "React",
+                                "score": 70,
+                                "confidence": 0.8,
+                                "reasoning": "ok",
+                            }
+                        ]
+                    },
+                )
+
+        assert response.status_code == 503
+        assert "overloaded" in response.json()["detail"].lower()
 
 
 class TestLearningPlanAnthropicErrors:
@@ -329,6 +369,36 @@ class TestAssessmentSSEAnthropicErrors:
             _mock_graph.reset_mock()
 
     @pytest.mark.asyncio
+    async def test_overloaded_error_in_sse_stream(self, setup_db):
+        async with _TestSessionFactory() as db:
+            await seed_session(db)
+
+        from tests.conftest import _mock_graph
+
+        _mock_graph.ainvoke = AsyncMock(side_effect=_make_overloaded_error())
+
+        try:
+            async with AsyncClient(
+                transport=ASGITransport(app=_test_app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/api/assessment/sess-001/respond", json={"response": "answer"}
+                )
+
+            body = response.text
+            for line in body.split("\n"):
+                if "[ERROR]" in line:
+                    error_json = line.split("[ERROR]")[1].strip()
+                    parsed = json.loads(error_json)
+                    assert parsed["status"] == 503
+                    assert "overloaded" in parsed["detail"].lower()
+                    break
+            else:
+                pytest.fail("No [ERROR] event found in SSE stream")
+        finally:
+            _mock_graph.reset_mock()
+
+    @pytest.mark.asyncio
     async def test_generic_error_in_sse_stream(self, setup_db):
         async with _TestSessionFactory() as db:
             await seed_session(db)
@@ -418,6 +488,25 @@ class TestClassifyAnthropicError:
         assert status == 502
         assert "encountered an error" in detail
         assert headers == {}
+
+    def test_overloaded_error_default_retry_after(self) -> None:
+        """OverloadedError without retry-after header defaults to '30'."""
+        exc = _make_overloaded_error()
+        result = classify_anthropic_error(exc)
+        assert result is not None
+        status, detail, headers = result
+        assert status == 503
+        assert "overloaded" in detail.lower()
+        assert headers["Retry-After"] == "30"
+
+    def test_overloaded_error_with_retry_after(self) -> None:
+        """OverloadedError with retry-after header forwards the value."""
+        exc = _make_overloaded_error(retry_after="60")
+        result = classify_anthropic_error(exc)
+        assert result is not None
+        status, _detail, headers = result
+        assert status == 503
+        assert headers["Retry-After"] == "60"
 
     def test_unrecognised_exception_returns_none(self) -> None:
         result = classify_anthropic_error(ValueError("something else"))

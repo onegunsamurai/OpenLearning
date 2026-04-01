@@ -12,6 +12,11 @@ from anthropic import (
     InternalServerError,
     RateLimitError,
 )
+
+# OverloadedError (HTTP 529) is not yet re-exported from the public anthropic namespace.
+# The SDK creates this class internally for 529 responses; importing from the private
+# anthropic._exceptions module relies on internal APIs and may break with SDK upgrades.
+from anthropic._exceptions import OverloadedError
 from langchain_anthropic import ChatAnthropic
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel
@@ -67,7 +72,12 @@ def get_structured_model(
     model = get_chat_model().with_structured_output(schema)
 
     return model.with_retry(
-        retry_if_exception_type=(APITimeoutError, RateLimitError, InternalServerError),
+        retry_if_exception_type=(
+            APITimeoutError,
+            RateLimitError,
+            InternalServerError,
+            OverloadedError,
+        ),
         wait_exponential_jitter=True,
         stop_after_attempt=max_retries,
     )
@@ -143,4 +153,13 @@ def classify_anthropic_error(exc: Exception) -> tuple[int, str, dict[str, str]] 
         return (502, "Unable to reach the AI service. Please try again shortly.", {})
     if isinstance(exc, InternalServerError):
         return (502, "The AI service encountered an error. Please try again.", {})
+    if isinstance(exc, OverloadedError):
+        retry_after = getattr(getattr(exc, "response", None), "headers", {}).get(
+            "retry-after", "30"
+        )
+        return (
+            503,
+            "The AI service is currently overloaded. Please try again in a moment.",
+            {"Retry-After": retry_after},
+        )
     return None

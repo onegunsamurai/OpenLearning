@@ -22,7 +22,11 @@ export function ApiErrorDisplay({
   const status = isApiError ? error.status : 0;
   const retryAfter = isApiError ? error.retryAfter : undefined;
 
-  const initialCountdown = status === 429 && retryAfter ? retryAfter : null;
+  const shouldUseRetryAfter = status === 429 || status === 503;
+  const initialCountdown =
+    shouldUseRetryAfter && retryAfter !== undefined && retryAfter !== null
+      ? retryAfter
+      : null;
   const [countdown, setCountdown] = useState<number | null>(initialCountdown);
 
   // Reset countdown when error changes — React-recommended pattern for
@@ -84,6 +88,12 @@ export function ApiErrorDisplay({
           message: error.message,
           showApiKeyButton: false,
         };
+      case 503:
+        return {
+          title: "Service Overloaded",
+          message: error.message,
+          showApiKeyButton: false,
+        };
       case 502:
       case 504:
         return {
@@ -114,11 +124,13 @@ export function ApiErrorDisplay({
             <p className="text-sm text-destructive/80 mt-1">{message}</p>
           </div>
 
-          {status === 429 && countdown !== null && countdown > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Auto-retrying in {countdown}s...
-            </p>
-          )}
+          {(status === 429 || status === 503) &&
+            countdown !== null &&
+            countdown > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Auto-retrying in {countdown}s...
+              </p>
+            )}
 
           <div className="flex flex-wrap gap-2">
             {showApiKeyButton && (
@@ -137,7 +149,11 @@ export function ApiErrorDisplay({
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
-                disabled={status === 429 && countdown !== null && countdown > 0}
+                disabled={
+                  (status === 429 || status === 503) &&
+                  countdown !== null &&
+                  countdown > 0
+                }
                 className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
