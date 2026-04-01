@@ -1,5 +1,23 @@
 # Pipeline development workflow rules
 
+## Worktree isolation — required for all feature/fix work
+
+Every feature or bug fix MUST run in its own git worktree to enable parallel development. Never work directly on `main`.
+
+**Creating a worktree:**
+```bash
+bash scripts/worktree-create.sh <issue-number>
+cd .claude/worktrees/issue-<number>
+```
+
+This script handles branch creation (prefix inferred from labels), env file symlinks, and dependency installation. All `make` targets, `git` commands, and relative paths work identically inside a worktree.
+
+**Listing active worktrees:** `make worktree-list`
+
+**Cleanup after PR merge:** `make worktree-remove ISSUE=<number> --delete-branch`
+
+If you are already inside a worktree (check: `git rev-parse --show-toplevel` contains `.claude/worktrees/`), skip worktree creation and proceed with the current worktree.
+
 ## Mandatory workflow
 
 When implementing a new feature, ALWAYS follow the pipeline phases in order. Never jump to coding without completing analysis and design phases.

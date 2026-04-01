@@ -64,7 +64,7 @@ gh issue view N --json comments --jq '.comments[].body'
 
 ---
 
-## Stage 2 — Create Branch
+## Stage 2 — Create Worktree
 
 **Guard: clean working tree**
 ```bash
@@ -72,11 +72,23 @@ git status --porcelain
 ```
 If output is non-empty → **HALT**: "Working tree is dirty. Commit or stash your changes before running `/auto-fix`."
 
-**Create branch:**
-- Slugify the issue title: lowercase, replace spaces and special chars with hyphens, collapse consecutive hyphens, trim to 40 chars
-- `git checkout -b fix/issue-NNN-<slug>`
+**Create an isolated worktree** using the worktree script (handles branch naming, env symlinks, and dependency installation):
+```bash
+bash scripts/worktree-create.sh NNN
+```
 
-Example: Issue #42 "Fix null pointer in assessment loader" → `fix/issue-42-fix-null-pointer-in-assessment`
+This creates:
+- Worktree at `.claude/worktrees/issue-NNN`
+- Branch named `fix/issue-NNN-<slug>` or `feat/issue-NNN-<slug>` (inferred from issue labels)
+- Symlinks for `.env`, `backend/.env`, `frontend/.env.local`, `.claude/settings.local.json`
+- Installed frontend (`npm install`) and backend (`pip install`) dependencies
+
+**Switch to the worktree:**
+```bash
+cd .claude/worktrees/issue-NNN
+```
+
+> **All subsequent stages operate from this worktree directory.** Paths like `backend/`, `frontend/`, and `make` targets work identically to the main worktree.
 
 ---
 
@@ -262,8 +274,9 @@ git commit -m "fix: "
 
 ## Stage 7 — Push & Open PR
 
+Push from the worktree (git push works identically from any worktree):
 ```bash
-git push -u origin fix/issue-NNN-
+git push -u origin $(git branch --show-current)
 ```
 
 Read `.github/PULL_REQUEST_TEMPLATE.md` and fill it in. Then:
@@ -392,14 +405,16 @@ Return to **Stage 8** (CI wait).
 ─────────────────────────────────────
 AUTO-FIX COMPLETE
 
-Issue:   #N — <title>
-Branch:  fix/issue-NNN-<slug>
-PR:      <URL>
-CI:      All checks green
-Review:  Copilot approved / Copilot comments addressed (N rounds)
+Issue:     #N — <title>
+Branch:    fix/issue-NNN-<slug>
+Worktree:  .claude/worktrees/issue-NNN
+PR:        <URL>
+CI:        All checks green
+Review:    Copilot approved / Copilot comments addressed (N rounds)
 
 Stages completed:
   ✓ Bug discovered and analyzed
+  ✓ Worktree created and isolated
   ✓ Fix implemented with regression test
   ✓ make check passed
   ✓ Code review clean
@@ -409,6 +424,9 @@ Stages completed:
   ✓ Committed and pushed
   ✓ CI passed
   ✓ Copilot review addressed
+
+Cleanup (after PR is merged):
+  make worktree-remove ISSUE=NNN --delete-branch
 ─────────────────────────────────────
 ```
 
@@ -419,6 +437,7 @@ Stages completed:
 | Condition | Message |
 |-----------|---------|
 | Dirty working tree | "Working tree is dirty. Commit or stash your changes before running `/auto-fix`." |
+| Worktree creation failed | "Worktree creation failed. Check `scripts/worktree-create.sh` output for details." |
 | Unable to identify root cause after 3 investigation cycles | "Unable to identify root cause after 3 investigation cycles. Here is what was examined: <summary of files read, searches performed, and hypotheses considered>. Manual investigation required." |
 | Dev server not running for E2E | "Dev server is not running. Start it first: `make dev`" |
 | E2E still failing after 3 iterations | "E2E tests are still failing after 3 fix attempts. Here are the remaining failures: <summary of failing pages and errors>. Manual investigation required." |
