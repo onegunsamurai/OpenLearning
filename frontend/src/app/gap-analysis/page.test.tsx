@@ -8,6 +8,7 @@ import type { AssessmentReportResponse } from "@/lib/api";
 const {
   mockRouter,
   mockSetCurrentStep,
+  mockReset,
   mockSessionReport,
   mockSearchParams,
   mockStoreState,
@@ -15,6 +16,7 @@ const {
   return {
     mockRouter: { push: vi.fn(), replace: vi.fn() },
     mockSetCurrentStep: vi.fn(),
+    mockReset: vi.fn(),
     mockSessionReport: {
       report: null as AssessmentReportResponse | null,
       loading: false,
@@ -24,6 +26,7 @@ const {
     mockSearchParams: { get: vi.fn().mockReturnValue(null) },
     mockStoreState: {
       assessmentSessionId: "sess-123" as string | null,
+      targetLevel: "mid",
     },
   };
 });
@@ -57,10 +60,30 @@ vi.mock("@/components/error/api-error-display", () => ({
   ),
 }));
 
+vi.mock("@/components/gap-analysis/no-gaps-hero", () => ({
+  NoGapsHero: ({
+    onStartOver,
+    onContinue,
+    targetLevel,
+  }: {
+    onStartOver: () => void;
+    onContinue: () => void;
+    targetLevel: string;
+  }) => (
+    <div data-testid="no-gaps-hero">
+      <span>targetLevel:{targetLevel}</span>
+      <button onClick={onStartOver}>Start Over</button>
+      <button onClick={onContinue}>View Learning Plan</button>
+    </div>
+  ),
+}));
+
 vi.mock("@/lib/store", () => ({
   useAppStore: () => ({
     assessmentSessionId: mockStoreState.assessmentSessionId,
     setCurrentStep: mockSetCurrentStep,
+    targetLevel: mockStoreState.targetLevel,
+    reset: mockReset,
   }),
 }));
 
@@ -109,18 +132,43 @@ const sampleReport: AssessmentReportResponse = {
   },
 };
 
+const noGapsReport: AssessmentReportResponse = {
+  proficiencyScores: [
+    {
+      skillId: "react",
+      skillName: "React",
+      score: 95,
+      confidence: 0.9,
+      reasoning: "Excellent",
+    },
+  ],
+  knowledgeGraph: { nodes: [] },
+  gapAnalysis: {
+    overallReadiness: 100,
+    summary: "No significant gaps identified. Great job!",
+    gaps: [],
+  },
+  learningPlan: {
+    summary: "No learning needed",
+    totalHours: 0,
+    phases: [],
+  },
+};
+
 import GapAnalysisPage from "./page";
 
 beforeEach(() => {
   mockRouter.push.mockClear();
   mockRouter.replace.mockClear();
   mockSetCurrentStep.mockClear();
+  mockReset.mockClear();
   mockSessionReport.report = null;
   mockSessionReport.loading = false;
   mockSessionReport.error = null;
   mockSessionReport.refetch.mockClear();
   mockSearchParams.get.mockReturnValue(null);
   mockStoreState.assessmentSessionId = "sess-123";
+  mockStoreState.targetLevel = "mid";
 });
 
 describe("GapAnalysisPage", () => {
@@ -196,6 +244,55 @@ describe("GapAnalysisPage", () => {
 
     await waitFor(() => {
       expect(mockRouter.replace).toHaveBeenCalledWith("/assess?session=sess-123");
+    });
+  });
+
+  describe("no-gaps success state", () => {
+    it("renders NoGapsHero when gaps array is empty", () => {
+      mockSessionReport.report = noGapsReport;
+      render(<GapAnalysisPage />);
+      expect(screen.getByTestId("no-gaps-hero")).toBeInTheDocument();
+    });
+
+    it("does not render RadarChart or GapCard when no gaps", () => {
+      mockSessionReport.report = noGapsReport;
+      render(<GapAnalysisPage />);
+      expect(screen.queryByTestId("radar-chart")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("gap-card")).not.toBeInTheDocument();
+    });
+
+    it("still renders normal layout when gaps exist", () => {
+      mockSessionReport.report = sampleReport;
+      render(<GapAnalysisPage />);
+      expect(screen.queryByTestId("no-gaps-hero")).not.toBeInTheDocument();
+      expect(screen.getByTestId("radar-chart")).toBeInTheDocument();
+    });
+
+    it("passes targetLevel from store to NoGapsHero", () => {
+      mockStoreState.targetLevel = "senior";
+      mockSessionReport.report = noGapsReport;
+      render(<GapAnalysisPage />);
+      expect(screen.getByText("targetLevel:senior")).toBeInTheDocument();
+    });
+
+    it("start over calls reset and navigates to /", async () => {
+      const user = userEvent.setup();
+      mockSessionReport.report = noGapsReport;
+      render(<GapAnalysisPage />);
+
+      await user.click(screen.getByText("Start Over"));
+      expect(mockReset).toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith("/");
+    });
+
+    it("view learning plan navigates correctly", async () => {
+      const user = userEvent.setup();
+      mockSessionReport.report = noGapsReport;
+      render(<GapAnalysisPage />);
+
+      await user.click(screen.getByText("View Learning Plan"));
+      expect(mockSetCurrentStep).toHaveBeenCalledWith(3);
+      expect(mockRouter.push).toHaveBeenCalledWith("/learning-plan?session=sess-123");
     });
   });
 });

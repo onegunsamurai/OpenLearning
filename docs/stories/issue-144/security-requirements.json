@@ -1,0 +1,108 @@
+{
+  "$schema": "security-requirements-v1",
+  "issue": 144,
+  "title": "Success State UIs for Perfect Scores",
+  "date": "2026-04-01",
+  "scope": "frontend-only",
+  "overallRisk": "LOW",
+  "blockingThreats": [],
+  "requirements": [
+    {
+      "id": "SR-1",
+      "title": "No dangerouslySetInnerHTML in new components",
+      "priority": "HIGH",
+      "threat": "T-1: XSS via LLM-generated content",
+      "cwe": ["CWE-79"],
+      "owasp": "A03:2021",
+      "mitigation": "All LLM-generated content (skill names, scores, summaries) must be rendered via standard React JSX text interpolation, never via dangerouslySetInnerHTML.",
+      "validation": {
+        "type": "static-analysis",
+        "check": "grep-zero-matches",
+        "pattern": "dangerouslySetInnerHTML|__html",
+        "scope": [
+          "frontend/src/components/gap-analysis/",
+          "frontend/src/components/learning-plan/",
+          "frontend/src/components/assessment/"
+        ],
+        "expectedMatches": 0
+      }
+    },
+    {
+      "id": "SR-2",
+      "title": "Share CTA must not expose session-bound URLs",
+      "priority": "MEDIUM",
+      "threat": "T-2: Session ID exposure via share functionality",
+      "cwe": ["CWE-200", "CWE-639"],
+      "owasp": "A01:2021",
+      "mitigation": "The 'Share your results' CTA should share only a generic congratulatory message without session IDs, report URLs, or user-specific assessment data. Use navigator.share() or navigator.clipboard.writeText() with a static message template.",
+      "validation": {
+        "type": "code-review",
+        "checks": [
+          {
+            "description": "Share handler does not include sessionId in shared content",
+            "check": "review-share-handler",
+            "verify": "Shared text/URL does not contain session UUID or /api/ paths"
+          },
+          {
+            "description": "No report endpoint URL in clipboard/share payload",
+            "check": "grep-zero-matches",
+            "pattern": "sessionId|session_id|/api/assessment",
+            "scope": ["share-handler-function-body"],
+            "expectedMatches": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "SR-3",
+      "title": "CTA navigation uses hardcoded internal paths only",
+      "priority": "LOW",
+      "threat": "T-3: Open redirect via CTA navigation",
+      "cwe": ["CWE-601"],
+      "owasp": "A01:2021",
+      "mitigation": "All CTA click handlers must use router.push() with hardcoded string paths or paths derived from trusted application state. No user-supplied input (query params, form fields) should control navigation targets.",
+      "validation": {
+        "type": "code-review",
+        "check": "review-cta-handlers",
+        "verify": "All router.push() calls use string literals or application state paths, no external/user-controlled URLs"
+      }
+    },
+    {
+      "id": "SR-4",
+      "title": "No new dependencies with known vulnerabilities",
+      "priority": "LOW",
+      "threat": "Supply chain risk",
+      "cwe": ["CWE-1395"],
+      "owasp": "A06:2021",
+      "mitigation": "No new npm dependencies should be required. If any are added, they must be vetted via npm audit.",
+      "validation": {
+        "type": "dependency-audit",
+        "check": "npm-audit",
+        "scope": ["frontend/package.json"],
+        "expectedNewDeps": 0
+      }
+    }
+  ],
+  "existingControls": [
+    {
+      "control": "Authentication guard on affected pages",
+      "location": ["frontend/src/app/gap-analysis/page.tsx", "frontend/src/app/learning-plan/page.tsx"],
+      "description": "Both pages redirect unauthenticated users to /login. New success-state branches render within these pages and inherit the guard."
+    },
+    {
+      "control": "React JSX auto-escaping",
+      "location": "All .tsx components",
+      "description": "React escapes all text content in JSX expressions by default. No dangerouslySetInnerHTML usage exists in the codebase."
+    },
+    {
+      "control": "CORS origin restriction",
+      "location": "backend/app/main.py",
+      "description": "Backend CORS middleware restricts allowed origins via settings.cors_origins (not wildcard)."
+    },
+    {
+      "control": "Typed API responses via codegen",
+      "location": "frontend/src/lib/generated/api-client/types.gen.ts",
+      "description": "GapItem, GapAnalysis, ProficiencyScore types are auto-generated from backend Pydantic models, ensuring type-safe data handling."
+    }
+  ]
+}

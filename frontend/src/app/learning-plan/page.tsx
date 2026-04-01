@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/layout/PageShell";
 import { PlanHeader } from "@/components/learning-plan/PlanHeader";
 import { PlanTimeline } from "@/components/learning-plan/PlanTimeline";
+import { NoGapsSuccess } from "@/components/learning-plan/no-gaps-success";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
@@ -27,7 +28,7 @@ function LearningPlanPageContent() {
   const searchParams = useSearchParams();
   const sessionParam = searchParams.get("session");
 
-  const { assessmentSessionId, reset } = useAppStore();
+  const { assessmentSessionId, reset, targetLevel } = useAppStore();
   const { user, isLoading: authLoading } = useAuthStore();
   const { login } = useAuth();
 
@@ -110,6 +111,19 @@ function LearningPlanPageContent() {
   if (!report) return null;
 
   const { learningPlan } = report;
+  const hasNoGaps = report.gapAnalysis.gaps.length === 0;
+
+  if (hasNoGaps) {
+    return (
+      <PageShell currentStep={3} sessionId={sessionId}>
+        <NoGapsSuccess
+          scores={report.proficiencyScores}
+          targetLevel={targetLevel}
+          onStartOver={handleStartOver}
+        />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell currentStep={3} sessionId={sessionId}>
