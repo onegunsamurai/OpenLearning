@@ -77,8 +77,11 @@ class TestGapAnalysisAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_authentication_error_returns_401(self, setup_db):
-        with patch("app.routes.gap_analysis.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_auth_error())
+        with patch(
+            "app.routes.gap_analysis.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_auth_error(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -102,8 +105,11 @@ class TestGapAnalysisAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_rate_limit_error_returns_429_with_retry_after(self, setup_db):
-        with patch("app.routes.gap_analysis.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_rate_limit_error("45"))
+        with patch(
+            "app.routes.gap_analysis.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_rate_limit_error("45"),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -128,8 +134,11 @@ class TestGapAnalysisAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_connection_error_returns_502(self, setup_db):
-        with patch("app.routes.gap_analysis.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_connection_error())
+        with patch(
+            "app.routes.gap_analysis.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_connection_error(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -157,8 +166,11 @@ class TestLearningPlanAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_authentication_error_returns_401(self, setup_db):
-        with patch("app.routes.learning_plan.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_auth_error())
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_auth_error(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -187,8 +199,11 @@ class TestLearningPlanAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_timeout_error_returns_504(self, setup_db):
-        with patch("app.routes.learning_plan.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_timeout_error())
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_timeout_error(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
@@ -218,8 +233,11 @@ class TestLearningPlanAnthropicErrors:
 
     @pytest.mark.asyncio
     async def test_internal_server_error_returns_502(self, setup_db):
-        with patch("app.routes.learning_plan.get_chat_model") as mock_model:
-            mock_model.return_value.ainvoke = AsyncMock(side_effect=_make_internal_server_error())
+        with patch(
+            "app.routes.learning_plan.ainvoke_structured",
+            new_callable=AsyncMock,
+            side_effect=_make_internal_server_error(),
+        ):
             async with AsyncClient(
                 transport=ASGITransport(app=_test_app), base_url="http://test"
             ) as client:
