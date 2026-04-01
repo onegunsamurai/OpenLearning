@@ -194,7 +194,7 @@ class GapAnalysisOutput(BaseModel):
     """Output schema for standalone gap analysis generation."""
 
     overall_readiness: int = Field(
-        description="Weighted average of (current_level / target_level) * 100 across all skills"
+        description="Weighted average of (current_level / target_level) * 100 across all skills, rounded to nearest integer (0-100)"
     )
     summary: str = Field(description="2-3 sentence executive summary of the candidate's readiness")
     gaps: list[GapAnalysisItemOutput] = Field(
