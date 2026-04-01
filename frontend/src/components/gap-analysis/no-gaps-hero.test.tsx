@@ -100,6 +100,6 @@ describe("NoGapsHero", () => {
     expect(
       screen.getByText("Outstanding Performance!")
     ).toBeInTheDocument();
-    expect(screen.getByText("Your Skill Scores")).toBeInTheDocument();
+    expect(screen.queryByText("Your Skill Scores")).not.toBeInTheDocument();
   });
 });

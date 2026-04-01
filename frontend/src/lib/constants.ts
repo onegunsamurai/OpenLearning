@@ -2,7 +2,7 @@ export const LEVELS = ["junior", "mid", "senior", "staff"] as const;
 
 export type Level = (typeof LEVELS)[number];
 
-export const MAX_LEVEL: Level = "staff";
+export const MAX_LEVEL: Level = LEVELS[LEVELS.length - 1];
 
 export const LEVEL_LABELS: Record<Level, string> = {
   junior: "Junior",

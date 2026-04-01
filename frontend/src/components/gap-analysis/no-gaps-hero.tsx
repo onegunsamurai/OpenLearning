@@ -55,14 +55,16 @@ export function NoGapsHero({
       <GapSummary readiness={overallReadiness} summary={summary} />
 
       {/* Skill scores */}
-      <div className="space-y-3">
-        <h3 className="font-heading text-lg font-semibold text-center">
-          Your Skill Scores
-        </h3>
-        {scores.map((score, i) => (
-          <SkillScoreCard key={score.skillId} score={score} index={i} />
-        ))}
-      </div>
+      {scores.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="font-heading text-lg font-semibold text-center">
+            Your Skill Scores
+          </h3>
+          {scores.map((score, i) => (
+            <SkillScoreCard key={score.skillId} score={score} index={i} />
+          ))}
+        </div>
+      )}
 
       {/* CTAs */}
       <div className="flex flex-col items-center gap-3 pb-8 sm:flex-row sm:justify-center">
