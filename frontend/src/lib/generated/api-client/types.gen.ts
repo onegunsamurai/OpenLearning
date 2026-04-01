@@ -1228,6 +1228,56 @@ export type AuthLogoutApiAuthLogoutPostResponses = {
     200: unknown;
 };
 
+export type RegisterApiAuthRegisterPostData = {
+    body: RegisterRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/register';
+};
+
+export type RegisterApiAuthRegisterPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegisterApiAuthRegisterPostError = RegisterApiAuthRegisterPostErrors[keyof RegisterApiAuthRegisterPostErrors];
+
+export type RegisterApiAuthRegisterPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkResponse;
+};
+
+export type RegisterApiAuthRegisterPostResponse = RegisterApiAuthRegisterPostResponses[keyof RegisterApiAuthRegisterPostResponses];
+
+export type LoginApiAuthLoginPostData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/login';
+};
+
+export type LoginApiAuthLoginPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LoginApiAuthLoginPostError = LoginApiAuthLoginPostErrors[keyof LoginApiAuthLoginPostErrors];
+
+export type LoginApiAuthLoginPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkResponse;
+};
+
+export type LoginApiAuthLoginPostResponse = LoginApiAuthLoginPostResponses[keyof LoginApiAuthLoginPostResponses];
+
 export type DeleteApiKeyApiAuthApiKeyDeleteData = {
     body?: never;
     path?: never;
@@ -1331,56 +1381,6 @@ export type ValidateKeyApiAuthValidateKeyPostResponses = {
 };
 
 export type ValidateKeyApiAuthValidateKeyPostResponse = ValidateKeyApiAuthValidateKeyPostResponses[keyof ValidateKeyApiAuthValidateKeyPostResponses];
-
-export type RegisterApiAuthRegisterPostData = {
-    body: RegisterRequest;
-    path?: never;
-    query?: never;
-    url: '/api/auth/register';
-};
-
-export type RegisterApiAuthRegisterPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type RegisterApiAuthRegisterPostError = RegisterApiAuthRegisterPostErrors[keyof RegisterApiAuthRegisterPostErrors];
-
-export type RegisterApiAuthRegisterPostResponses = {
-    /**
-     * Successful Response
-     */
-    200: OkResponse;
-};
-
-export type RegisterApiAuthRegisterPostResponse = RegisterApiAuthRegisterPostResponses[keyof RegisterApiAuthRegisterPostResponses];
-
-export type LoginApiAuthLoginPostData = {
-    body: LoginRequest;
-    path?: never;
-    query?: never;
-    url: '/api/auth/login';
-};
-
-export type LoginApiAuthLoginPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type LoginApiAuthLoginPostError = LoginApiAuthLoginPostErrors[keyof LoginApiAuthLoginPostErrors];
-
-export type LoginApiAuthLoginPostResponses = {
-    /**
-     * Successful Response
-     */
-    200: OkResponse;
-};
-
-export type LoginApiAuthLoginPostResponse = LoginApiAuthLoginPostResponses[keyof LoginApiAuthLoginPostResponses];
 
 export type ListUserAssessmentsApiUserAssessmentsGetData = {
     body?: never;

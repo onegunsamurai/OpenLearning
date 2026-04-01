@@ -14,6 +14,7 @@ from sqlalchemy.pool import NullPool
 
 from app.db import AuthMethod, Base, User, get_db
 from app.deps import JWT_ALGORITHM
+from app.routes.api_keys import router as api_keys_router
 from app.routes.auth import router as auth_router
 from tests.conftest import _test_db_url
 
@@ -53,6 +54,7 @@ def _mock_settings():
 
 _test_app = FastAPI()
 _test_app.include_router(auth_router, prefix="/api/auth")
+_test_app.include_router(api_keys_router, prefix="/api/auth")
 _test_app.dependency_overrides[get_db] = _override_get_db
 
 
@@ -170,9 +172,9 @@ class TestGitHubOAuth:
         self, http_client: AsyncClient, db_session: AsyncSession
     ) -> None:
         # Build a valid state
-        from app.routes.auth import _sign_state
+        from app.services.auth_service import sign_oauth_state
 
-        state = _sign_state("/", _TEST_JWT_SECRET)
+        state = sign_oauth_state("/", _TEST_JWT_SECRET)
 
         # Mock the httpx calls to GitHub
         mock_token_resp = MagicMock()
@@ -191,7 +193,9 @@ class TestGitHubOAuth:
         mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.routes.auth.httpx.AsyncClient", return_value=mock_client_instance):
+        with patch(
+            "app.services.auth_service.httpx.AsyncClient", return_value=mock_client_instance
+        ):
             resp = await http_client.get(
                 f"/api/auth/github/callback?code=test-code&state={state}",
                 follow_redirects=False,
@@ -222,9 +226,9 @@ class TestGitHubOAuth:
         # Pre-seed a user
         await _seed_user(db_session, user_id="existing-user", github_id=88888)
 
-        from app.routes.auth import _sign_state
+        from app.services.auth_service import sign_oauth_state
 
-        state = _sign_state("/", _TEST_JWT_SECRET)
+        state = sign_oauth_state("/", _TEST_JWT_SECRET)
 
         mock_token_resp = MagicMock()
         mock_token_resp.json.return_value = {"access_token": "gh-token-456"}
@@ -242,7 +246,9 @@ class TestGitHubOAuth:
         mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.routes.auth.httpx.AsyncClient", return_value=mock_client_instance):
+        with patch(
+            "app.services.auth_service.httpx.AsyncClient", return_value=mock_client_instance
+        ):
             resp = await http_client.get(
                 f"/api/auth/github/callback?code=test-code&state={state}",
                 follow_redirects=False,
@@ -269,12 +275,12 @@ class TestGitHubOAuth:
     async def test_github_callback_sanitizes_malicious_redirect_in_state(
         self, http_client: AsyncClient, db_session: AsyncSession
     ) -> None:
-        """Regression: even if a malicious URL bypasses _validate_redirect on login,
+        """Regression: even if a malicious URL bypasses validate_redirect on login,
         the inline urlparse().netloc guard in github_callback must sanitize it."""
-        from app.routes.auth import _sign_state
+        from app.services.auth_service import sign_oauth_state
 
         # Sign a malicious redirect directly into state (bypassing login-side validation)
-        state = _sign_state("https://evil.com", _TEST_JWT_SECRET)
+        state = sign_oauth_state("https://evil.com", _TEST_JWT_SECRET)
 
         mock_token_resp = MagicMock()
         mock_token_resp.json.return_value = {"access_token": "gh-token-evil"}
@@ -292,7 +298,9 @@ class TestGitHubOAuth:
         mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.routes.auth.httpx.AsyncClient", return_value=mock_client_instance):
+        with patch(
+            "app.services.auth_service.httpx.AsyncClient", return_value=mock_client_instance
+        ):
             resp = await http_client.get(
                 f"/api/auth/github/callback?code=test-code&state={state}",
                 follow_redirects=False,
@@ -307,9 +315,9 @@ class TestGitHubOAuth:
     async def test_github_callback_invalid_code_returns_redirect_with_error(
         self, http_client: AsyncClient, setup_db
     ) -> None:
-        from app.routes.auth import _sign_state
+        from app.services.auth_service import sign_oauth_state
 
-        state = _sign_state("/", _TEST_JWT_SECRET)
+        state = sign_oauth_state("/", _TEST_JWT_SECRET)
 
         mock_token_resp = MagicMock()
         mock_token_resp.json.return_value = {"error": "bad_verification_code"}
@@ -319,7 +327,9 @@ class TestGitHubOAuth:
         mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
         mock_client_instance.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("app.routes.auth.httpx.AsyncClient", return_value=mock_client_instance):
+        with patch(
+            "app.services.auth_service.httpx.AsyncClient", return_value=mock_client_instance
+        ):
             resp = await http_client.get(
                 f"/api/auth/github/callback?code=bad-code&state={state}",
                 follow_redirects=False,
@@ -409,8 +419,7 @@ class TestLogout:
 
 @pytest.mark.asyncio
 class TestApiKey:
-    @patch("app.routes.auth.get_settings", _mock_settings)
-    @patch("app.routes.auth.encrypt_api_key")
+    @patch("app.routes.api_keys.encrypt_api_key")
     @patch("app.deps.get_settings", _mock_settings)
     async def test_set_api_key_stores_encrypted(
         self,
@@ -430,7 +439,6 @@ class TestApiKey:
         assert resp.json()["ok"] is True
         mock_encrypt.assert_called_once_with("sk-my-secret-key")
 
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.crypto.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_get_api_key_returns_masked_preview(
@@ -494,14 +502,13 @@ class TestValidateRedirect:
         ],
     )
     def test_validate_redirect(self, input_val: str | None, expected: str) -> None:
-        from app.routes.auth import _validate_redirect
+        from app.services.auth_service import validate_redirect
 
-        assert _validate_redirect(input_val) == expected
+        assert validate_redirect(input_val) == expected
 
 
 @pytest.mark.asyncio
 class TestDeleteApiKey:
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.crypto.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_delete_api_key_removes_key(
@@ -525,7 +532,6 @@ class TestDeleteApiKey:
         await db_session.refresh(user)
         assert user.encrypted_api_key is None
 
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_delete_api_key_no_key_still_succeeds(
         self, http_client: AsyncClient, db_session: AsyncSession
@@ -549,7 +555,6 @@ class TestDeleteApiKey:
 
 @pytest.mark.asyncio
 class TestValidateKey:
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_validate_key_valid(
         self, http_client: AsyncClient, db_session: AsyncSession
@@ -572,7 +577,6 @@ class TestValidateKey:
         assert data["valid"] is True
         assert data["error"] is None
 
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_validate_key_invalid(
         self, http_client: AsyncClient, db_session: AsyncSession
@@ -603,7 +607,6 @@ class TestValidateKey:
         assert data["valid"] is False
         assert data["error"] == "Invalid API key"
 
-    @patch("app.routes.auth.get_settings", _mock_settings)
     @patch("app.deps.get_settings", _mock_settings)
     async def test_validate_key_rate_limited(
         self, http_client: AsyncClient, db_session: AsyncSession

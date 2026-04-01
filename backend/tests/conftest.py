@@ -22,6 +22,7 @@ from app.graph.state import (
     make_initial_state,
 )
 from app.main import register_anthropic_error_handlers, register_assessment_error_handlers
+from app.routes.api_keys import router as api_keys_router
 from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
@@ -62,6 +63,7 @@ _test_app.include_router(assessment_router, prefix="/api")
 _test_app.include_router(gap_analysis_router, prefix="/api")
 _test_app.include_router(learning_plan_router, prefix="/api")
 _test_app.include_router(auth_router, prefix="/api/auth")
+_test_app.include_router(api_keys_router, prefix="/api/auth")
 _test_app.include_router(user_router, prefix="/api/user")
 _test_app.dependency_overrides[get_db] = _override_get_db
 _test_app.dependency_overrides[get_current_user] = _override_get_current_user
