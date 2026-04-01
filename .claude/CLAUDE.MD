@@ -1,61 +1,31 @@
-Claude Code Prompt for Plan Mode
-#prompts
-Review this plan thoroughly before making any code changes. For every issue or recommendation, explain the concrete tradeoffs, give me an opinionated recommendation, and ask for my input before assuming a direction.
-My engineering preferences (use these to guide your recommendations):
+# Project rules (always active)
 
-DRY is important—flag repetition aggressively.
-Well-tested code is non-negotiable; I'd rather have too many tests than too few.
-I want code that's "engineered enough" — not under-engineered (fragile, hacky) and not over-engineered (premature abstraction, unnecessary complexity).
-I err on the side of handling more edge cases, not fewer; thoughtfulness > speed.
-Bias toward explicit over clever.
+## Engineering preferences
+- DRY is important—flag repetition aggressively.
+- Well-tested code is non-negotiable.
+- "Engineered enough" — not under-engineered, not over-engineered.
+- Handle more edge cases, not fewer; thoughtfulness > speed.
+- Bias toward explicit over clever.
+- Flag over-engineering: if a proposed abstraction only serves the
+  current use case with no evidence of future reuse, call it out.
+- Before proposing any new pattern, utility, or abstraction, search
+  the existing codebase for prior art. If something similar exists,
+  explain why reuse doesn't work before creating new.
 
-1. Architecture review
-Evaluate:
+## Pipeline workflow
+When running /pipeline, /quality-gate, or /doc-sync commands:
+- Execute phases autonomously. Do NOT pause for interactive input
+  between phases.
+- Stop and ask for human input ONLY at gate failures after 3 retries,
+  or when the story-analyzer identifies open questions in Phase 0.
+- Plan mode rules below do NOT apply during pipeline execution.
 
-Overall system design and component boundaries.
-Dependency graph and coupling concerns.
-Data flow patterns and potential bottlenecks.
-Scaling characteristics and single points of failure.
-Security architecture (auth, data access, API boundaries).
+---
 
-2. Code quality review
-Evaluate:
+# Plan mode rules (only when reviewing plans, NOT during /pipeline)
 
-Code organization and module structure.
-DRY violations—be aggressive here.
-Error handling patterns and missing edge cases (call these out explicitly).
-Technical debt hotspots.
-Areas that are over-engineered or under-engineered relative to my preferences.
-
-3. Test review
-Evaluate:
-
-Test coverage gaps (unit, integration, e2e).
-Test quality and assertion strength.
-Missing edge case coverage—be thorough.
-Untested failure modes and error paths.
-
-4. Performance review
-Evaluate:
-
-N+1 queries and database access patterns.
-Memory-usage concerns.
-Caching opportunities.
-Slow or high-complexity code paths.
-
-For each issue you find
-For every specific issue (bug, smell, design concern, or risk):
-
-Describe the problem concretely, with file and line references.
-Present 2–3 options, including "do nothing" where that's reasonable.
-For each option, specify: implementation effort, risk, impact on other code, and maintenance burden.
-Give me your recommended option and why, mapped to my preferences above.
-Then explicitly ask whether I agree or want to choose a different direction before proceeding.
-
-Workflow and interaction
-
-Do not assume my priorities on timeline or scale.
-After each section, pause and ask for my feedback before moving on.
+Activate these rules when I ask you to review a plan, design, or
+architecture — or when I'm working interactively outside the pipeline.
 
 BEFORE YOU START:
 Ask if I want one of two options:
