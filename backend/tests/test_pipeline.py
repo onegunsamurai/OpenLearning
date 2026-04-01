@@ -1,6 +1,15 @@
 """Tests for the LangGraph pipeline structure and graph compilation."""
 
-from app.graph.pipeline import build_graph, compile_graph
+import pytest
+
+from app.graph.pipeline import (
+    _make_calibration_node,
+    build_graph,
+    calibrate_easy,
+    calibrate_hard,
+    calibrate_medium,
+    compile_graph,
+)
 
 
 class TestGraphStructure:
@@ -68,3 +77,76 @@ class TestGraphStructure:
         edges = set(graph.edges)
         assert ("analyze_gaps", "enrich_gaps") in edges
         assert ("enrich_gaps", "generate_plan") in edges
+
+
+class TestCalibrationNodeFactory:
+    """Verify the _make_calibration_node factory produces correct callables."""
+
+    def test_factory_returns_async_callable(self):
+        import asyncio
+
+        node = _make_calibration_node(0)
+        assert asyncio.iscoroutinefunction(node)
+
+    def test_module_level_nodes_are_callables(self):
+        import asyncio
+
+        assert asyncio.iscoroutinefunction(calibrate_easy)
+        assert asyncio.iscoroutinefunction(calibrate_medium)
+        assert asyncio.iscoroutinefunction(calibrate_hard)
+
+    def test_factory_creates_distinct_functions(self):
+        assert calibrate_easy is not calibrate_medium
+        assert calibrate_medium is not calibrate_hard
+        assert calibrate_easy is not calibrate_hard
+
+    def test_enrich_gaps_node_present(self):
+        graph = build_graph()
+        assert "enrich_gaps" in graph.nodes
+
+    @pytest.mark.asyncio
+    async def test_calibration_node_behavioral_contract(self, monkeypatch):
+        """Verify the factory-produced node builds correct interrupt payload and state."""
+        from unittest.mock import AsyncMock
+
+        from app.graph import pipeline as pipeline_mod
+        from app.graph.state import Question, Response
+
+        fake_question = Question(
+            id="q-test-123",
+            text="What is a hash table?",
+            topic="data_structures",
+            bloom_level="remember",
+            question_type="open",
+        )
+        monkeypatch.setattr(
+            pipeline_mod,
+            "generate_calibration_question",
+            AsyncMock(return_value=fake_question),
+        )
+
+        captured_payload = {}
+
+        def fake_interrupt(payload):
+            captured_payload.update(payload)
+            return "user answer text"
+
+        monkeypatch.setattr(pipeline_mod, "interrupt", fake_interrupt)
+
+        node = _make_calibration_node(1)  # difficulty_index=1 → step=2
+        state = {"calibration_questions": [], "calibration_responses": []}
+        result = await node(state)
+
+        # Verify interrupt payload
+        assert captured_payload["type"] == "calibration"
+        assert captured_payload["step"] == 2
+        assert captured_payload["total_steps"] == 3
+        assert captured_payload["question"]["id"] == "q-test-123"
+
+        # Verify returned state
+        assert len(result["calibration_questions"]) == 1
+        assert result["calibration_questions"][0] is fake_question
+        assert len(result["calibration_responses"]) == 1
+        assert isinstance(result["calibration_responses"][0], Response)
+        assert result["calibration_responses"][0].text == "user answer text"
+        assert result["calibration_responses"][0].question_id == "q-test-123"
