@@ -20,67 +20,31 @@ from app.graph.state import AssessmentState, BloomLevel, Question, Response, Top
 # --- Calibration nodes (one interrupt per node) ---
 
 
-async def calibrate_easy(state: AssessmentState) -> dict:
-    """Generate easy calibration question, interrupt for response, store result."""
-    question = await generate_calibration_question(state, DIFFICULTY_LEVELS[0])
-    user_answer = interrupt(
-        {
-            "type": "calibration",
-            "question": question.model_dump(by_alias=True),
-            "step": 1,
-            "total_steps": len(DIFFICULTY_LEVELS),
-        }
-    )
-    calibration_questions = list(state.get("calibration_questions", []))
-    calibration_responses = list(state.get("calibration_responses", []))
-    calibration_questions.append(question)
-    calibration_responses.append(Response(question_id=question.id, text=user_answer))
-    return {
-        "calibration_questions": calibration_questions,
-        "calibration_responses": calibration_responses,
-    }
+def _make_calibration_node(difficulty_index: int, step: int):
+    """Factory that creates a calibration node for a given difficulty level."""
+
+    async def _calibrate(state: AssessmentState) -> dict:
+        question = await generate_calibration_question(state, DIFFICULTY_LEVELS[difficulty_index])
+        user_answer = interrupt(
+            {
+                "type": "calibration",
+                "question": question.model_dump(by_alias=True),
+                "step": step,
+                "total_steps": len(DIFFICULTY_LEVELS),
+            }
+        )
+        cal_q = list(state.get("calibration_questions", []))
+        cal_r = list(state.get("calibration_responses", []))
+        cal_q.append(question)
+        cal_r.append(Response(question_id=question.id, text=user_answer))
+        return {"calibration_questions": cal_q, "calibration_responses": cal_r}
+
+    return _calibrate
 
 
-async def calibrate_medium(state: AssessmentState) -> dict:
-    """Generate medium calibration question, interrupt for response, store result."""
-    question = await generate_calibration_question(state, DIFFICULTY_LEVELS[1])
-    user_answer = interrupt(
-        {
-            "type": "calibration",
-            "question": question.model_dump(by_alias=True),
-            "step": 2,
-            "total_steps": len(DIFFICULTY_LEVELS),
-        }
-    )
-    calibration_questions = list(state.get("calibration_questions", []))
-    calibration_responses = list(state.get("calibration_responses", []))
-    calibration_questions.append(question)
-    calibration_responses.append(Response(question_id=question.id, text=user_answer))
-    return {
-        "calibration_questions": calibration_questions,
-        "calibration_responses": calibration_responses,
-    }
-
-
-async def calibrate_hard(state: AssessmentState) -> dict:
-    """Generate hard calibration question, interrupt for response, store result."""
-    question = await generate_calibration_question(state, DIFFICULTY_LEVELS[2])
-    user_answer = interrupt(
-        {
-            "type": "calibration",
-            "question": question.model_dump(by_alias=True),
-            "step": 3,
-            "total_steps": len(DIFFICULTY_LEVELS),
-        }
-    )
-    calibration_questions = list(state.get("calibration_questions", []))
-    calibration_responses = list(state.get("calibration_responses", []))
-    calibration_questions.append(question)
-    calibration_responses.append(Response(question_id=question.id, text=user_answer))
-    return {
-        "calibration_questions": calibration_questions,
-        "calibration_responses": calibration_responses,
-    }
+calibrate_easy = _make_calibration_node(0, 1)
+calibrate_medium = _make_calibration_node(1, 2)
+calibrate_hard = _make_calibration_node(2, 3)
 
 
 async def calibrate_evaluate(state: AssessmentState) -> dict:

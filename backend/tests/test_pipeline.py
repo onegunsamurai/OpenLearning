@@ -1,6 +1,13 @@
 """Tests for the LangGraph pipeline structure and graph compilation."""
 
-from app.graph.pipeline import build_graph, compile_graph
+from app.graph.pipeline import (
+    _make_calibration_node,
+    build_graph,
+    calibrate_easy,
+    calibrate_hard,
+    calibrate_medium,
+    compile_graph,
+)
 
 
 class TestGraphStructure:
@@ -68,3 +75,29 @@ class TestGraphStructure:
         edges = set(graph.edges)
         assert ("analyze_gaps", "enrich_gaps") in edges
         assert ("enrich_gaps", "generate_plan") in edges
+
+
+class TestCalibrationNodeFactory:
+    """Verify the _make_calibration_node factory produces correct callables."""
+
+    def test_factory_returns_async_callable(self):
+        import asyncio
+
+        node = _make_calibration_node(0, 1)
+        assert asyncio.iscoroutinefunction(node)
+
+    def test_module_level_nodes_are_callables(self):
+        import asyncio
+
+        assert asyncio.iscoroutinefunction(calibrate_easy)
+        assert asyncio.iscoroutinefunction(calibrate_medium)
+        assert asyncio.iscoroutinefunction(calibrate_hard)
+
+    def test_factory_creates_distinct_functions(self):
+        assert calibrate_easy is not calibrate_medium
+        assert calibrate_medium is not calibrate_hard
+        assert calibrate_easy is not calibrate_hard
+
+    def test_enrich_gaps_node_present(self):
+        graph = build_graph()
+        assert "enrich_gaps" in graph.nodes
