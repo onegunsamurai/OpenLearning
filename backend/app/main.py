@@ -92,6 +92,9 @@ def register_anthropic_error_handlers(application: FastAPI) -> None:
         RateLimitError,
     )
 
+    # See comment in app.services.ai for why this uses a private import.
+    from anthropic._exceptions import OverloadedError
+
     from app.services.ai import classify_anthropic_error
 
     async def _handler(_request: Request, exc: Exception) -> JSONResponse:
@@ -109,6 +112,7 @@ def register_anthropic_error_handlers(application: FastAPI) -> None:
         APIConnectionError,
         APITimeoutError,
         InternalServerError,
+        OverloadedError,
     ):
         application.add_exception_handler(exc_type, _handler)
 
