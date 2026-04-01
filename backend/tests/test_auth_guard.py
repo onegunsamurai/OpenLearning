@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.db import Base, get_db
+from app.routes.api_keys import router as api_keys_router
 from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
@@ -50,6 +51,7 @@ _guard_app.include_router(assessment_router, prefix="/api")
 _guard_app.include_router(gap_analysis_router, prefix="/api")
 _guard_app.include_router(learning_plan_router, prefix="/api")
 _guard_app.include_router(auth_router, prefix="/api/auth")
+_guard_app.include_router(api_keys_router, prefix="/api/auth")
 _guard_app.include_router(health_router, prefix="/api")
 _guard_app.include_router(skills_router, prefix="/api")
 _guard_app.include_router(roles_router, prefix="/api")

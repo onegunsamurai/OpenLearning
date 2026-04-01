@@ -153,6 +153,34 @@ export const authMeApiAuthMeGet = <ThrowOnError extends boolean = false>(options
 export const authLogoutApiAuthLogoutPost = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutApiAuthLogoutPostData, ThrowOnError>) => (options?.client ?? client).post<AuthLogoutApiAuthLogoutPostResponses, unknown, ThrowOnError>({ url: '/api/auth/logout', ...options });
 
 /**
+ * Register
+ *
+ * Register a new user with email and password.
+ */
+export const registerApiAuthRegisterPost = <ThrowOnError extends boolean = false>(options: Options<RegisterApiAuthRegisterPostData, ThrowOnError>) => (options.client ?? client).post<RegisterApiAuthRegisterPostResponses, RegisterApiAuthRegisterPostErrors, ThrowOnError>({
+    url: '/api/auth/register',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Login
+ *
+ * Authenticate with email and password.
+ */
+export const loginApiAuthLoginPost = <ThrowOnError extends boolean = false>(options: Options<LoginApiAuthLoginPostData, ThrowOnError>) => (options.client ?? client).post<LoginApiAuthLoginPostResponses, LoginApiAuthLoginPostErrors, ThrowOnError>({
+    url: '/api/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Delete Api Key
  *
  * Remove the stored API key for the current user.
@@ -187,34 +215,6 @@ export const setApiKeyApiAuthApiKeyPost = <ThrowOnError extends boolean = false>
  */
 export const validateKeyApiAuthValidateKeyPost = <ThrowOnError extends boolean = false>(options: Options<ValidateKeyApiAuthValidateKeyPostData, ThrowOnError>) => (options.client ?? client).post<ValidateKeyApiAuthValidateKeyPostResponses, ValidateKeyApiAuthValidateKeyPostErrors, ThrowOnError>({
     url: '/api/auth/validate-key',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Register
- *
- * Register a new user with email and password.
- */
-export const registerApiAuthRegisterPost = <ThrowOnError extends boolean = false>(options: Options<RegisterApiAuthRegisterPostData, ThrowOnError>) => (options.client ?? client).post<RegisterApiAuthRegisterPostResponses, RegisterApiAuthRegisterPostErrors, ThrowOnError>({
-    url: '/api/auth/register',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Login
- *
- * Authenticate with email and password.
- */
-export const loginApiAuthLoginPost = <ThrowOnError extends boolean = false>(options: Options<LoginApiAuthLoginPostData, ThrowOnError>) => (options.client ?? client).post<LoginApiAuthLoginPostResponses, LoginApiAuthLoginPostErrors, ThrowOnError>({
-    url: '/api/auth/login',
     ...options,
     headers: {
         'Content-Type': 'application/json',

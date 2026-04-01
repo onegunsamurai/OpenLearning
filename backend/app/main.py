@@ -17,6 +17,7 @@ from app.db import init_db
 from app.graph.content_pipeline import compile_content_graph
 from app.graph.pipeline import compile_graph
 from app.routes import (
+    api_keys,
     assessment,
     auth,
     gap_analysis,
@@ -77,6 +78,7 @@ app.include_router(gap_analysis.router, prefix="/api")
 app.include_router(learning_plan.router, prefix="/api")
 app.include_router(materials.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
+app.include_router(api_keys.router, prefix="/api/auth")
 app.include_router(user.router, prefix="/api/user")
 
 
