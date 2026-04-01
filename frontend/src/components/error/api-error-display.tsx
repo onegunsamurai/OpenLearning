@@ -22,8 +22,11 @@ export function ApiErrorDisplay({
   const status = isApiError ? error.status : 0;
   const retryAfter = isApiError ? error.retryAfter : undefined;
 
+  const shouldUseRetryAfter = status === 429 || status === 503;
   const initialCountdown =
-    (status === 429 || status === 503) && retryAfter ? retryAfter : null;
+    shouldUseRetryAfter && retryAfter !== undefined && retryAfter !== null
+      ? retryAfter
+      : null;
   const [countdown, setCountdown] = useState<number | null>(initialCountdown);
 
   // Reset countdown when error changes — React-recommended pattern for

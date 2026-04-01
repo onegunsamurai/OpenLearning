@@ -26,13 +26,16 @@ way to add it to langchain's `retry_if_exception_type` tuple.
 Add `OverloadedError` to the retry tuple in `get_structured_model()`. This is a transient
 error that should be retried with exponential backoff (same as `InternalServerError`).
 
-### No Retry-After Header
-Anthropic does not send `Retry-After` on 529 responses. We will not fabricate one.
-The frontend shows a manual retry button without auto-retry countdown.
+### Retry-After Header
+Anthropic does not guarantee a `Retry-After` header on 529 responses. When we map 529
+to 503, we default the `Retry-After` value to 30 seconds so the client has a concrete
+backoff hint. The frontend shows an auto-retry countdown and disables the retry button
+when `retryAfter` is present. If no `retryAfter` value is available, the frontend shows
+a manual retry button without an auto-retry countdown.
 
 ## Consequences
 - Users see "The AI service is currently overloaded" instead of raw API errors
 - Transient overload is retried automatically (up to 3 attempts)
-- Frontend retry button available after retries exhausted
+- Frontend retry button or countdown available after retries exhausted
 - If Anthropic adds a top-level `OverloadedError` export in a future SDK version,
   we can simplify the import

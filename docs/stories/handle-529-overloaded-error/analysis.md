@@ -18,11 +18,11 @@ The `OverloadedError` class exists in `anthropic._exceptions` but is not handled
 ## Acceptance Criteria
 - [ ] Backend catches `OverloadedError` (HTTP 529) from all Anthropic API call sites
 - [ ] `ainvoke_structured` retries on `OverloadedError` with exponential backoff (same as other transient errors)
-- [ ] `classify_anthropic_error` maps `OverloadedError` → 503 with user-friendly message
+- [ ] `classify_anthropic_error` maps `OverloadedError` → 503 with user-friendly message and `Retry-After` header (default 30s)
 - [ ] Global exception handler registered for `OverloadedError`
 - [ ] SSE streaming catches `OverloadedError` and yields `[ERROR]` event with status 503
 - [ ] Frontend displays user-friendly message for 503: "The AI service is currently overloaded. Please try again in a moment."
-- [ ] Frontend shows retry button for 503 (no auto-retry countdown — unlike 429, no Retry-After header)
+- [ ] Frontend shows retry button for 503 with auto-retry countdown when `Retry-After` is present; manual retry only when absent
 - [ ] Regression tests cover the 529 error path in:
   - Unit test for `classify_anthropic_error`
   - Integration test via gap-analysis route

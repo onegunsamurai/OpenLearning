@@ -14,8 +14,8 @@ from anthropic import (
 )
 
 # OverloadedError (HTTP 529) is not yet re-exported from the public anthropic namespace.
-# The SDK creates this class internally for 529 responses; the private import is stable
-# across versions with the anthropic dependency pinned in requirements.txt.
+# The SDK creates this class internally for 529 responses; importing from the private
+# anthropic._exceptions module relies on internal APIs and may break with SDK upgrades.
 from anthropic._exceptions import OverloadedError
 from langchain_anthropic import ChatAnthropic
 from langchain_core.runnables import Runnable
