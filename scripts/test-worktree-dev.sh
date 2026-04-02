@@ -217,6 +217,9 @@ assert_contains "$yaml_content" "127.0.0.1:8144:8000"
 begin_test "generates correct db port binding"
 assert_contains "$yaml_content" "127.0.0.1:5576:5432"
 
+begin_test "uses !override on db ports to replace base compose ports"
+assert_contains "$yaml_content" "ports: !override"
+
 begin_test "generates correct CORS_ORIGINS"
 assert_contains "$yaml_content" 'CORS_ORIGINS:'
 
