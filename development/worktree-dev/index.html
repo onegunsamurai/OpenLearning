@@ -10,27 +10,29 @@
       
       
       
-        <link rel="canonical" href="https://onegunsamurai.github.io/OpenLearning/stories/issue-144/adr/">
+        <link rel="canonical" href="https://onegunsamurai.github.io/OpenLearning/development/worktree-dev/">
       
+      
+        <link rel="prev" href="../code-style/">
       
       
       
         
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>ADR-144: Success State UI for Zero Skill Gaps - OpenLearning</title>
+        <title>Worktree Environments - OpenLearning</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -74,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-144-success-state-ui-for-zero-skill-gaps" class="md-skip">
+        <a href="#worktree-docker-environments" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +92,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="OpenLearning" class="md-header__button md-logo" aria-label="OpenLearning" data-md-component="logo">
+    <a href="../.." title="OpenLearning" class="md-header__button md-logo" aria-label="OpenLearning" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-144: Success State UI for Zero Skill Gaps
+              Worktree Environments
             
           </span>
         </div>
@@ -226,7 +228,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="OpenLearning" class="md-nav__button md-logo" aria-label="OpenLearning" data-md-component="logo">
+    <a href="../.." title="OpenLearning" class="md-nav__button md-logo" aria-label="OpenLearning" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -256,7 +258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -337,7 +339,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -365,7 +367,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -454,7 +456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
@@ -482,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/assessment-pipeline/" class="md-nav__link">
+      <a href="../../architecture/assessment-pipeline/" class="md-nav__link">
         
   
   
@@ -510,7 +512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/learning-content/" class="md-nav__link">
+      <a href="../../architecture/learning-content/" class="md-nav__link">
         
   
   
@@ -538,7 +540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/data-models/" class="md-nav__link">
+      <a href="../../architecture/data-models/" class="md-nav__link">
         
   
   
@@ -627,7 +629,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/knowledge-base/" class="md-nav__link">
+      <a href="../../guides/knowledge-base/" class="md-nav__link">
         
   
   
@@ -655,7 +657,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/api-reference/" class="md-nav__link">
+      <a href="../../guides/api-reference/" class="md-nav__link">
         
   
   
@@ -687,8 +689,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -699,13 +703,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -726,7 +728,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -744,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../development/setup/" class="md-nav__link">
+      <a href="../setup/" class="md-nav__link">
         
   
   
@@ -772,7 +774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../development/testing/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -800,7 +802,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../development/code-style/" class="md-nav__link">
+      <a href="../code-style/" class="md-nav__link">
         
   
   
@@ -816,6 +818,269 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worktree Environments
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worktree Environments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#port-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Scheme
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#start-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stop-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stop environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-e2e-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run E2E tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-worktrees-with-docker-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List worktrees with Docker status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-two-worktrees-simultaneously" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Two Worktrees Simultaneously
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#port-already-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port already in use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-not-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker not running
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-check-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health check timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-env-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing .env files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -855,10 +1120,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status
+        Quick Start
       
     </span>
   </a>
@@ -866,10 +1131,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#port-scheme" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context
+        Port Scheme
       
     </span>
   </a>
@@ -877,22 +1142,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#decisions" class="md-nav__link">
+  <a href="#commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Decisions
+        Commands
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Decisions">
+    <nav class="md-nav" aria-label="Commands">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#d1-success-state-trigger" class="md-nav__link">
+  <a href="#start-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D1: Success state trigger
+        Start environment
       
     </span>
   </a>
@@ -900,10 +1165,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#d2-extract-skillscorecard-from-assessmentcompletetsx" class="md-nav__link">
+  <a href="#stop-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D2: Extract SkillScoreCard from AssessmentComplete.tsx
+        Stop environment
       
     </span>
   </a>
@@ -911,10 +1176,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#d3-gap-analysis-success-state-nogapshero" class="md-nav__link">
+  <a href="#run-e2e-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D3: Gap-analysis success state — NoGapsHero
+        Run E2E tests
       
     </span>
   </a>
@@ -922,10 +1187,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#d4-learning-plan-success-state-nogapssuccess" class="md-nav__link">
+  <a href="#view-logs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D4: Learning-plan success state — NoGapsSuccess
+        View logs
       
     </span>
   </a>
@@ -933,21 +1198,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#d5-component-hierarchy" class="md-nav__link">
+  <a href="#list-worktrees-with-docker-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        D5: Component hierarchy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#d6-level-constants-extraction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        D6: Level constants extraction
+        List worktrees with Docker status
       
     </span>
   </a>
@@ -960,10 +1214,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cta-logic" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CTA Logic
+        How It Works
       
     </span>
   </a>
@@ -971,22 +1225,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#file-changes" class="md-nav__link">
+  <a href="#running-two-worktrees-simultaneously" class="md-nav__link">
     <span class="md-ellipsis">
       
-        File Changes
+        Running Two Worktrees Simultaneously
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="File Changes">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-files" class="md-nav__link">
+  <a href="#port-already-in-use" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New Files
+        Port already in use
       
     </span>
   </a>
@@ -994,10 +1259,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#modified-files" class="md-nav__link">
+  <a href="#docker-not-running" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Modified Files
+        Docker not running
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-check-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health check timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-env-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing .env files
       
     </span>
   </a>
@@ -1010,21 +1297,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-order" class="md-nav__link">
+  <a href="#technical-details" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Order
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#risks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Risks
+        Technical Details
       
     </span>
   </a>
@@ -1051,101 +1327,121 @@
   
 
 
-<h1 id="adr-144-success-state-ui-for-zero-skill-gaps">ADR-144: Success State UI for Zero Skill Gaps<a class="headerlink" href="#adr-144-success-state-ui-for-zero-skill-gaps" title="Permanent link">&para;</a></h1>
-<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
-<p>Proposed</p>
-<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>When a user scores 100% on all assessed skills (<code>gaps.length === 0</code>), the gap-analysis and learning-plan pages render empty content areas. We need celebratory success states that guide the user toward next steps.</p>
-<h2 id="decisions">Decisions<a class="headerlink" href="#decisions" title="Permanent link">&para;</a></h2>
-<h3 id="d1-success-state-trigger">D1: Success state trigger<a class="headerlink" href="#d1-success-state-trigger" title="Permanent link">&para;</a></h3>
-<p><strong>Condition:</strong> <code>gapAnalysis.gaps.length === 0</code>
-Deterministic structural indicator — we don't rely on <code>overallReadiness === 100</code> which is LLM-generated.</p>
-<h3 id="d2-extract-skillscorecard-from-assessmentcompletetsx">D2: Extract <code>SkillScoreCard</code> from <code>AssessmentComplete.tsx</code><a class="headerlink" href="#d2-extract-skillscorecard-from-assessmentcompletetsx" title="Permanent link">&para;</a></h3>
-<p><strong>Location:</strong> <code>frontend/src/components/shared/skill-score-card.tsx</code>
-Inline card (lines 39-56 of AssessmentComplete) becomes standalone component with 3 consumers:
-1. AssessmentComplete (existing)
-2. NoGapsHero on gap-analysis page (new)
-3. NoGapsSuccess on learning-plan page (new)</p>
-<h3 id="d3-gap-analysis-success-state-nogapshero">D3: Gap-analysis success state — <code>NoGapsHero</code><a class="headerlink" href="#d3-gap-analysis-success-state-nogapshero" title="Permanent link">&para;</a></h3>
-<p><strong>Location:</strong> <code>frontend/src/components/gap-analysis/no-gaps-hero.tsx</code>
-When <code>gaps.length === 0</code>, replaces radar chart + gap cards with:
-- GapSummary (reused as-is, shows readiness ring)
-- SkillScoreCard list (from proficiencyScores)
-- CTAs: "Try a Harder Level" (or "Add More Skills" at Staff) + "View Learning Plan"</p>
-<h3 id="d4-learning-plan-success-state-nogapssuccess">D4: Learning-plan success state — <code>NoGapsSuccess</code><a class="headerlink" href="#d4-learning-plan-success-state-nogapssuccess" title="Permanent link">&para;</a></h3>
-<p><strong>Location:</strong> <code>frontend/src/components/learning-plan/no-gaps-success.tsx</code>
-When <code>phases.length === 0</code>, replaces PlanHeader + PlanTimeline with:
-- Congratulations message
-- SkillScoreCard list
-- CTAs matching gap-analysis page</p>
-<p>Separate component (not PlanHeader modification) because PlanHeader's stats are meaningless at zero phases.</p>
-<h3 id="d5-component-hierarchy">D5: Component hierarchy<a class="headerlink" href="#d5-component-hierarchy" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>gap-analysis/page.tsx
-├── (gaps.length &gt; 0) existing layout
-└── (gaps.length === 0) NoGapsHero
-    ├── GapSummary (readiness=100)
-    ├── SkillScoreCard[]
-    └── CTAs
+<h1 id="worktree-docker-environments">Worktree Docker Environments<a class="headerlink" href="#worktree-docker-environments" title="Permanent link">&para;</a></h1>
+<p>Run isolated Docker dev environments for parallel development across git worktrees.
+Each worktree gets unique ports derived from the issue number, preventing conflicts.</p>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a worktree (if you haven&#39;t already)</span>
+make<span class="w"> </span>worktree-create<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span><span class="m">144</span>
 
-learning-plan/page.tsx
-├── (phases.length &gt; 0) existing layout
-└── (phases.length === 0) NoGapsSuccess
-    ├── SkillScoreCard[]
-    └── CTAs
+<span class="c1"># Start an isolated Docker environment</span>
+make<span class="w"> </span>worktree-dev<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span><span class="m">144</span>
+
+<span class="c1"># Or, from inside the worktree directory (auto-detects issue number)</span>
+<span class="nb">cd</span><span class="w"> </span>.claude/worktrees/issue-144
+make<span class="w"> </span>worktree-dev
 </code></pre></div>
-<h3 id="d6-level-constants-extraction">D6: Level constants extraction<a class="headerlink" href="#d6-level-constants-extraction" title="Permanent link">&para;</a></h3>
-<p><strong>Location:</strong> <code>frontend/src/lib/constants.ts</code>
-Extract <code>LEVELS</code>, <code>LEVEL_LABELS</code>, <code>MAX_LEVEL</code> from <code>role-selector.tsx</code> to shared constants.</p>
-<h2 id="cta-logic">CTA Logic<a class="headerlink" href="#cta-logic" title="Permanent link">&para;</a></h2>
+<h2 id="port-scheme">Port Scheme<a class="headerlink" href="#port-scheme" title="Permanent link">&para;</a></h2>
+<p>Ports are deterministically derived from the issue number:</p>
 <table>
 <thead>
 <tr>
-<th>targetLevel</th>
-<th>Primary CTA</th>
-<th>Action</th>
+<th>Service</th>
+<th>Formula</th>
+<th>Example (ISSUE=144)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>"staff"</code> (max)</td>
-<td>"Add More Skills"</td>
-<td><code>reset()</code> + <code>router.push("/")</code></td>
+<td>Frontend</td>
+<td>3000 + N</td>
+<td>3144</td>
 </tr>
 <tr>
-<td>Any other</td>
-<td>"Try a Harder Level"</td>
-<td><code>reset()</code> + <code>router.push("/")</code></td>
+<td>Backend</td>
+<td>8000 + N</td>
+<td>8144</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>5432 + N</td>
+<td>5576</td>
 </tr>
 </tbody>
 </table>
-<p>Secondary CTA is always "View Learning Plan" / "Start New Assessment".</p>
-<h2 id="file-changes">File Changes<a class="headerlink" href="#file-changes" title="Permanent link">&para;</a></h2>
-<h3 id="new-files">New Files<a class="headerlink" href="#new-files" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>frontend/src/lib/constants.ts</code> — Shared level constants</li>
-<li><code>frontend/src/components/shared/skill-score-card.tsx</code> — Extracted score card</li>
-<li><code>frontend/src/components/gap-analysis/no-gaps-hero.tsx</code> — Gap analysis success state</li>
-<li><code>frontend/src/components/learning-plan/no-gaps-success.tsx</code> — Learning plan success state</li>
-<li>Tests for each new file</li>
-</ul>
-<h3 id="modified-files">Modified Files<a class="headerlink" href="#modified-files" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>frontend/src/components/assessment/AssessmentComplete.tsx</code> — Use SkillScoreCard</li>
-<li><code>frontend/src/components/onboarding/role-selector.tsx</code> — Import from constants</li>
-<li><code>frontend/src/app/gap-analysis/page.tsx</code> — Add success state branch</li>
-<li><code>frontend/src/app/learning-plan/page.tsx</code> — Add success state branch</li>
-<li>Page test files — Add success state tests</li>
-</ul>
-<h2 id="implementation-order">Implementation Order<a class="headerlink" href="#implementation-order" title="Permanent link">&para;</a></h2>
+<p>Maximum supported issue number: <strong>57535</strong> (backend port would exceed 65535).</p>
+<p>All ports bind to <code>127.0.0.1</code> (localhost only) for security.</p>
+<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
+<h3 id="start-environment">Start environment<a class="headerlink" href="#start-environment" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>worktree-dev<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span>&lt;N&gt;<span class="w">              </span><span class="c1"># dev mode (default, hot-reload)</span>
+make<span class="w"> </span>worktree-dev<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span>&lt;N&gt;<span class="w"> </span><span class="nv">MODE</span><span class="o">=</span>prod<span class="w">    </span><span class="c1"># production-like build</span>
+</code></pre></div>
+<h3 id="stop-environment">Stop environment<a class="headerlink" href="#stop-environment" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>worktree-dev-down<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span>&lt;N&gt;<span class="w">                  </span><span class="c1"># stop, keep database</span>
+make<span class="w"> </span>worktree-dev-down<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span>&lt;N&gt;<span class="w"> </span><span class="nv">VOLUMES</span><span class="o">=</span>yes<span class="w">      </span><span class="c1"># stop and wipe database</span>
+</code></pre></div>
+<h3 id="run-e2e-tests">Run E2E tests<a class="headerlink" href="#run-e2e-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>worktree-e2e<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span>&lt;N&gt;
+</code></pre></div>
+<p>This starts the Docker stack (if not running), sets <code>BASE_URL</code> and <code>API_URL</code>
+for Playwright, and runs the E2E test suite.</p>
+<h3 id="view-logs">View logs<a class="headerlink" href="#view-logs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-p<span class="w"> </span>openlearning-wt-&lt;N&gt;<span class="w"> </span>logs<span class="w"> </span>-f
+docker<span class="w"> </span>compose<span class="w"> </span>-p<span class="w"> </span>openlearning-wt-&lt;N&gt;<span class="w"> </span>logs<span class="w"> </span>backend
+</code></pre></div>
+<h3 id="list-worktrees-with-docker-status">List worktrees with Docker status<a class="headerlink" href="#list-worktrees-with-docker-status" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>worktree-list
+</code></pre></div>
+<p>Shows an "up" or "down" Docker column for each worktree.</p>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Constants extraction + SkillScoreCard extraction (foundations)</li>
-<li>Gap-analysis NoGapsHero</li>
-<li>Learning-plan NoGapsSuccess</li>
+<li><strong>Port derivation</strong> — Unique ports from issue number, validated within 1024-65535</li>
+<li><strong>Override file</strong> — Generates <code>docker-compose.worktree.yml</code> inside the worktree dir</li>
+<li><strong>Compose layering</strong> — <code>docker-compose.yml</code> + <code>docker-compose.dev.yml</code> + worktree override</li>
+<li><strong>Project isolation</strong> — <code>COMPOSE_PROJECT_NAME=openlearning-wt-&lt;N&gt;</code> separates containers, networks, and volumes</li>
+<li><strong>Symlink cleanup</strong> — Fixes <code>node_modules</code> and <code>package-lock.json</code> symlinks before Docker start</li>
+<li><strong>Health checks</strong> — Waits up to 120s for all services to be healthy</li>
+<li><strong>Cleanup integration</strong> — <code>make worktree-remove</code> auto-stops Docker stacks</li>
 </ol>
-<h2 id="risks">Risks<a class="headerlink" href="#risks" title="Permanent link">&para;</a></h2>
+<h2 id="running-two-worktrees-simultaneously">Running Two Worktrees Simultaneously<a class="headerlink" href="#running-two-worktrees-simultaneously" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Terminal 1</span>
+make<span class="w"> </span>worktree-dev<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span><span class="m">144</span>
+<span class="c1"># Frontend: http://localhost:3144, Backend: http://localhost:8144</span>
+
+<span class="c1"># Terminal 2</span>
+make<span class="w"> </span>worktree-dev<span class="w"> </span><span class="nv">ISSUE</span><span class="o">=</span><span class="m">145</span>
+<span class="c1"># Frontend: http://localhost:3145, Backend: http://localhost:8145</span>
+</code></pre></div>
+<p>Each stack has its own database, containers, and network. No conflicts.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="port-already-in-use">Port already in use<a class="headerlink" href="#port-already-in-use" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Error: Docker Compose failed to start. Check if ports are already in use:
+  lsof -i :3144
+</code></pre></div>
+<p>Another process is using the derived port. Stop it or use a different issue number.</p>
+<h3 id="docker-not-running">Docker not running<a class="headerlink" href="#docker-not-running" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Error: Docker is not running. Start Docker Desktop and try again.
+</code></pre></div>
+<h3 id="health-check-timeout">Health check timeout<a class="headerlink" href="#health-check-timeout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Error: Health checks did not pass within 120 seconds.
+</code></pre></div>
+<p>Container logs are dumped automatically. Common causes:
+- Missing environment variables (check <code>.env</code> files)
+- Database migration issues (check backend logs)
+- Build failures (check the Docker build output above)</p>
+<h3 id="missing-env-files">Missing .env files<a class="headerlink" href="#missing-env-files" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>⚠ backend/.env not found in worktree.
+</code></pre></div>
+<p>Run <code>bash scripts/worktree-create.sh &lt;N&gt;</code> to set up symlinks, or manually copy
+<code>.env</code> files from the repo root.</p>
+<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Store <code>targetLevel</code> stale/missing:</strong> Treat unknown as non-max (safe default)</li>
-<li><strong>LLM returns <code>gaps: []</code> unexpectedly:</strong> Trust backend; scores will still show actual values</li>
+<li><strong>Generated file</strong>: <code>.claude/worktrees/issue-&lt;N&gt;/docker-compose.worktree.yml</code> (gitignored)</li>
+<li><strong>Project name</strong>: <code>openlearning-wt-&lt;N&gt;</code></li>
+<li><strong>Docker Compose V2</strong> required (shipped with Docker Desktop)</li>
+<li><strong>Resource usage</strong>: ~1GB RAM per stack. Aim for no more than ~10 simultaneous stacks.</li>
+<li><strong>CORS</strong>: Automatically configured to <code>http://localhost:&lt;frontend-port&gt;</code></li>
+<li><strong>Database</strong>: Fresh PostgreSQL per worktree. Tables created by <code>init_db()</code> on backend startup.</li>
 </ul>
 
 
@@ -1202,10 +1498,10 @@ Extract <code>LEVELS</code>, <code>LEVEL_LABELS</code>, <code>MAX_LEVEL</code> f
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
