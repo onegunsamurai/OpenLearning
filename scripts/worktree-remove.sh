@@ -44,6 +44,12 @@ remove_worktree() {
   local issue_num
   issue_num=$(basename "$worktree_dir" | sed 's/issue-//')
 
+  # Validate issue_num is numeric before using in docker compose commands
+  if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+    echo "  ⚠ Could not determine issue number from directory name" >&2
+    issue_num=""
+  fi
+
   # Check for uncommitted changes
   local dirty=""
   if [ -n "$(git -C "$worktree_dir" status --porcelain 2>/dev/null)" ]; then
@@ -60,6 +66,16 @@ remove_worktree() {
       return 0
     fi
   fi
+
+  # Stop Docker stack if running (after confirmation, before removal to free ports)
+  if [ -n "$issue_num" ] && docker compose -p "openlearning-wt-${issue_num}" ps --quiet 2>/dev/null | grep -q .; then
+    echo "  Stopping Docker stack for issue-${issue_num}..."
+    docker compose -p "openlearning-wt-${issue_num}" down -v --timeout 10 2>/dev/null || true
+    echo "  ✓ Docker stack stopped"
+  fi
+
+  # Remove generated override file
+  rm -f "${worktree_dir}/docker-compose.worktree.yml"
 
   # Remove the worktree
   if [ "$dirty" = "yes" ] && [ "$force" = "yes" ]; then

@@ -1,4 +1,4 @@
-.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend test-e2e test-e2e-headed test-e2e-report fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean worktree-create worktree-remove worktree-list
+.PHONY: dev dev-backend dev-frontend dev-db install install-backend install-frontend install-hooks generate-api lint lint-backend lint-frontend typecheck test test-backend test-frontend test-e2e test-e2e-headed test-e2e-report fmt fmt-backend fmt-check fmt-check-backend check pre-commit build-frontend docs-serve docs-build docker-build docker-dev docker-up docker-down docker-clean worktree-create worktree-remove worktree-list worktree-dev worktree-dev-down worktree-e2e
 
 dev:
 	make -j2 dev-backend dev-frontend
@@ -97,3 +97,17 @@ worktree-remove:
 
 worktree-list:
 	@bash scripts/worktree-list.sh
+
+# --- Worktree Docker environments (isolated parallel dev) ---
+worktree-dev:
+	@bash scripts/worktree-dev.sh "$(ISSUE)" $(if $(MODE),"--mode=$(MODE)")
+
+worktree-dev-down:
+	@bash scripts/worktree-dev.sh --down "$(ISSUE)" $(if $(VOLUMES),--volumes)
+
+worktree-e2e:
+	@ISSUE_NUM=$$(echo "$(ISSUE)" | grep -oE '[0-9]+') && \
+	  bash scripts/worktree-dev.sh "$$ISSUE_NUM" $(if $(MODE),"--mode=$(MODE)") && \
+	  BASE_URL="http://localhost:$$((3000 + ISSUE_NUM))" \
+	  API_URL="http://localhost:$$((8000 + ISSUE_NUM))" \
+	  $(MAKE) test-e2e

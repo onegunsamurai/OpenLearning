@@ -132,3 +132,22 @@ This uses both `docker-compose.yml` and `docker-compose.dev.yml` to start a Post
 To use your own PostgreSQL instance, set `DATABASE_URL` in `backend/.env`.
 
 For tests, set `TEST_DATABASE_URL` to point to a separate database (CI uses `openlearning_test`).
+
+## Worktree Docker Environments
+
+When developing in a git worktree (`.claude/worktrees/issue-<N>`), use isolated Docker
+environments to avoid port conflicts with other worktrees or the main repo:
+
+```bash
+make worktree-dev ISSUE=144          # start isolated stack
+make worktree-dev-down ISSUE=144     # stop stack
+make worktree-e2e ISSUE=144          # run E2E tests against stack
+```
+
+Each worktree gets unique ports derived from the issue number (e.g., issue 144: frontend on 3144, backend on 8144). See [Worktree Environments](worktree-dev.md) for full details.
+
+| Target | Description |
+|--------|-------------|
+| `make worktree-dev ISSUE=N` | Start isolated Docker stack for worktree |
+| `make worktree-dev-down ISSUE=N` | Stop the stack (add `VOLUMES=yes` to wipe DB) |
+| `make worktree-e2e ISSUE=N` | Start stack + run Playwright E2E tests |
