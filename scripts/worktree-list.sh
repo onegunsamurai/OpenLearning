@@ -20,11 +20,14 @@ if [ ! -d "${worktrees[0]:-}" ]; then
   exit 0
 fi
 
-# ── Gather data ──────────────────────────────────────────────────────────────
+# ── Pre-fetch data (avoid N+1 subprocess calls) ─────────────────────────────
+
+# Single docker ps call for all running containers (O(1) instead of O(N))
+running_containers=$(docker ps --format '{{.Names}}' 2>/dev/null || echo "")
 
 # Print header
-printf "%-7s  %-50s  %-7s  %s\n" "Issue" "Branch" "Status" "Title"
-printf "%-7s  %-50s  %-7s  %s\n" "-----" "------" "------" "-----"
+printf "%-7s  %-50s  %-7s  %-8s  %s\n" "Issue" "Branch" "Status" "Docker" "Title"
+printf "%-7s  %-50s  %-7s  %-8s  %s\n" "-----" "------" "------" "------" "-----"
 
 for wt_dir in "${worktrees[@]}"; do
   [ -d "$wt_dir" ] || continue
@@ -56,5 +59,11 @@ for wt_dir in "${worktrees[@]}"; do
     title="${title:0:47}..."
   fi
 
-  printf "#%-6s  %-50s  %-7s  %s\n" "$issue_num" "$branch_name" "$status" "$title"
+  # Check Docker stack status (string match against pre-fetched container names)
+  docker_status="down"
+  if echo "$running_containers" | grep -qF "openlearning-wt-${issue_num}"; then
+    docker_status="up"
+  fi
+
+  printf "#%-6s  %-50s  %-7s  %-8s  %s\n" "$issue_num" "$branch_name" "$status" "$docker_status" "$title"
 done
