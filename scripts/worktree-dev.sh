@@ -25,7 +25,7 @@ Usage:
   worktree-dev.sh --help                               Show this help
 
 Arguments:
-  issue-number   GitHub issue number (1-57535)
+  issue-number   GitHub issue number (positive integer)
   --mode         dev (default): hot-reload with volume mounts
                  prod: production-like build
   --down         Tear down the Docker stack
@@ -52,25 +52,62 @@ validate_issue_number() {
     return 1
   fi
 
-  local num=$((input))
-
-  # Backend port is the tightest constraint: 8000 + N <= 65535
-  if [ "$num" -gt 57535 ]; then
-    local backend_port=$((8000 + num))
-    err "Port overflow for issue #$num."
-    err "  Backend port would be $backend_port (exceeds 65535)."
-    err "  Maximum supported issue number is 57535."
-    return 1
-  fi
-
   return 0
+}
+
+is_port_free() {
+  local port="$1"
+  # lsof returns 0 if something is listening, 1 if nothing is
+  ! lsof -i :"$port" >/dev/null 2>&1
+}
+
+find_free_port() {
+  local start="$1"
+  local port
+  for port in $(seq "$start" 65535); do
+    if is_port_free "$port"; then
+      echo "$port"
+      return 0
+    fi
+  done
+  err "No free port found starting from $start"
+  return 1
 }
 
 derive_ports() {
   local issue_num="$1"
-  FRONTEND_PORT=$((3000 + issue_num))
-  BACKEND_PORT=$((8000 + issue_num))
-  DB_PORT=$((5432 + issue_num))
+
+  # Preferred ports based on issue number
+  local pref_frontend=$((3000 + issue_num))
+  local pref_backend=$((8000 + issue_num))
+  local pref_db=$((5432 + issue_num))
+
+  # Clamp preferred ports to valid range (1024-65535)
+  [ "$pref_frontend" -gt 65535 ] && pref_frontend=10000
+  [ "$pref_backend" -gt 65535 ] && pref_backend=20000
+  [ "$pref_db" -gt 65535 ] && pref_db=30000
+
+  # Use preferred port if free, otherwise find the next free one
+  if is_port_free "$pref_frontend"; then
+    FRONTEND_PORT=$pref_frontend
+  else
+    warn "Preferred frontend port $pref_frontend is in use, finding alternative..."
+    FRONTEND_PORT=$(find_free_port "$pref_frontend") || return 1
+  fi
+
+  if is_port_free "$pref_backend"; then
+    BACKEND_PORT=$pref_backend
+  else
+    warn "Preferred backend port $pref_backend is in use, finding alternative..."
+    BACKEND_PORT=$(find_free_port "$pref_backend") || return 1
+  fi
+
+  if is_port_free "$pref_db"; then
+    DB_PORT=$pref_db
+  else
+    warn "Preferred DB port $pref_db is in use, finding alternative..."
+    DB_PORT=$(find_free_port "$pref_db") || return 1
+  fi
 }
 
 detect_issue_from_dir() {

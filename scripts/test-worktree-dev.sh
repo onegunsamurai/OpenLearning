@@ -106,6 +106,10 @@ begin_test "accepts max issue number 57535"
 (validate_issue_number "57535" >/dev/null 2>&1)
 assert_exit_code "0" "$?"
 
+begin_test "accepts large issue number 99999 (no upper bound)"
+(validate_issue_number "99999" >/dev/null 2>&1)
+assert_exit_code "0" "$?"
+
 begin_test "rejects issue number 0"
 rc=0; validate_issue_number "0" >/dev/null 2>&1 || rc=$?
 assert_exit_code "1" "$rc"
@@ -122,14 +126,6 @@ begin_test "rejects empty input"
 rc=0; validate_issue_number "" >/dev/null 2>&1 || rc=$?
 assert_exit_code "1" "$rc"
 
-begin_test "rejects port overflow (57536)"
-rc=0; validate_issue_number "57536" >/dev/null 2>&1 || rc=$?
-assert_exit_code "1" "$rc"
-
-begin_test "rejects very large number (99999)"
-rc=0; validate_issue_number "99999" >/dev/null 2>&1 || rc=$?
-assert_exit_code "1" "$rc"
-
 begin_test "rejects command injection attempt"
 rc=0; validate_issue_number '1;rm' >/dev/null 2>&1 || rc=$?
 assert_exit_code "1" "$rc"
@@ -142,40 +138,70 @@ begin_test "handles leading zeros (0144 → rejects as starting with 0)"
 rc=0; validate_issue_number "0144" >/dev/null 2>&1 || rc=$?
 assert_exit_code "1" "$rc"
 
+# ── Tests: is_port_free ──────────────────────────────────────────────────────
+
+echo ""
+echo "is_port_free"
+
+begin_test "detects a likely-free high port as free"
+# Port 59999 is very unlikely to be in use
+is_port_free 59999
+assert_exit_code "0" "$?"
+
+# ── Tests: find_free_port ────────────────────────────────────────────────────
+
+echo ""
+echo "find_free_port"
+
+begin_test "finds a free port starting from a high range"
+result=$(find_free_port 59990)
+if [ -n "$result" ] && [ "$result" -ge 59990 ] && [ "$result" -le 65535 ]; then
+  pass
+else
+  fail "expected port in range 59990-65535, got '$result'"
+fi
+
 # ── Tests: derive_ports ──────────────────────────────────────────────────────
 
 echo ""
 echo "derive_ports"
 
-begin_test "issue 1 → frontend=3001, backend=8001, db=5433"
+# Mock is_port_free to always return free (for deterministic tests)
+_real_is_port_free=$(declare -f is_port_free)
+is_port_free() { return 0; }
+
+begin_test "issue 1 → preferred frontend=3001 when free"
 derive_ports 1
 assert_eq "3001" "$FRONTEND_PORT"
 
-begin_test "issue 1 → backend=8001"
+begin_test "issue 1 → preferred backend=8001 when free"
 assert_eq "8001" "$BACKEND_PORT"
 
-begin_test "issue 1 → db=5433"
+begin_test "issue 1 → preferred db=5433 when free"
 assert_eq "5433" "$DB_PORT"
 
-begin_test "issue 144 → frontend=3144"
+begin_test "issue 144 → preferred frontend=3144 when free"
 derive_ports 144
 assert_eq "3144" "$FRONTEND_PORT"
 
-begin_test "issue 144 → backend=8144"
+begin_test "issue 144 → preferred backend=8144 when free"
 assert_eq "8144" "$BACKEND_PORT"
 
-begin_test "issue 144 → db=5576"
+begin_test "issue 144 → preferred db=5576 when free"
 assert_eq "5576" "$DB_PORT"
 
-begin_test "issue 57535 → frontend=60535"
-derive_ports 57535
-assert_eq "60535" "$FRONTEND_PORT"
+begin_test "issue 99999 → clamps frontend to 10000 when overflow"
+derive_ports 99999
+assert_eq "10000" "$FRONTEND_PORT"
 
-begin_test "issue 57535 → backend=65535"
-assert_eq "65535" "$BACKEND_PORT"
+begin_test "issue 99999 → clamps backend to 20000 when overflow"
+assert_eq "20000" "$BACKEND_PORT"
 
-begin_test "issue 57535 → db=62967"
-assert_eq "62967" "$DB_PORT"
+begin_test "issue 99999 → clamps db to 30000 when overflow"
+assert_eq "30000" "$DB_PORT"
+
+# Restore real is_port_free
+eval "$_real_is_port_free"
 
 # ── Tests: detect_issue_from_pwd ─────────────────────────────────────────────
 
