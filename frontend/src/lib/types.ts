@@ -22,4 +22,6 @@ export type {
   LearningPlanOut,
   LearningPhaseOut,
   ResourceOut,
+  MaterialOut,
+  MaterialsResponse,
 } from "@/lib/generated/api-client";

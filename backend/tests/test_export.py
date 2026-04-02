@@ -83,6 +83,39 @@ class TestBuildAssessmentMarkdown:
         )
         assert "[Next.js Docs](https://nextjs.org/docs)" in md
 
+    def test_resource_with_javascript_url_renders_plain(self):
+        plan = {
+            "summary": "Test",
+            "total_hours": 1,
+            "phases": [
+                {
+                    "phase_number": 1,
+                    "title": "Phase 1",
+                    "estimated_hours": 1,
+                    "rationale": "",
+                    "concepts": [],
+                    "resources": [
+                        {
+                            "title": "Evil Link",
+                            "url": "javascript:alert(1)",
+                            "type": "article",
+                        }
+                    ],
+                }
+            ],
+        }
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=plan,
+            proficiency_scores=None,
+        )
+        assert "javascript:" not in md
+        assert "- Evil Link — article" in md
+
     def test_resource_without_url_renders_plain(self):
         md = build_assessment_markdown(
             session_id="abc-123",
@@ -159,6 +192,181 @@ class TestBuildAssessmentMarkdown:
             proficiency_scores=None,
         )
         assert "**Date:** N/A" in md
+
+    def test_materials_section_renders(self):
+        materials = [
+            {
+                "concept_id": "distributed_systems",
+                "quality_score": 0.9,
+                "bloom_score": 0.85,
+                "material": {
+                    "sections": [
+                        {
+                            "type": "explanation",
+                            "title": "Understanding CAP",
+                            "body": "The CAP theorem states...",
+                        },
+                        {
+                            "type": "code_example",
+                            "title": "Async Example",
+                            "body": "Here is an example:",
+                            "code_block": "async def fetch(): ...",
+                        },
+                        {
+                            "type": "quiz",
+                            "title": "CAP Quiz",
+                            "body": "What does CAP stand for?",
+                            "answer": "Consistency, Availability, Partition tolerance",
+                        },
+                    ]
+                },
+            }
+        ]
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=materials,
+        )
+        assert "## Generated Learning Materials" in md
+        assert "### Distributed Systems" in md
+        assert "**Quality:** 90%" in md
+        assert "#### Understanding CAP" in md
+        assert "The CAP theorem states..." in md
+        assert "~~~~\nasync def fetch(): ...\n~~~~" in md
+        assert "#### CAP Quiz" in md
+        assert "> **Answer:** Consistency, Availability, Partition tolerance" in md
+
+    def test_materials_none_does_not_add_section(self):
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=None,
+        )
+        assert "Generated Learning Materials" not in md
+
+    def test_materials_empty_list_does_not_add_section(self):
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=[],
+        )
+        assert "Generated Learning Materials" not in md
+
+    def test_materials_malformed_sections_skipped(self):
+        materials = [
+            {
+                "concept_id": "test_concept",
+                "quality_score": 0.5,
+                "bloom_score": 0.6,
+                "material": {
+                    "sections": "not-a-list",
+                },
+            },
+            {
+                "concept_id": "good_concept",
+                "quality_score": 0.8,
+                "bloom_score": 0.7,
+                "material": {
+                    "sections": [
+                        {"type": "explanation", "title": "Good", "body": "Works"},
+                    ]
+                },
+            },
+        ]
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=materials,
+        )
+        assert "### Good Concept" in md
+        assert "#### Good" in md
+
+    def test_materials_quality_flag_renders(self):
+        materials = [
+            {
+                "concept_id": "test_concept",
+                "quality_score": 0.5,
+                "bloom_score": 0.6,
+                "quality_flag": "review",
+                "material": {"sections": []},
+            }
+        ]
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=materials,
+        )
+        assert "**Flag:** review" in md
+
+    def test_materials_code_block_with_backticks_uses_tilde_fence(self):
+        """Tilde fencing prevents markdown injection from backticks in code."""
+        materials = [
+            {
+                "concept_id": "injection_test",
+                "quality_score": 0.8,
+                "bloom_score": 0.7,
+                "material": {
+                    "sections": [
+                        {
+                            "type": "code_example",
+                            "title": "Tricky Code",
+                            "body": "Example:",
+                            "code_block": "```\nmalicious\n```",
+                        },
+                    ]
+                },
+            }
+        ]
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=None,
+            proficiency_scores=None,
+            materials=materials,
+        )
+        assert "~~~~\n```\nmalicious\n```\n~~~~" in md
+
+    def test_materials_backward_compatible_with_existing_tests(self):
+        """Existing call without materials arg still works."""
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=datetime(2026, 3, 16),
+            knowledge_graph=FULL_KNOWLEDGE_GRAPH,
+            gap_nodes=FULL_GAP_NODES,
+            learning_plan=FULL_LEARNING_PLAN,
+            proficiency_scores=FULL_PROFICIENCY_SCORES,
+        )
+        assert "# Assessment Report" in md
+        assert "Generated Learning Materials" not in md
 
 
 # ── TestAssessmentExportRoute ────────────────────────────────────────────────

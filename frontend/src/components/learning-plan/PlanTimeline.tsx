@@ -1,6 +1,7 @@
 "use client";
 
 import type { AssessmentReportResponse } from "@/lib/api";
+import type { ParsedMaterial } from "@/lib/materials";
 import { ConceptCard } from "./ConceptCard";
 import { motion } from "motion/react";
 
@@ -10,9 +11,11 @@ type PipelinePhase = PipelinePlan["phases"][number];
 interface PlanTimelineProps {
   plan: PipelinePlan;
   activePhase: number;
+  materialsByConceptId?: Map<string, ParsedMaterial>;
+  materialsLoading?: boolean;
 }
 
-export function PlanTimeline({ plan, activePhase }: PlanTimelineProps) {
+export function PlanTimeline({ plan, activePhase, materialsByConceptId, materialsLoading }: PlanTimelineProps) {
   const phase: PipelinePhase | undefined = plan.phases.find(
     (p) => p.phaseNumber === activePhase
   );
@@ -39,6 +42,8 @@ export function PlanTimeline({ plan, activePhase }: PlanTimelineProps) {
             concept={concept}
             resources={phase.resources}
             index={i}
+            material={materialsByConceptId?.get(concept)}
+            materialsLoading={materialsLoading}
           />
         ))}
       </div>

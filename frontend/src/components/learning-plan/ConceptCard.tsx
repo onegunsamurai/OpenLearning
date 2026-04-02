@@ -1,10 +1,12 @@
 "use client";
 
 import type { AssessmentReportResponse } from "@/lib/api";
+import type { ParsedMaterial } from "@/lib/materials";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { BookOpen, Video, Wrench, FileText, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
+import { MaterialsPanel } from "./materials-panel";
 
 type PipelineResource = AssessmentReportResponse["learningPlan"]["phases"][number]["resources"][number];
 
@@ -26,9 +28,11 @@ interface ConceptCardProps {
   concept: string;
   resources: PipelineResource[];
   index: number;
+  material?: ParsedMaterial;
+  materialsLoading?: boolean;
 }
 
-export function ConceptCard({ concept, resources, index }: ConceptCardProps) {
+export function ConceptCard({ concept, resources, index, material, materialsLoading }: ConceptCardProps) {
   return (
     <motion.div
       className="rounded-xl border border-border bg-card p-4 space-y-3"
@@ -86,6 +90,16 @@ export function ConceptCard({ concept, resources, index }: ConceptCardProps) {
           </div>
         </div>
       )}
+
+      {materialsLoading && !material && (
+        <div
+          className="h-8 rounded-lg bg-secondary animate-pulse"
+          role="status"
+          aria-label="Loading learning materials"
+        />
+      )}
+
+      {material && <MaterialsPanel material={material} />}
     </motion.div>
   );
 }

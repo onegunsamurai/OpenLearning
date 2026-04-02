@@ -48,7 +48,7 @@ graph TB
 
 ## Data Flow
 
-The platform follows a linear pipeline from onboarding to learning plan:
+The platform follows a linear pipeline from onboarding to learning materials:
 
 ```mermaid
 graph LR
@@ -57,6 +57,7 @@ graph LR
     C --> D[Gap Analysis]
     D --> E[Learning Plan]
     E --> F[Content Generation]
+    F --> G[Materials UI]
 ```
 
 1. **Onboarding** — User selects a role (primary path) or browses and selects skills manually. Skills are mapped to a knowledge base domain.
@@ -65,6 +66,7 @@ graph LR
 4. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
 5. **Learning Plan** — Claude generates a phased plan from the identified gaps with concrete resources.
 6. **Content Generation** — A background LangGraph pipeline generates Bloom-validated learning material for each knowledge gap, with quality gating and retry loops.
+7. **Materials UI** — Frontend displays generated materials alongside learning plan, with explanations, code examples, analogies, and quizzes for each gap.
 
 ### Session Management
 
@@ -82,13 +84,15 @@ Authenticated sessions are linked to users via a `user_id` foreign key. Write en
 |-------|-----------|---------|
 | Frontend | Next.js 16 (App Router) | Pages, routing, SSR |
 | UI | Tailwind CSS v4, Radix UI, shadcn/ui | Styling and components |
+| Markdown | react-markdown + rehype-sanitize | XSS-safe rendering of learning materials |
 | State | Zustand (sessionStorage) | Client-side state management |
 | Charts | Recharts | Proficiency radar charts |
 | Animations | Motion v12 | Page transitions and UI animations |
 | Backend | FastAPI | API server, SSE streaming |
-| Pipeline | LangGraph | State machine with checkpoints and interrupts |
-| LLM | LangChain + Anthropic Claude | Question generation, evaluation, plan generation |
-| Database | SQLAlchemy + asyncpg (PostgreSQL) | Session and result storage |
+| Pipeline | LangGraph | State machine with checkpoints and interrupts (assessment and content generation) |
+| LLM | LangChain + Anthropic Claude | Question generation, evaluation, plan generation, content creation |
+| Vector Search | pgvector | RAG-based content generation for domain knowledge |
+| Database | SQLAlchemy + asyncpg (PostgreSQL) | Session, result, and material storage |
 | Checkpoints | LangGraph AsyncPostgresSaver | Pipeline state persistence |
 | Auth | python-jose | JWT token signing and verification |
 | OAuth | httpx | GitHub OAuth token exchange |
@@ -135,11 +139,11 @@ OpenLearning/
 │   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── repositories/        # Data access layer (session_repo, result_repo, user_repo, material_repo)
 │   │   ├── services/            # Service layer (assessment orchestration, AI/LLM integration, SSE adapter, session cleanup)
-│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
-│   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
+│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, knowledge mapper, gap analyzer, plan gen, content nodes, schemas)
+│   │   ├── graph/               # LangGraph pipelines (assessment, content generation), state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
 │   │   ├── data/                # Skills taxonomy (skills_taxonomy.py)
-│   │   └── prompts/             # System prompts for Claude (calibration, eval, etc.)
+│   │   └── prompts/             # System prompts for Claude (calibration, eval, content generation, etc.)
 │   ├── tests/                   # pytest test suite
 │   ├── Dockerfile               # Backend container image
 │   ├── .dockerignore            # Docker build exclusions
@@ -151,9 +155,10 @@ OpenLearning/
 │   │   ├── components/
 │   │   │   ├── providers/       # React context providers (auth)
 │   │   │   ├── settings/        # Settings components (API key setup)
+│   │   │   ├── learning-plan/   # Learning plan components (materials, quality badge, section renderers)
 │   │   │   └── ui/              # UI primitives (shadcn/ui)
-│   │   ├── hooks/               # Custom React hooks (useAuth, useAssessmentChat, etc.)
-│   │   └── lib/                 # Types, Zustand store, auth store, API client, generated types
+│   │   ├── hooks/               # Custom React hooks (useAuth, useAssessmentChat, useMaterials, etc.)
+│   │   └── lib/                 # Types, Zustand store, auth store, API client, generated types, materials utilities
 │   ├── Dockerfile               # Frontend container image
 │   ├── .dockerignore            # Docker build exclusions
 │   ├── package.json

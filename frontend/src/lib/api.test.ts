@@ -4,6 +4,7 @@ import { vi } from "vitest";
 vi.mock("@/lib/generated/api-client", () => ({
   getSkillsApiSkillsGet: vi.fn(),
   listUserAssessmentsApiUserAssessmentsGet: vi.fn(),
+  getMaterialsApiMaterialsSessionIdGet: vi.fn(),
 }));
 
 // Mock the client module
@@ -15,6 +16,7 @@ import { unwrap, api, ApiError, parseRetryAfter, extractDetail } from "./api";
 import {
   getSkillsApiSkillsGet,
   listUserAssessmentsApiUserAssessmentsGet,
+  getMaterialsApiMaterialsSessionIdGet,
 } from "@/lib/generated/api-client";
 
 const mockFetch = vi.fn();
@@ -403,6 +405,32 @@ describe("api.assessmentExport", () => {
     });
 
     await expect(api.assessmentExport("bad-id")).rejects.toThrow("Request failed");
+  });
+});
+
+describe("api.getMaterials", () => {
+  const sdkResult = (data: unknown) =>
+    ({ data, request: {}, response: {} }) as never;
+
+  it("unwraps SDK result and returns MaterialsResponse", async () => {
+    const data = { sessionId: "sess-1", materials: [] };
+    vi.mocked(getMaterialsApiMaterialsSessionIdGet).mockResolvedValueOnce(
+      sdkResult(data)
+    );
+
+    const result = await api.getMaterials("sess-1");
+    expect(result).toEqual(data);
+    expect(getMaterialsApiMaterialsSessionIdGet).toHaveBeenCalledWith({
+      path: { session_id: "sess-1" },
+    });
+  });
+
+  it("throws ApiError on failure", async () => {
+    vi.mocked(getMaterialsApiMaterialsSessionIdGet).mockResolvedValueOnce(
+      { error: { detail: "Not found" }, request: {}, response: { status: 404 } } as never
+    );
+
+    await expect(api.getMaterials("bad")).rejects.toThrow("Not found");
   });
 });
 

@@ -15,6 +15,7 @@ Most learning platforms treat assessment as a static quiz. OpenLearning uses a L
 - **Skill Assessment** — Adaptive AI interview with calibration, Bloom-level targeting, and knowledge graph construction
 - **Gap Analysis** — Radar chart visualization comparing current vs target proficiency with priority-ranked gaps
 - **Learning Plan** — Phased, structured learning plan with theory, quiz, and lab modules
+- **Learning Materials** — Personalized, AI-generated learning content for each gap with explanations, code examples, analogies, and quizzes
 - **User Dashboard** — View assessment history, resume incomplete assessments, and revisit past results
 
 ## Assessment Pipeline
@@ -126,6 +127,7 @@ To stop and remove all data: `make docker-clean`
 - **State**: Zustand (sessionStorage persistence)
 - **Charts**: Recharts
 - **Animations**: Motion v12
+- **Markdown**: react-markdown + rehype-sanitize (XSS-safe rendering)
 
 ## Architecture
 

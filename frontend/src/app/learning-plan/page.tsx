@@ -11,9 +11,10 @@ import { useAppStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionReport } from "@/hooks/useSessionReport";
+import { useMaterials } from "@/hooks/useMaterials";
 import { ApiErrorDisplay } from "@/components/error/api-error-display";
 import { cn } from "@/lib/utils";
-import { Loader2, Copy, RotateCcw, Check, FileDown, ArrowLeft } from "lucide-react";
+import { Loader2, Copy, RotateCcw, Check, FileDown, ArrowLeft, AlertTriangle } from "lucide-react";
 
 export default function LearningPlanPage() {
   return (
@@ -34,6 +35,13 @@ function LearningPlanPageContent() {
 
   const sessionId = sessionParam || assessmentSessionId;
   const { report, loading, error, refetch } = useSessionReport(sessionId);
+  const {
+    materialsByConceptId,
+    loading: materialsLoading,
+    error: materialsError,
+    retry: materialsRetry,
+    pollingExhausted,
+  } = useMaterials(sessionId);
 
   const [activePhase, setActivePhase] = useState(1);
   const [copied, setCopied] = useState(false);
@@ -82,7 +90,11 @@ function LearningPlanPageContent() {
           <p className="text-muted-foreground font-mono text-sm">
             Loading your learning plan...
           </p>
-          <div className="w-full max-w-4xl grid gap-4 lg:grid-cols-[250px,1fr] mt-8">
+          <div
+            role="status"
+            aria-label="Loading your learning plan"
+            className="w-full max-w-4xl grid gap-4 lg:grid-cols-[250px,1fr] mt-8"
+          >
             <div className="h-[300px] rounded-xl bg-card border border-border animate-pulse" />
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
@@ -160,7 +172,38 @@ function LearningPlanPageContent() {
 
         {/* Main content */}
         <div className="space-y-6">
-          <PlanTimeline plan={learningPlan} activePhase={activePhase} />
+          <PlanTimeline
+            plan={learningPlan}
+            activePhase={activePhase}
+            materialsByConceptId={materialsByConceptId}
+            materialsLoading={materialsLoading}
+          />
+
+          {materialsError && (
+            <div className="flex items-center gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Could not load learning materials.</span>
+              <button
+                onClick={materialsRetry}
+                className="ml-auto text-cyan hover:underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {pollingExhausted && !materialsError && materialsByConceptId.size === 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Learning materials are still being generated.</span>
+              <button
+                onClick={materialsRetry}
+                className="ml-auto text-cyan hover:underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

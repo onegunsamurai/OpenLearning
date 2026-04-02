@@ -48,7 +48,7 @@ from app.models.assessment_api import (
     KnowledgeGraphOut,
 )
 from app.models.events import AssessmentEvent, CompleteEvent, ErrorEvent, QuestionEvent
-from app.repositories import result_repo, session_repo
+from app.repositories import material_repo, result_repo, session_repo
 from app.routes.export_utils import build_assessment_markdown
 from app.services.ai import api_key_scope, classify_anthropic_error
 from app.services.assessment_mappers import (
@@ -396,6 +396,23 @@ async def export_assessment(
         proficiency_scores = [s.model_dump() for s in scores]
         completed_at = None
 
+    # Fetch materials for export (may be empty if pipeline hasn't run)
+    material_rows = await material_repo.get_materials_by_session(db, session_id)
+    materials_data = (
+        [
+            {
+                "concept_id": row.concept_id,
+                "material": row.material,
+                "quality_score": row.quality_score,
+                "bloom_score": row.bloom_score,
+                "quality_flag": row.quality_flag,
+            }
+            for row in material_rows
+        ]
+        if material_rows
+        else None
+    )
+
     markdown = build_assessment_markdown(
         session_id=session_id,
         target_level=session_row.target_level,
@@ -404,6 +421,7 @@ async def export_assessment(
         gap_nodes=gap_nodes,
         learning_plan=learning_plan,
         proficiency_scores=proficiency_scores,
+        materials=materials_data,
     )
 
     return ExportResult(markdown=markdown, session_id=session_id)

@@ -793,7 +793,7 @@ Generate a personalized learning plan from gap analysis.
 
 > **Requires authentication.** Returns 401 without a valid JWT cookie.
 
-Retrieve generated learning materials for a completed assessment session. Materials are generated automatically in the background when an assessment completes.
+Retrieve generated learning materials for a completed assessment session. Materials are generated automatically in the background when an assessment completes via the content generation pipeline.
 
 **Path parameter**: `session_id` — the assessment session UUID
 
@@ -813,10 +813,37 @@ Retrieve generated learning materials for a completed assessment session. Materi
       "material": {
         "concept_id": "http_fundamentals",
         "target_bloom": 2,
+        "target_bloom_label": "Understand",
+        "objective": "Explain how HTTP request/response cycles work",
         "sections": [
-          {"type": "explanation", "title": "What HTTP does", "body": "..."},
-          {"type": "code_example", "title": "HTTP Request", "body": "...", "codeBlock": "..."},
-          {"type": "quiz", "title": "Check understanding", "body": "...", "answer": "..."}
+          {
+            "type": "explanation",
+            "title": "What HTTP does",
+            "body": "HTTP is a stateless protocol...",
+            "code_block": null,
+            "answer": null
+          },
+          {
+            "type": "code_example",
+            "title": "HTTP Request Example",
+            "body": "Here's how to make an HTTP request...",
+            "code_block": "const response = await fetch('...');",
+            "answer": null
+          },
+          {
+            "type": "analogy",
+            "title": "Thinking about HTTP",
+            "body": "HTTP is like sending mail...",
+            "code_block": null,
+            "answer": null
+          },
+          {
+            "type": "quiz",
+            "title": "Check your understanding",
+            "body": "What does an HTTP status code 404 mean?",
+            "code_block": null,
+            "answer": "It means the requested resource was not found on the server."
+          }
         ]
       },
       "generatedAt": "2026-03-23T12:00:00Z"
@@ -825,7 +852,27 @@ Retrieve generated learning materials for a completed assessment session. Materi
 }
 ```
 
-An empty `materials` list indicates the pipeline is still running.
+#### Content Section Types
+
+Materials are organized into sections, each with a specific pedagogical purpose:
+
+| Type | Purpose | Fields |
+|------|---------|--------|
+| `explanation` | Core concept explanation with context and reasoning | `title`, `body` |
+| `code_example` | Concrete code demonstrating the concept | `title`, `body`, `code_block` |
+| `analogy` | Relatable comparison to familiar concepts | `title`, `body` |
+| `quiz` | Knowledge check with question and answer | `title`, `body`, `answer` |
+
+All sections include `type`, `title`, and `body`. Optional fields are `code_block` (populated for code examples) and `answer` (populated for quizzes). Sections are ordered pedagogically and should be rendered in array order.
+
+#### Quality Scoring
+
+- **`bloomScore`** (0.0–1.0) — Alignment to target Bloom taxonomy level. Validated by LLM-as-judge against the learning objective.
+- **`qualityScore`** (0.0–1.0) — Composite quality metric: average of accuracy, clarity, and evidence alignment.
+- **`iterationCount`** — Number of generation attempts. High values (>2) indicate the quality gate required retries.
+- **`qualityFlag`** — Set to `"max_iterations_reached"` if the material was emitted after 3 iterations without passing the quality gate. `null` indicates it passed quality checks.
+
+An empty `materials` list indicates the content generation pipeline is still running. Clients should poll periodically (e.g., every 3 seconds) until materials are available.
 
 **Response** (404 — session not found):
 
@@ -833,7 +880,7 @@ An empty `materials` list indicates the pipeline is still running.
 {"detail": "Session not found"}
 ```
 
-**Source**: `backend/app/routes/materials.py`
+**Source**: `backend/app/routes/materials.py`, `backend/app/models/materials.py`
 
 ---
 

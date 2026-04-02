@@ -14,6 +14,7 @@ import {
   loginApiAuthLoginPost,
   listUserAssessmentsApiUserAssessmentsGet,
   deleteUserAssessmentApiUserAssessmentsSessionIdDelete,
+  getMaterialsApiMaterialsSessionIdGet,
 } from "@/lib/generated/api-client";
 import type {
   SkillsResponse,
@@ -24,6 +25,7 @@ import type {
   ApiKeyResponse,
   ValidateKeyResponse,
   UserAssessmentSummary,
+  MaterialsResponse,
 } from "@/lib/generated/api-client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -273,6 +275,9 @@ const realApi = {
   authLogin: async (email: string, password: string): Promise<void> => {
     unwrap(await loginApiAuthLoginPost({ body: { email, password } }));
   },
+
+  getMaterials: async (sessionId: string): Promise<MaterialsResponse> =>
+    unwrap(await getMaterialsApiMaterialsSessionIdGet({ path: { session_id: sessionId } })),
 };
 
 export const api = realApi;
