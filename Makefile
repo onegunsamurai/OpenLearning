@@ -100,14 +100,20 @@ worktree-list:
 
 # --- Worktree Docker environments (isolated parallel dev) ---
 worktree-dev:
-	@bash scripts/worktree-dev.sh "$(ISSUE)" $(if $(MODE),"--mode=$(MODE)")
+	@bash scripts/worktree-dev.sh $(if $(ISSUE),"$(ISSUE)") $(if $(MODE),"--mode=$(MODE)")
 
 worktree-dev-down:
-	@bash scripts/worktree-dev.sh --down "$(ISSUE)" $(if $(VOLUMES),--volumes)
+	@bash scripts/worktree-dev.sh --down $(if $(ISSUE),"$(ISSUE)") $(if $(VOLUMES),--volumes)
 
 worktree-e2e:
-	@ISSUE_NUM=$$(echo "$(ISSUE)" | grep -oE '[0-9]+') && \
+	@if [ -z "$(ISSUE)" ]; then echo "Error: ISSUE is required. Usage: make worktree-e2e ISSUE=<N>" >&2; exit 1; fi; \
+	  if ! echo "$(ISSUE)" | grep -qE '^#?[0-9]+$$'; then \
+	    echo "Error: ISSUE must be a number (e.g. 152 or #152), got '$(ISSUE)'" >&2; exit 1; \
+	  fi; \
+	  ISSUE_NUM=$$(echo "$(ISSUE)" | sed -E 's/^#?([0-9]+)$$/\1/'); \
 	  bash scripts/worktree-dev.sh "$$ISSUE_NUM" $(if $(MODE),"--mode=$(MODE)") && \
-	  BASE_URL="http://localhost:$$((3000 + ISSUE_NUM))" \
-	  API_URL="http://localhost:$$((8000 + ISSUE_NUM))" \
+	  FRONTEND_PORT=$$(docker compose -p "openlearning-wt-$$ISSUE_NUM" port frontend 3000 2>/dev/null | cut -d: -f2) && \
+	  BACKEND_PORT=$$(docker compose -p "openlearning-wt-$$ISSUE_NUM" port backend 8000 2>/dev/null | cut -d: -f2) && \
+	  BASE_URL="http://localhost:$$FRONTEND_PORT" \
+	  API_URL="http://localhost:$$BACKEND_PORT" \
 	  $(MAKE) test-e2e

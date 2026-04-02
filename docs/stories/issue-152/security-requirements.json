@@ -27,7 +27,7 @@
       "priority": "HIGH",
       "category": "input_validation",
       "title": "Strict issue number validation before any shell use",
-      "description": "The issue number argument MUST be validated as a positive integer in range 1-62535 before any use in shell commands, file paths, Docker commands, or string interpolation.",
+      "description": "The issue number argument MUST be validated as a positive integer before any use in shell commands, file paths, Docker commands, or string interpolation. Port conflicts are handled automatically via availability checks with fallback to free ports.",
       "cwe": ["CWE-78"],
       "owasp": "A03:2021",
       "validation": {
@@ -35,7 +35,7 @@
         "test_cases": [
           {"input": "0", "expected": "error_exit"},
           {"input": "-1", "expected": "error_exit"},
-          {"input": "99999", "expected": "error_exit"},
+          {"input": "99999", "expected": "success"},
           {"input": "abc", "expected": "error_exit"},
           {"input": "1; rm -rf /", "expected": "error_exit"},
           {"input": "1$(whoami)", "expected": "error_exit"},
@@ -43,11 +43,11 @@
           {"input": "0144", "expected": "error_exit_or_strip_leading_zeros"},
           {"input": "1", "expected": "success"},
           {"input": "999", "expected": "success"},
-          {"input": "62535", "expected": "success"}
+          {"input": "65000", "expected": "success"}
         ],
         "description": "Run the script with each test input and verify correct accept/reject behavior."
       },
-      "implementation_notes": "Use regex validation: [[ \"$ISSUE_NUM\" =~ ^[1-9][0-9]*$ ]] followed by arithmetic check: (( ISSUE_NUM >= 1 && ISSUE_NUM <= 62535 )). Must appear BEFORE any variable interpolation."
+      "implementation_notes": "Use regex validation: [[ \"$ISSUE_NUM\" =~ ^[1-9][0-9]*$ ]]. No upper bound needed — preferred ports (base + N) are tried first; if unavailable or overflowing, the script auto-finds free ports. Must appear BEFORE any variable interpolation."
     },
     {
       "id": "SR-03",

@@ -168,15 +168,26 @@ handle_symlinks() {
 
   # package-lock.json: replace symlink with real copy
   if [ -L "$frontend_dir/package-lock.json" ]; then
-    log "Replacing symlinked package-lock.json with real copy..."
     local target
-    target=$(readlink "$frontend_dir/package-lock.json")
-    # Resolve relative targets
-    if [[ "$target" != /* ]]; then
-      target="$frontend_dir/$target"
+    if ! target=$(readlink "$frontend_dir/package-lock.json"); then
+      warn "Failed to resolve package-lock.json symlink; removing it."
+      rm "$frontend_dir/package-lock.json"
+      need_npm_install="true"
+    else
+      # Resolve relative targets
+      if [[ "$target" != /* ]]; then
+        target="$frontend_dir/$target"
+      fi
+      if [ -e "$target" ]; then
+        log "Replacing symlinked package-lock.json with real copy..."
+        rm "$frontend_dir/package-lock.json"
+        cp "$target" "$frontend_dir/package-lock.json"
+      else
+        warn "package-lock.json symlink target '$target' does not exist; removing symlink."
+        rm "$frontend_dir/package-lock.json"
+        need_npm_install="true"
+      fi
     fi
-    rm "$frontend_dir/package-lock.json"
-    cp "$target" "$frontend_dir/package-lock.json"
   fi
 
   # Run npm install if needed (skip during testing)
@@ -199,8 +210,8 @@ generate_override_yaml() {
   local mode="$6"
   local output_file="$worktree_dir/docker-compose.worktree.yml"
 
-  # Shared YAML header and port/env config
-  local backend_volumes="" frontend_volumes=""
+  # Mode-specific overrides
+  local backend_volumes="" frontend_volumes="" frontend_build_args=""
   if [ "$mode" = "dev" ]; then
     backend_volumes="
     volumes:
@@ -209,6 +220,12 @@ generate_override_yaml() {
     volumes:
       - ${worktree_dir}/frontend:/app
       - /app/node_modules"
+  else
+    # Prod mode: Next.js inlines NEXT_PUBLIC_* at build time, so we must override the build arg
+    frontend_build_args="
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: \"http://localhost:${backend_port}\""
   fi
 
   # Truncate and write (SR-07: never append)
@@ -230,7 +247,7 @@ services:
 
   frontend:
     ports: !override
-      - "127.0.0.1:${frontend_port}:3000"
+      - "127.0.0.1:${frontend_port}:3000"${frontend_build_args}
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:${backend_port}"${frontend_volumes}
 YAML

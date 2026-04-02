@@ -35,7 +35,7 @@ THEN Docker Compose starts db, backend, and frontend services
 ```
 GIVEN worktree issue-144 is running via `make worktree-dev ISSUE=144`
 WHEN the developer runs `make worktree-dev ISSUE=145` for a second worktree
-THEN the second stack starts successfully on different ports (frontend: 3145, backend: 8145, db: 5545)
+THEN the second stack starts successfully on different ports (frontend: 3145, backend: 8145, db: 5577)
   AND both stacks remain operational with independent databases
   AND neither stack's health checks fail
 ```

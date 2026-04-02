@@ -290,6 +290,12 @@ generate_override_yaml 144 3144 8144 5576 "$TMPDIR_TEST" "prod"
 yaml_prod=$(cat "$TMPDIR_TEST/docker-compose.worktree.yml")
 assert_not_contains "$yaml_prod" "/app"
 
+begin_test "prod mode includes NEXT_PUBLIC_API_URL build arg"
+assert_contains "$yaml_prod" "NEXT_PUBLIC_API_URL: \"http://localhost:8144\""
+
+begin_test "prod mode build args section exists"
+assert_contains "$yaml_prod" "build:"
+
 begin_test "override file is truncated (not appended) on regeneration"
 generate_override_yaml 200 3200 8200 5632 "$TMPDIR_TEST" "dev"
 yaml_regen=$(cat "$TMPDIR_TEST/docker-compose.worktree.yml")
@@ -355,6 +361,18 @@ begin_test "handles missing package-lock.json gracefully"
 rm -f "$TMPDIR_SYMLINKS/frontend/package-lock.json"
 rc=0; handle_symlinks "$TMPDIR_SYMLINKS" "true" 2>/dev/null || rc=$?
 assert_exit_code "0" "$rc"
+
+begin_test "handles broken package-lock.json symlink gracefully"
+ln -sf "/nonexistent/path/package-lock.json" "$TMPDIR_SYMLINKS/frontend/package-lock.json"
+rc=0; handle_symlinks "$TMPDIR_SYMLINKS" "true" 2>/dev/null || rc=$?
+assert_exit_code "0" "$rc"
+
+begin_test "broken symlink is removed"
+if [ -L "$TMPDIR_SYMLINKS/frontend/package-lock.json" ]; then
+  fail "broken symlink was not removed"
+else
+  pass
+fi
 
 rm -rf "$TMPDIR_SYMLINKS"
 

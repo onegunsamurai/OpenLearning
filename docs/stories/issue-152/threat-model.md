@@ -226,7 +226,7 @@
 | ID | Threat | Requirement | Mitigation | Implementation Note | Validation |
 |----|--------|-------------|------------|---------------------|------------|
 | SR-01 | T-02 | Generated override file MUST NOT contain plaintext secrets | Use `env_file` directives or `${VAR}` interpolation for all sensitive values. Only set non-secret overrides (ports, CORS_ORIGINS, FRONTEND_URL, COMPOSE_PROJECT_NAME, NEXT_PUBLIC_API_URL) as literal values in the generated YAML. | Grep the generated file template in `worktree-dev.sh` for any reference to `API_KEY`, `SECRET`, `PASSWORD`, `TOKEN`, `ENCRYPTION`. The override should only contain: port mappings, CORS origins (localhost URLs), frontend URL, database URL (with the well-known dev credentials that are already in the base compose file), and project name. | Automated: `grep -iE '(api_key|secret|token|encryption)' docker-compose.worktree.yml` must return zero matches (excluding CORS/URL values). Manual: Review generated file after first implementation. |
-| SR-02 | T-01, T-09 | Issue number input MUST be validated as a positive integer (1-62535) before any use in shell commands | Validate `$1` with regex `^[1-9][0-9]*$`, then check the integer is <= 62535 (ensuring all derived ports <= 65535). Reject with clear error on failure. Must happen BEFORE any use in variable expansion, docker commands, or file paths. | Replicate the validation pattern from `worktree-create.sh` line 65 (`^[0-9]+$`) but strengthen it: (a) reject `0`, (b) add upper bound check, (c) reject leading zeros to avoid octal interpretation. | Test: Verify script exits with error for inputs `0`, `-1`, `99999`, `abc`, `1; rm`, `1$(whoami)`, empty string. |
+| SR-02 | T-01, T-09 | Issue number input MUST be validated as a positive integer before any use in shell commands | Validate `$1` with regex `^[1-9][0-9]*$`. Reject with clear error on failure. No upper bound needed — preferred ports (base + N) are tried first; if unavailable or overflowing 65535, the script auto-finds free ports via `lsof`. Must happen BEFORE any use in variable expansion, docker commands, or file paths. | Replicate the validation pattern from `worktree-create.sh` line 65 (`^[0-9]+$`) but strengthen it: (a) reject `0`, (b) reject leading zeros to avoid octal interpretation. | Test: Verify script exits with error for inputs `0`, `-1`, `abc`, `1; rm`, `1$(whoami)`, empty string. Verify large numbers like `99999` succeed with clamped fallback ports. |
 | SR-03 | T-04 | CORS_ORIGINS MUST be set to an explicit `http://localhost:<port>` value, never `*` | The script must produce `CORS_ORIGINS: '["http://localhost:<3000+N>"]'` with the exact computed port. No wildcard. No additional origins unless the base compose file's default origin is also needed. | Use a string template: `CORS_ORIGINS: '["http://localhost:${FRONTEND_PORT}"]'` where `FRONTEND_PORT` is arithmetically derived. | Automated: Parse the generated YAML and assert `CORS_ORIGINS` does not contain `*`. Manual: Inspect generated file. |
 
 ### MEDIUM Priority
@@ -272,7 +272,7 @@
 - **`env_file` directive:** `docker-compose.yml` lines 22-24 use `env_file` with `required: false`. The override file should preserve this pattern.
 
 ### Port Convention
-- **Base ports:** Frontend=3000, Backend=8000, DB=5432 (in `docker-compose.dev.yml`). The proposed derivation `base + ISSUE_NUM` is simple and deterministic. The upper bound check (ISSUE <= 62535) ensures no port exceeds 65535 (since 3000 + 62535 = 65535).
+- **Base ports:** Frontend=3000, Backend=8000, DB=5432 (in `docker-compose.dev.yml`). The derivation `base + ISSUE_NUM` is used as the preferred port. If the preferred port exceeds 65535, it clamps to a safe fallback range. If any preferred port is already in use, the script auto-finds the next free port via `lsof`.
 
 ---
 
@@ -280,7 +280,7 @@
 
 | Priority | Action | Blocks Implementation? |
 |----------|--------|----------------------|
-| HIGH | Validate issue number as integer 1-62535 before any shell use (SR-02) | Yes |
+| HIGH | Validate issue number as positive integer before any shell use (SR-02) | Yes |
 | HIGH | Never embed secrets in generated override YAML (SR-01) | Yes |
 | HIGH | CORS must be explicit localhost origin, never wildcard (SR-03) | Yes |
 | MEDIUM | Bind ports to 127.0.0.1 in override file (SR-04) | No, but strongly recommended |
