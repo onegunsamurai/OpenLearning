@@ -67,3 +67,6 @@ e2e-screenshots/
 
 # Pipeline temp files
 .pipeline/last-gate-report.json
+
+# Pipeline design artifacts (generated per-issue, not living docs)
+docs/stories/
