@@ -26,7 +26,7 @@ export class AssessmentPage {
     this.chatMessages = page.locator("main .space-y-4 > div");
     this.typingIndicator = page.locator("[class*=typing], [class*=animate-pulse]");
     this.progressBar = page.locator('[role="progressbar"]');
-    this.progressText = page.getByText(/calibration|question \d+ of/i);
+    this.progressText = page.getByText(/question \d+ of/i);
     this.errorDisplay = page.getByRole("alert");
     this.retryButton = page.getByRole("button", { name: /retry/i });
 

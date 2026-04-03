@@ -17,22 +17,18 @@ On the onboarding page, you have two options:
 !!! info
     Skills map to knowledge base domains. Three domains are fully supported with comprehensive concept hierarchies: Backend Engineering, Frontend Engineering, and DevOps / Platform Engineering.
 
-## Step 2: Calibration
+## Step 2: Adaptive Assessment
 
-The assessment begins with **3 calibration questions** at increasing difficulty (easy, medium, hard). These determine your starting level:
+After selecting skills, the assessment begins immediately with questions tailored to your target level. The starting Bloom level is determined by your declared target level:
 
-| Calibrated Level | Starting Bloom Level | Description |
-|-----------------|---------------------|-------------|
+| Target Level | Starting Bloom Level | Description |
+|-------------|---------------------|-------------|
 | Junior | Understand | Foundational concepts |
 | Mid | Apply | Practical application |
 | Senior | Analyze | System-level reasoning |
 | Staff | Evaluate | Architecture and strategy |
 
-The calibrator also identifies initial concepts for your knowledge graph and picks the first topic to assess.
-
-## Step 3: Adaptive Assessment
-
-The main assessment loop generates questions tailored to your demonstrated level:
+The assessment loop generates questions that adapt based on your demonstrated understanding:
 
 1. **Question generation** — Claude generates a question targeting your current topic and Bloom level
 2. **Your response** — Answer the question in the chat interface
@@ -46,13 +42,13 @@ The main assessment loop generates questions tailored to your demonstrated level
 
 The assessment continues until **8 topics** have been evaluated or **25 questions** have been asked.
 
-## Step 4: Gap Analysis
+## Step 3: Gap Analysis
 
 After the assessment completes, the system compares your knowledge graph against the target graph for your chosen level. Gaps are identified where your confidence is more than 0.2 below the target, then sorted by prerequisite order.
 
 You'll see a radar chart comparing current vs. target proficiency across all assessed concepts, plus a priority-ranked list of gaps.
 
-## Step 5: Learning Plan
+## Step 4: Learning Plan
 
 Finally, a personalized learning plan is generated from your gaps. The plan includes:
 

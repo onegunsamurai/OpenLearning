@@ -20,6 +20,15 @@ class AssessmentStartRequest(CamelModel):
             raise ValueError("Too many skills (max 50)")
         return v
 
+    @field_validator("target_level")
+    @classmethod
+    def validate_target_level(cls, v: str) -> str:
+        v = v.lower().strip()
+        valid_levels = {"junior", "mid", "senior", "staff"}
+        if v not in valid_levels:
+            raise ValueError(f"Target level must be one of: {', '.join(sorted(valid_levels))}")
+        return v
+
     @field_validator("role_id")
     @classmethod
     def validate_role_id(cls, v: str | None) -> str | None:
@@ -40,9 +49,6 @@ class AssessmentStartRequest(CamelModel):
 class AssessmentStartResponse(CamelModel):
     session_id: str
     question: str
-    question_type: str = "calibration"
-    step: int = 1
-    total_steps: int = 3
     estimated_questions: int | None = None
 
 

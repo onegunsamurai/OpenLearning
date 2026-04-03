@@ -64,7 +64,7 @@ Shared fixtures are defined in `backend/tests/conftest.py`:
 | `sample_evaluation` | An `EvaluationResult` with confidence 0.7 and evidence |
 | `sample_knowledge_graph` | A `KnowledgeGraph` with 2 nodes and 1 edge |
 | `initial_state` | Fresh `AssessmentState` for "backend_engineering" domain |
-| `mid_assessment_state` | `AssessmentState` mid-assessment with history and calibrated_level="mid" |
+| `mid_assessment_state` | `AssessmentState` mid-assessment with history and target_level="mid" |
 | `setup_db` | Creates PostgreSQL test tables before each test, drops after |
 | `_test_user` | An `AuthUser` with test user ID and username (module-level constant) |
 | `_override_get_current_user` | Dependency override that returns `_test_user`, bypassing real JWT auth |

@@ -78,7 +78,7 @@ describe("AssessPage session persistence", () => {
 
 describe("AssessPage progress bar", () => {
   it("shows numeric percentage for normal assessment progress", () => {
-    mockProgress = { type: "assessment", totalQuestions: 9, maxQuestions: 25 };
+    mockProgress = { type: "assessment", totalQuestions: 10, maxQuestions: 25 };
     render(<AssessPage />);
 
     // Question 10 of ~25 → 40%
@@ -87,7 +87,7 @@ describe("AssessPage progress bar", () => {
   });
 
   it("shows 'Almost done' when assessment overflows maxQuestions", () => {
-    mockProgress = { type: "assessment", totalQuestions: 25, maxQuestions: 25 };
+    mockProgress = { type: "assessment", totalQuestions: 26, maxQuestions: 25 };
     render(<AssessPage />);
 
     // Question 26 of ~25 → 104%, should show "Almost done" instead
@@ -101,8 +101,8 @@ describe("AssessPage progress bar", () => {
   });
 
   it("shows 'Almost done' at exactly 95% threshold", () => {
-    // totalQuestions=22, maxQuestions=24 → (23/24)*100 ≈ 95.83% → >= 95
-    mockProgress = { type: "assessment", totalQuestions: 22, maxQuestions: 24 };
+    // totalQuestions=23, maxQuestions=24 → (23/24)*100 ≈ 95.83% → >= 95
+    mockProgress = { type: "assessment", totalQuestions: 23, maxQuestions: 24 };
     render(<AssessPage />);
 
     expect(screen.getByText("Almost done")).toBeInTheDocument();
@@ -112,12 +112,4 @@ describe("AssessPage progress bar", () => {
     expect(indicator).toHaveStyle({ transform: `translateX(-${100 - 95}%)` });
   });
 
-  it("shows numeric percentage for calibration progress (unaffected)", () => {
-    mockProgress = { type: "calibration", step: 2, totalSteps: 3 };
-    render(<AssessPage />);
-
-    expect(screen.getByText("Calibration: Step 2 of 3")).toBeInTheDocument();
-    expect(screen.getByText("67%")).toBeInTheDocument();
-    expect(screen.queryByText("Almost done")).not.toBeInTheDocument();
-  });
 });

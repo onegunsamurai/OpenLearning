@@ -118,7 +118,6 @@ async def enrich_gaps(state: AssessmentState) -> dict:
     # Build prompt safely: format header (no LLM data), then concatenate gap_summary
     # to avoid str.format() interpreting { } in concept names
     header = GAP_ENRICHMENT_PROMPT_HEADER.format(
-        calibrated_level=state.get("calibrated_level", "unknown"),
         target_level=state.get("target_level", "mid"),
     )
     prompt = header + gap_summary + GAP_ENRICHMENT_PROMPT_FOOTER

@@ -3,51 +3,12 @@
 from __future__ import annotations
 
 from app.agents.schemas import (
-    CalibrationEvalConcept,
-    CalibrationEvalOutput,
-    CalibrationQuestionOutput,
     EvaluationOutput,
     PlanOutput,
     PlanPhaseOutput,
     PlanResourceOutput,
     QuestionOutput,
 )
-
-
-class TestCalibrationSchemas:
-    def test_calibration_question_output(self):
-        output = CalibrationQuestionOutput(
-            topic="http_fundamentals",
-            text="What is HTTP?",
-            question_type="conceptual",
-        )
-        assert output.topic == "http_fundamentals"
-        assert output.text == "What is HTTP?"
-
-    def test_calibration_question_default_type(self):
-        output = CalibrationQuestionOutput(topic="rest", text="Q?")
-        assert output.question_type == "conceptual"
-
-    def test_calibration_eval_output(self):
-        output = CalibrationEvalOutput(
-            calibrated_level="mid",
-            initial_concepts=[
-                CalibrationEvalConcept(concept="http", confidence=0.6, bloom_level="understand")
-            ],
-            first_topic="http",
-            reasoning="Good baseline",
-        )
-        assert output.calibrated_level == "mid"
-        assert len(output.initial_concepts) == 1
-        assert output.initial_concepts[0].confidence == 0.6
-
-    def test_calibration_eval_empty_reasoning(self):
-        output = CalibrationEvalOutput(
-            calibrated_level="junior",
-            initial_concepts=[],
-            first_topic="basics",
-        )
-        assert output.reasoning == ""
 
 
 class TestQuestionOutput:

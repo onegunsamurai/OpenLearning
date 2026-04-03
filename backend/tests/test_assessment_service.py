@@ -34,12 +34,13 @@ from app.services.assessment_service import (
 _user = AuthUser(user_id="u-1", display_name="Test", avatar_url="")
 
 
-def _make_interrupt(text="What is React?", q_type="calibration", step=1, total=3):
+def _make_interrupt(text="What is React?"):
     return {
         "question": {"text": text},
-        "type": q_type,
-        "step": step,
-        "total_steps": total,
+        "type": "assessment",
+        "topics_evaluated": 0,
+        "total_questions": 0,
+        "max_questions": 20,
     }
 
 
@@ -494,7 +495,7 @@ class TestResumeAssessment:
         session.status = "active"
         session.thread_id = "t-1"
 
-        interrupt = _make_interrupt(text="What are hooks?", q_type="assessment", step=2, total=5)
+        interrupt = _make_interrupt(text="What are hooks?")
         graph.aget_state = AsyncMock(return_value=_make_graph_state(interrupt))
 
         with patch(
@@ -505,5 +506,3 @@ class TestResumeAssessment:
             result = await resume_assessment(db, graph, "s-1", _user)
 
         assert result.question == "What are hooks?"
-        assert result.step == 2
-        assert result.total_steps == 5

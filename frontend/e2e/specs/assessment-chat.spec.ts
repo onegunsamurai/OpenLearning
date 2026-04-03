@@ -29,7 +29,7 @@ test.describe("Assessment chat page", () => {
 
     // First question from mock should appear as an assistant message
     await expect(
-      page.getByText(/calibration question/i)
+      page.getByText(/start the assessment/i)
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -38,7 +38,7 @@ test.describe("Assessment chat page", () => {
     await mockAssessmentRespond(page, [
       buildSSEResponse(
         "Good answer! Now tell me about your experience with database indexing.",
-        { type: "calibration", step: 2, total_steps: 3 }
+        { type: "assessment", total_questions: 1, max_questions: 25 }
       ),
     ]);
     await seedAppStore(page);
@@ -49,7 +49,7 @@ test.describe("Assessment chat page", () => {
 
     // Wait for first question
     await expect(
-      page.getByText(/calibration question/i)
+      page.getByText(/start the assessment/i)
     ).toBeVisible({ timeout: 10_000 });
 
     // Send an answer
@@ -81,11 +81,8 @@ test.describe("Assessment chat page", () => {
     const assess = new AssessmentPage(page);
     await assess.expectChatReady();
     await expect(
-      page.getByText(/calibration question/i)
+      page.getByText(/start the assessment/i)
     ).toBeVisible({ timeout: 10_000 });
-
-    // Progress should show calibration initially
-    await expect(page.getByText(/calibration/i).first()).toBeVisible();
 
     // Answer and check progress updates
     await assess.sendMessage("REST APIs use HTTP methods for CRUD operations.");
@@ -103,7 +100,7 @@ test.describe("Assessment chat page", () => {
 
     const assess = new AssessmentPage(page);
     await expect(
-      page.getByText(/calibration question/i)
+      page.getByText(/start the assessment/i)
     ).toBeVisible({ timeout: 10_000 });
 
     // Send final answer
@@ -129,7 +126,7 @@ test.describe("Assessment chat page", () => {
 
     const assess = new AssessmentPage(page);
     await expect(
-      page.getByText(/calibration question/i)
+      page.getByText(/start the assessment/i)
     ).toBeVisible({ timeout: 10_000 });
 
     await assess.sendMessage("My answer");

@@ -28,17 +28,22 @@ async def _collect(events):
 class TestQuestionEvent:
     @pytest.mark.asyncio
     async def test_yields_question_text(self):
-        lines = await _collect([QuestionEvent(text="What is React?", meta={"type": "calibration"})])
+        lines = await _collect([QuestionEvent(text="What is React?", meta={"type": "assessment"})])
         assert lines[0] == "data: What is React?\n\n"
 
     @pytest.mark.asyncio
     async def test_yields_meta_marker(self):
-        meta = {"type": "calibration", "step": 1, "total_steps": 3}
+        meta = {
+            "type": "assessment",
+            "topics_evaluated": 0,
+            "total_questions": 1,
+            "max_questions": 20,
+        }
         lines = await _collect([QuestionEvent(text="Q", meta=meta)])
         assert lines[1].startswith("data: [META]")
         parsed = json.loads(lines[1].removeprefix("data: [META]").strip())
-        assert parsed["type"] == "calibration"
-        assert parsed["step"] == 1
+        assert parsed["type"] == "assessment"
+        assert parsed["total_questions"] == 1
 
     @pytest.mark.asyncio
     async def test_yields_done_marker(self):

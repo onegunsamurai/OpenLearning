@@ -36,15 +36,15 @@ describe("useDemoAssessmentChat", () => {
       );
     });
 
-    it("sets initial calibration progress", () => {
+    it("sets initial assessment progress", () => {
       const { result } = renderHook(() => useDemoAssessmentChat());
 
       act(() => result.current.initialiseChat());
 
       expect(result.current.progress).toEqual({
-        type: "calibration",
-        step: 1,
-        totalSteps: 3,
+        type: "assessment",
+        totalQuestions: 1,
+        maxQuestions: DEMO_QUESTIONS.length,
       });
     });
 
@@ -94,12 +94,11 @@ describe("useDemoAssessmentChat", () => {
 
       act(() => result.current.initialiseChat());
 
-      // Send 3 messages (calibration)
+      // Send 3 messages
       for (let i = 0; i < 3; i++) {
         await act(() => result.current.sendMessage(`answer ${i}`));
       }
 
-      // Should have progressed through calibration to assessment
       // Check that progress has updated
       expect(result.current.progress).not.toBeNull();
     });

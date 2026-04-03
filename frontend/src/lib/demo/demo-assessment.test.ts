@@ -43,7 +43,7 @@ describe("createDemoSSEResponse", () => {
 
     const meta = JSON.parse(metaLine!.slice(6));
     expect(meta.type).toBeDefined();
-    expect(meta.step).toBeDefined();
+    expect(meta.total_questions).toBeDefined();
   });
 
   it("ends with [DONE]", async () => {

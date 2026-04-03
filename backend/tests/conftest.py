@@ -303,7 +303,6 @@ def mid_assessment_state(
 ) -> AssessmentState:
     """State as if we're mid-assessment with some history."""
     state = dict(initial_state)
-    state["calibrated_level"] = "mid"
     state["current_topic"] = "http_fundamentals"
     state["current_bloom_level"] = BloomLevel.apply
     state["question_history"] = [sample_question]

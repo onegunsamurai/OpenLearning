@@ -149,9 +149,6 @@ class AssessmentRespondRequest(CamelModel):
 class AssessmentStartResponse(CamelModel):
     session_id: str
     question: str
-    question_type: str = "calibration"
-    step: int = 1
-    total_steps: int = 3
     estimated_questions: int | None = None
 
 # Response for /assessment/{id}/graph
@@ -290,11 +287,6 @@ class AssessmentState(TypedDict, total=False):
     skill_ids: list[str]
     skill_domain: str
     target_level: str
-
-    # Calibration
-    calibration_questions: list[Question]
-    calibration_responses: list[Response]
-    calibrated_level: str               # "junior", "mid", "senior", "staff"
 
     # Assessment loop
     question_history: list[Question]
@@ -450,26 +442,6 @@ Gap analysis diffs these two graphs.
 These Pydantic models define the contract between the LLM and the assessment agents. They use plain `BaseModel` (not `CamelModel`) because they are internal to the LLM integration — the LLM returns data in this shape, and agents map it to the `CamelModel` state types.
 
 **Source**: `backend/app/agents/schemas.py`
-
-### Calibration
-
-```python
-class CalibrationQuestionOutput(BaseModel):
-    topic: str           # Technical concept being tested
-    text: str            # The question text
-    question_type: str   # "conceptual", "scenario", "debugging", "design"
-
-class CalibrationEvalConcept(BaseModel):
-    concept: str         # Concept name
-    confidence: float    # 0.0–1.0
-    bloom_level: str     # Bloom taxonomy level
-
-class CalibrationEvalOutput(BaseModel):
-    calibrated_level: str                        # "junior", "mid", "senior", "staff"
-    initial_concepts: list[CalibrationEvalConcept]
-    first_topic: str                             # Best first topic for in-depth assessment
-    reasoning: str                               # Explanation of level determination
-```
 
 ### Question Generation
 

@@ -191,38 +191,25 @@ function AssessPageContent() {
         {progress &&
           !assessmentDone &&
           (() => {
-            const assessmentPercent =
-              progress.type === "assessment"
-                ? (((progress.totalQuestions ?? 0) + 1) /
-                    (progress.maxQuestions ?? 25)) *
-                  100
-                : 0;
-            const isOverflowing =
-              progress.type === "assessment" && assessmentPercent >= 95;
+            const currentQuestion = progress.totalQuestions ?? 1;
+            const maxQ = progress.maxQuestions ?? 25;
+            const assessmentPercent = (currentQuestion / maxQ) * 100;
+            const isOverflowing = assessmentPercent >= 95;
 
             return (
               <div className="border-b border-border px-4 py-2 sm:px-6">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
                   <span>
-                    {progress.type === "calibration"
-                      ? `Calibration: Step ${progress.step ?? 1} of ${progress.totalSteps ?? 3}`
-                      : `Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
+                    {`Question ${currentQuestion} of ~${maxQ}`}
                   </span>
                   <span>
-                    {progress.type === "calibration"
-                      ? `${Math.round(((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100)}%`
-                      : isOverflowing
-                        ? "Almost done"
-                        : `${Math.round(assessmentPercent)}%`}
+                    {isOverflowing
+                      ? "Almost done"
+                      : `${Math.round(assessmentPercent)}%`}
                   </span>
                 </div>
                 <Progress
-                  value={
-                    progress.type === "calibration"
-                      ? ((progress.step ?? 1) / (progress.totalSteps ?? 3)) *
-                        100
-                      : Math.min(assessmentPercent, 95)
-                  }
+                  value={Math.min(assessmentPercent, 95)}
                   className="h-1.5"
                 />
               </div>

@@ -32,7 +32,6 @@ async def generate_plan(state: AssessmentState) -> dict:
     )
 
     prompt = PLAN_GEN_PROMPT.format(
-        calibrated_level=state.get("calibrated_level", "unknown"),
         target_level=state.get("target_level", "mid"),
         gap_summary=gap_summary,
     )
