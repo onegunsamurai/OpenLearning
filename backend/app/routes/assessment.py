@@ -16,7 +16,6 @@ from app.models.assessment_api import (
     KnowledgeGraphOut,
 )
 from app.services import assessment_service as service
-from app.services.content_trigger import trigger_content_pipeline
 from app.services.sse_adapter import SSEAdapter
 
 router = APIRouter()
@@ -78,8 +77,6 @@ async def assessment_report(
     user: AuthUser = Depends(get_current_user),
 ) -> AssessmentReportResponse:
     result = await service.get_assessment_report(db, req.app.state.graph, session_id, user)
-    if result.first_completion:
-        trigger_content_pipeline(session_id, req.app)
     return result.report
 
 

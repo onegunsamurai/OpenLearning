@@ -23,7 +23,6 @@ from .base import CamelModel
 from .gap_analysis import GapAnalysis, GapAnalysisRequest, GapItem
 from .health import HealthResponse
 from .learning_plan import LearningModule, LearningPlan, LearningPlanRequest, Phase
-from .materials import MaterialOut, MaterialsResponse
 from .roles import ConceptSummary, RoleConceptsResponse, RoleDetail, RoleLevelSummary, RoleSummary
 from .skills import Skill, SkillsResponse
 from .user import UserAssessmentSummary
@@ -50,8 +49,6 @@ __all__ = [
     "LearningPlanOut",
     "LearningPlanRequest",
     "LoginRequest",
-    "MaterialOut",
-    "MaterialsResponse",
     "OkResponse",
     "Phase",
     "ProficiencyScore",

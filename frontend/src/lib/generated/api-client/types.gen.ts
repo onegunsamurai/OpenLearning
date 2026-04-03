@@ -403,60 +403,6 @@ export type LoginRequest = {
 };
 
 /**
- * MaterialOut
- */
-export type MaterialOut = {
-    /**
-     * Conceptid
-     */
-    conceptId: string;
-    /**
-     * Domain
-     */
-    domain: string;
-    /**
-     * Bloomscore
-     */
-    bloomScore: number;
-    /**
-     * Qualityscore
-     */
-    qualityScore: number;
-    /**
-     * Iterationcount
-     */
-    iterationCount: number;
-    /**
-     * Qualityflag
-     */
-    qualityFlag?: string | null;
-    /**
-     * Material
-     */
-    material: {
-        [key: string]: unknown;
-    };
-    /**
-     * Generatedat
-     */
-    generatedAt: string;
-};
-
-/**
- * MaterialsResponse
- */
-export type MaterialsResponse = {
-    /**
-     * Sessionid
-     */
-    sessionId: string;
-    /**
-     * Materials
-     */
-    materials: Array<MaterialOut>;
-};
-
-/**
  * OkResponse
  */
 export type OkResponse = {
@@ -1098,36 +1044,6 @@ export type LearningPlanApiLearningPlanPostResponses = {
 };
 
 export type LearningPlanApiLearningPlanPostResponse = LearningPlanApiLearningPlanPostResponses[keyof LearningPlanApiLearningPlanPostResponses];
-
-export type GetMaterialsApiMaterialsSessionIdGetData = {
-    body?: never;
-    path: {
-        /**
-         * Session Id
-         */
-        session_id: string;
-    };
-    query?: never;
-    url: '/api/materials/{session_id}';
-};
-
-export type GetMaterialsApiMaterialsSessionIdGetErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetMaterialsApiMaterialsSessionIdGetError = GetMaterialsApiMaterialsSessionIdGetErrors[keyof GetMaterialsApiMaterialsSessionIdGetErrors];
-
-export type GetMaterialsApiMaterialsSessionIdGetResponses = {
-    /**
-     * Successful Response
-     */
-    200: MaterialsResponse;
-};
-
-export type GetMaterialsApiMaterialsSessionIdGetResponse = GetMaterialsApiMaterialsSessionIdGetResponses[keyof GetMaterialsApiMaterialsSessionIdGetResponses];
 
 export type GithubLoginApiAuthGithubGetData = {
     body?: never;
