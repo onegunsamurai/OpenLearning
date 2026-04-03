@@ -24,6 +24,11 @@ def trigger_content_pipeline(session_id: str, app: FastAPI) -> None:
 async def _run_content_pipeline(session_id: str, app: FastAPI) -> None:
     """Run the content generation pipeline for a given session."""
     try:
+        content_graph = getattr(app.state, "content_graph", None)
+        if content_graph is None:
+            logger.warning("Content pipeline not initialized — skipping for session %s", session_id)
+            return
+
         # Determine domain from session's skill_ids
         domain = "backend_engineering"
         factory = get_session_factory()
@@ -31,8 +36,6 @@ async def _run_content_pipeline(session_id: str, app: FastAPI) -> None:
             session_row = await session_repo.get_session(db, session_id)
             if session_row and session_row.skill_ids:
                 domain = map_skills_to_domain(session_row.skill_ids)
-
-        content_graph = app.state.content_graph
         config = {"configurable": {"thread_id": f"content-{session_id}"}}
         initial_state = {"session_id": session_id, "domain": domain}
         await content_graph.ainvoke(initial_state, config)
