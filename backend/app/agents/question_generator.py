@@ -12,7 +12,7 @@ async def generate_question(state: AssessmentState) -> dict:
     """Generate the next assessment question based on current state."""
     topic = state["current_topic"]
     bloom_level = state["current_bloom_level"]
-    calibrated_level = state.get("calibrated_level", "mid")
+    target_level = state.get("target_level", "mid")
     questions_on_topic = state.get("questions_on_current_topic", 0)
 
     # Collect previously used question types for this topic
@@ -30,7 +30,7 @@ async def generate_question(state: AssessmentState) -> dict:
     prompt = QUESTION_GEN_PROMPT.format(
         topic=topic,
         bloom_level=bloom_str,
-        calibrated_level=calibrated_level,
+        target_level=target_level,
         questions_on_topic=questions_on_topic,
         used_types=", ".join(used_types) if used_types else "none",
         previous_questions=prev_questions,

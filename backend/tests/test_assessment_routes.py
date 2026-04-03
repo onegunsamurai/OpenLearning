@@ -31,15 +31,13 @@ from tests.conftest import (
 
 def _make_interrupt_data(
     question_text: str = "What is React?",
-    q_type: str = "calibration",
-    step: int = 1,
-    total_steps: int = 3,
 ) -> dict:
     return {
         "question": {"text": question_text},
-        "type": q_type,
-        "step": step,
-        "total_steps": total_steps,
+        "type": "assessment",
+        "topics_evaluated": 0,
+        "total_questions": 0,
+        "max_questions": 20,
     }
 
 
@@ -125,7 +123,7 @@ class TestAssessmentStart:
         data = response.json()
         assert "sessionId" in data
         assert data["question"] == "What is React?"
-        assert data["questionType"] == "calibration"
+        assert "questionType" not in data
         _mock_graph.reset_mock()
 
     @pytest.mark.asyncio
@@ -310,7 +308,7 @@ class TestAssessmentRespond:
         async with _TestSessionFactory() as db:
             await seed_session(db)
 
-        interrupt = _make_interrupt_data(question_text="Explain hooks.", q_type="assessment")
+        interrupt = _make_interrupt_data(question_text="Explain hooks.")
         graph_state = _make_graph_state_with_interrupt(interrupt)
 
         _mock_graph.ainvoke = AsyncMock(return_value=None)
@@ -976,9 +974,6 @@ class TestAssessmentResume:
 
         interrupt = _make_interrupt_data(
             question_text="What are React hooks?",
-            q_type="assessment",
-            step=2,
-            total_steps=5,
         )
         graph_state = _make_graph_state_with_interrupt(interrupt)
         _mock_graph.aget_state = AsyncMock(return_value=graph_state)
@@ -993,9 +988,6 @@ class TestAssessmentResume:
             data = response.json()
             assert data["sessionId"] == "sess-resume-001"
             assert data["question"] == "What are React hooks?"
-            assert data["questionType"] == "assessment"
-            assert data["step"] == 2
-            assert data["totalSteps"] == 5
         finally:
             _mock_graph.reset_mock()
 

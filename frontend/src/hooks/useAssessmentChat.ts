@@ -11,9 +11,7 @@ export interface ChatMessage {
 }
 
 export interface AssessmentProgress {
-  type: "calibration" | "assessment";
-  step?: number;
-  totalSteps?: number;
+  type: "assessment";
   topicsEvaluated?: number;
   totalQuestions?: number;
   maxQuestions?: number;
@@ -51,7 +49,7 @@ export function useAssessmentChat({
     try {
       const result = await api.assessmentStart(skillIds, targetLevel, roleId);
       sessionIdRef.current = result.sessionId;
-      setProgress({ type: "calibration", step: 1, totalSteps: 3 });
+      setProgress({ type: "assessment", totalQuestions: 0, maxQuestions: result.estimatedQuestions ?? 25 });
 
       const assistantId = nextId();
       setMessages([
@@ -74,11 +72,7 @@ export function useAssessmentChat({
     try {
       const result = await api.assessmentResume(existingSessionId);
       sessionIdRef.current = result.sessionId;
-      setProgress({
-        type: result.questionType === "calibration" ? "calibration" : "assessment",
-        step: result.step,
-        totalSteps: result.totalSteps,
-      });
+      setProgress({ type: "assessment" });
 
       const assistantId = nextId();
       setMessages([
@@ -160,9 +154,7 @@ export function useAssessmentChat({
                 try {
                   const meta = JSON.parse(data.slice(6));
                   setProgress({
-                    type: meta.type ?? "assessment",
-                    step: meta.step,
-                    totalSteps: meta.total_steps,
+                    type: "assessment",
                     topicsEvaluated: meta.topics_evaluated,
                     totalQuestions: meta.total_questions,
                     maxQuestions: meta.max_questions,

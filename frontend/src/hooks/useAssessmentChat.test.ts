@@ -61,9 +61,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "What is React?",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -80,18 +78,16 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
       await act(() => result.current.initialiseChat());
 
       expect(result.current.progress).toEqual({
-        type: "calibration",
-        step: 1,
-        totalSteps: 3,
+        type: "assessment",
+        totalQuestions: 0,
+        maxQuestions: 25,
       });
     });
 
@@ -123,9 +119,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -136,9 +130,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-2",
         question: "Q2",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
       await act(() => result.current.initialiseChat());
       expect(result.current.messages).toHaveLength(1);
@@ -159,9 +151,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -181,9 +171,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -211,9 +199,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const hook = renderHook(() =>
@@ -261,8 +247,6 @@ describe("useAssessmentChat", () => {
 
       const meta = JSON.stringify({
         type: "assessment",
-        step: 2,
-        total_steps: 5,
         topics_evaluated: 3,
         total_questions: 10,
         max_questions: 15,
@@ -279,8 +263,6 @@ describe("useAssessmentChat", () => {
 
       expect(result.current.progress).toEqual({
         type: "assessment",
-        step: 2,
-        totalSteps: 5,
         topicsEvaluated: 3,
         totalQuestions: 10,
         maxQuestions: 15,
@@ -309,9 +291,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() =>
@@ -359,9 +339,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() =>
@@ -543,9 +521,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -590,9 +566,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));
@@ -615,9 +589,7 @@ describe("useAssessmentChat", () => {
       mockedApi.assessmentStart.mockResolvedValueOnce({
         sessionId: "sess-1",
         question: "Q1",
-        questionType: "open",
-        step: 1,
-        totalSteps: 3,
+        estimatedQuestions: 25,
       });
 
       const { result } = renderHook(() => useAssessmentChat(defaultOpts));

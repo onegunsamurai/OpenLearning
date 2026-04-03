@@ -112,12 +112,4 @@ describe("AssessPage progress bar", () => {
     expect(indicator).toHaveStyle({ transform: `translateX(-${100 - 95}%)` });
   });
 
-  it("shows numeric percentage for calibration progress (unaffected)", () => {
-    mockProgress = { type: "calibration", step: 2, totalSteps: 3 };
-    render(<AssessPage />);
-
-    expect(screen.getByText("Calibration: Step 2 of 3")).toBeInTheDocument();
-    expect(screen.getByText("67%")).toBeInTheDocument();
-    expect(screen.queryByText("Almost done")).not.toBeInTheDocument();
-  });
 });

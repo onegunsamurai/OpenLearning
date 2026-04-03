@@ -82,18 +82,6 @@ export type AssessmentStartResponse = {
      */
     question: string;
     /**
-     * Questiontype
-     */
-    questionType?: string;
-    /**
-     * Step
-     */
-    step?: number;
-    /**
-     * Totalsteps
-     */
-    totalSteps?: number;
-    /**
      * Estimatedquestions
      */
     estimatedQuestions?: number | null;

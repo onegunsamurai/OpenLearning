@@ -1,16 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Coroutine
-from typing import Any
-
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
-from app.agents.calibrator import (
-    DIFFICULTY_LEVELS,
-    evaluate_calibration,
-    generate_calibration_question,
-)
 from app.agents.gap_analyzer import analyze_gaps
 from app.agents.gap_enricher import enrich_gaps
 from app.agents.knowledge_mapper import update_knowledge_graph
@@ -18,52 +10,20 @@ from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import generate_question
 from app.agents.response_evaluator import evaluate_response
 from app.graph.router import MAX_TOPICS, decide_branch, get_deeper_bloom, get_next_topic
-from app.graph.state import AssessmentState, BloomLevel, Question, Response, TopicStatus
-
-# --- Calibration nodes (one interrupt per node) ---
-
-
-CalibrationNode = Callable[[AssessmentState], Coroutine[Any, Any, dict]]
-
-
-def _make_calibration_node(difficulty_index: int) -> CalibrationNode:
-    """Factory that creates a calibration node for a given difficulty level."""
-    step = difficulty_index + 1
-
-    async def _calibrate(state: AssessmentState) -> dict:
-        question = await generate_calibration_question(state, DIFFICULTY_LEVELS[difficulty_index])
-        user_answer = interrupt(
-            {
-                "type": "calibration",
-                "question": question.model_dump(by_alias=True),
-                "step": step,
-                "total_steps": len(DIFFICULTY_LEVELS),
-            }
-        )
-        cal_q = list(state.get("calibration_questions", []))
-        cal_r = list(state.get("calibration_responses", []))
-        cal_q.append(question)
-        cal_r.append(Response(question_id=question.id, text=user_answer))
-        return {"calibration_questions": cal_q, "calibration_responses": cal_r}
-
-    return _calibrate
-
-
-calibrate_easy = _make_calibration_node(0)
-calibrate_medium = _make_calibration_node(1)
-calibrate_hard = _make_calibration_node(2)
-
-
-async def calibrate_evaluate(state: AssessmentState) -> dict:
-    """Evaluate all 3 calibration Q&A pairs to determine starting level."""
-    return await evaluate_calibration(state)
-
+from app.graph.state import (
+    LEVEL_BLOOM_MAP,
+    AssessmentState,
+    BloomLevel,
+    Question,
+    Response,
+    TopicStatus,
+)
 
 # --- Agenda node ---
 
 
 def build_agenda_node(state: AssessmentState) -> dict:
-    """Build the topic agenda after calibration and select the first topic.
+    """Build the topic agenda and select the first topic.
 
     When skill_ids contain concept IDs (role-based selection), only those
     concepts are included in the agenda. Otherwise, all concepts up to the
@@ -89,21 +49,12 @@ def build_agenda_node(state: AssessmentState) -> dict:
     else:
         first_topic = ""
 
-    # Determine starting bloom level based on calibrated level
-    calibrated_level = state.get("calibrated_level", "mid")
-    bloom_map = {
-        "junior": BloomLevel.understand,
-        "mid": BloomLevel.apply,
-        "senior": BloomLevel.analyze,
-        "staff": BloomLevel.evaluate,
-    }
-
     per_topic = state.get("max_questions_per_topic", 4)
 
     return {
         "topic_agenda": agenda,
         "current_topic": first_topic,
-        "current_bloom_level": bloom_map.get(calibrated_level, BloomLevel.apply),
+        "current_bloom_level": LEVEL_BLOOM_MAP.get(target_level, BloomLevel.apply),
         "questions_on_current_topic": 0,
         "max_questions_per_topic": per_topic,
     }
@@ -211,12 +162,6 @@ def route_after_update(state: AssessmentState) -> str:
 def build_graph() -> StateGraph:
     graph = StateGraph(AssessmentState)
 
-    # Calibration nodes
-    graph.add_node("calibrate_easy", calibrate_easy)
-    graph.add_node("calibrate_medium", calibrate_medium)
-    graph.add_node("calibrate_hard", calibrate_hard)
-    graph.add_node("calibrate_evaluate", calibrate_evaluate)
-
     # Agenda node
     graph.add_node("build_agenda", build_agenda_node)
 
@@ -239,12 +184,8 @@ def build_graph() -> StateGraph:
     graph.add_node("enrich_gaps", enrich_gaps_node)
     graph.add_node("generate_plan", generate_plan_node)
 
-    # Edges: calibration chain
-    graph.add_edge(START, "calibrate_easy")
-    graph.add_edge("calibrate_easy", "calibrate_medium")
-    graph.add_edge("calibrate_medium", "calibrate_hard")
-    graph.add_edge("calibrate_hard", "calibrate_evaluate")
-    graph.add_edge("calibrate_evaluate", "build_agenda")
+    # Edges: start → agenda → assessment
+    graph.add_edge(START, "build_agenda")
     graph.add_edge("build_agenda", "generate_question")
 
     # Edges: assessment loop

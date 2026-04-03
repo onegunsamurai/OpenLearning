@@ -6,16 +6,11 @@ The assessment pipeline is a LangGraph state machine that adaptively evaluates a
 
 ## Pipeline Overview
 
-The pipeline has **16 nodes** organized into four phases:
+The pipeline has **12 nodes** organized into three phases:
 
 ```mermaid
 graph TD
-    START([Start]) --> CE[calibrate_easy]
-    CE --> CM[calibrate_medium]
-    CM --> CH[calibrate_hard]
-    CH --> CV[calibrate_evaluate]
-
-    CV --> BA[build_agenda]
+    START([Start]) --> BA[build_agenda]
     BA --> GQ[generate_question]
     GQ --> AR[await_response]
     AR --> ER[evaluate_response]
@@ -36,35 +31,22 @@ graph TD
     GP --> END([End])
 ```
 
-## Phase 1: Calibration
+## Phase 1: Agenda Building
 
-Three calibration questions at increasing difficulty determine the candidate's starting level.
+The pipeline begins by building the topic agenda and generating the first assessment question directly.
 
 ### Nodes
 
 | Node | Agent | Description |
 |------|-------|-------------|
-| `calibrate_easy` | `calibrator.generate_calibration_question` | Generates an easy question, interrupts for response |
-| `calibrate_medium` | `calibrator.generate_calibration_question` | Generates a medium question, interrupts for response |
-| `calibrate_hard` | `calibrator.generate_calibration_question` | Generates a hard question, interrupts for response |
-| `calibrate_evaluate` | `calibrator.evaluate_calibration` | Evaluates all 3 responses to determine starting level |
-| `build_agenda` | `pipeline.build_agenda_node` | Builds the topic agenda from the knowledge base and selects the first topic |
+| `build_agenda` | `pipeline.build_agenda_node` | Builds the topic agenda from the knowledge base using the `target_level` and selects the first topic |
 
-### Calibration Evaluation
+### Target Level → Starting Bloom Mapping
 
-The evaluator receives all three Q&A pairs and returns:
+The `target_level` provided by the user determines the starting Bloom level for the assessment:
 
-- **`calibrated_level`** — One of `junior`, `mid`, `senior`, `staff`
-- **`knowledge_graph`** — Seed knowledge graph with initial concept nodes (concept, confidence, bloom_level)
-- **`current_topic`** — The first topic to assess in the main loop
-- **`current_bloom_level`** — The starting Bloom level for the main assessment loop, determined by the calibrated level (see Level → Starting Bloom Mapping below)
-
-Each calibration node uses LangGraph's `interrupt()` to pause execution and wait for the user's answer. When the user responds via the API, the graph resumes from the checkpoint.
-
-### Level → Starting Bloom Mapping
-
-| Calibrated Level | Starting Bloom Level |
-|-----------------|---------------------|
+| Target Level | Starting Bloom Level |
+|-------------|---------------------|
 | Junior | Understand |
 | Mid | Apply |
 | Senior | Analyze |
@@ -90,7 +72,7 @@ The core loop generates questions, evaluates responses, updates the knowledge gr
 The question generator receives:
 
 - Current topic and Bloom level
-- Calibrated level (for difficulty calibration)
+- Target level (for difficulty targeting)
 - Number of questions already asked on this topic
 - Previously used question types (to avoid repetition)
 - Last 5 questions (for context)
@@ -181,9 +163,9 @@ When pivoting, the router selects the next topic by:
 2. Filtering out already-evaluated topics
 3. Picking the first unevaluated topic (preserving prerequisite order from the YAML)
 
-The starting Bloom level for the new topic is determined by the calibrated level (same mapping as Phase 1).
+The starting Bloom level for the new topic is determined by the target level (same mapping as Phase 1).
 
-## Phase 4: Conclusion
+## Conclusion
 
 ### Gap Analysis
 
@@ -238,21 +220,10 @@ The pipeline uses Bloom levels in three ways:
 
 The pipeline uses LangGraph's `interrupt()` at every point where user input is needed:
 
-- 3 calibration question nodes
 - `await_response` node (main assessment)
 - `await_probe_response` node (follow-up questions)
 
-Each interrupt sends metadata to the frontend. There are two shapes depending on the phase:
-
-**Calibration interrupt** (`type: "calibration"`):
-```json
-{
-  "type": "calibration",
-  "question": { "id": "...", "topic": "...", "bloomLevel": "...", "text": "...", "questionType": "..." },
-  "step": 1,
-  "total_steps": 3
-}
-```
+Each interrupt sends metadata to the frontend:
 
 **Assessment interrupt** (`type: "assessment"`, used by both `await_response` and `await_probe_response`):
 ```json
@@ -279,8 +250,6 @@ Agents use LangChain's `with_structured_output()` instead of regex-based JSON pa
 
 | Schema | Agent | Purpose |
 |--------|-------|---------|
-| `CalibrationQuestionOutput` | Calibrator | Single calibration question |
-| `CalibrationEvalOutput` | Calibrator | Calibration evaluation (level + initial concepts) |
 | `QuestionOutput` | Question Generator | Assessment question |
 | `EvaluationOutput` | Response Evaluator | Response confidence, Bloom level, evidence |
 | `PlanOutput` | Plan Generator | Full learning plan with phases and resources |

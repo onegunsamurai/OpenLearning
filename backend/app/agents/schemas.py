@@ -11,41 +11,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-# --- Calibration ---
-
-
-class CalibrationQuestionOutput(BaseModel):
-    """Output schema for a single calibration question."""
-
-    topic: str = Field(description="The technical concept being tested")
-    text: str = Field(description="The question text")
-    question_type: str = Field(
-        default="conceptual",
-        description="Type of question: conceptual, scenario, debugging, design",
-    )
-
-
-class CalibrationEvalConcept(BaseModel):
-    """A single concept with confidence from calibration evaluation."""
-
-    concept: str = Field(description="Name of the technical concept")
-    confidence: float = Field(description="Confidence level from 0.0 to 1.0")
-    bloom_level: str = Field(
-        description="Bloom's taxonomy level: remember, understand, apply, analyze, evaluate, create"
-    )
-
-
-class CalibrationEvalOutput(BaseModel):
-    """Output schema for calibration evaluation of 3 Q&A pairs."""
-
-    calibrated_level: str = Field(description="Starting level: junior, mid, senior, or staff")
-    initial_concepts: list[CalibrationEvalConcept] = Field(
-        description="Initial confidence estimates for relevant concepts"
-    )
-    first_topic: str = Field(description="The best first topic to assess in depth")
-    reasoning: str = Field(default="", description="Brief explanation of level determination")
-
-
 # --- Question Generation ---
 
 

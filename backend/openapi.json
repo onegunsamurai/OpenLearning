@@ -1271,21 +1271,6 @@
             "type": "string",
             "title": "Question"
           },
-          "questionType": {
-            "type": "string",
-            "title": "Questiontype",
-            "default": "calibration"
-          },
-          "step": {
-            "type": "integer",
-            "title": "Step",
-            "default": 1
-          },
-          "totalSteps": {
-            "type": "integer",
-            "title": "Totalsteps",
-            "default": 3
-          },
           "estimatedQuestions": {
             "anyOf": [
               {

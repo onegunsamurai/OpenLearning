@@ -40,9 +40,6 @@ class AssessmentStartRequest(CamelModel):
 class AssessmentStartResponse(CamelModel):
     session_id: str
     question: str
-    question_type: str = "calibration"
-    step: int = 1
-    total_steps: int = 3
     estimated_questions: int | None = None
 
 

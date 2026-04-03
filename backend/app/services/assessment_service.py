@@ -153,7 +153,7 @@ async def start_assessment(
     )
     initial_state["target_graph"] = target_graph
 
-    # Run graph until first interrupt (calibration question 1)
+    # Run graph until first interrupt (first assessment question)
     config = {"configurable": {"thread_id": thread_id}}
 
     with api_key_scope(api_key):
@@ -182,9 +182,6 @@ async def start_assessment(
     return AssessmentStartResponse(
         session_id=session_id,
         question=question_text,
-        question_type=interrupt_data.get("type", "calibration"),
-        step=interrupt_data.get("step", 1),
-        total_steps=interrupt_data.get("total_steps", 3),
         estimated_questions=estimated_questions,
     )
 
@@ -242,9 +239,7 @@ async def _assessment_event_stream(
             if interrupt_data:
                 question_text = interrupt_data["question"]["text"]
                 meta = {
-                    "type": interrupt_data.get("type", "assessment"),
-                    "step": interrupt_data.get("step"),
-                    "total_steps": interrupt_data.get("total_steps"),
+                    "type": "assessment",
                     "topics_evaluated": interrupt_data.get("topics_evaluated"),
                     "total_questions": interrupt_data.get("total_questions"),
                     "max_questions": interrupt_data.get("max_questions"),
@@ -436,7 +431,4 @@ async def resume_assessment(
     return AssessmentStartResponse(
         session_id=session_id,
         question=question["text"],
-        question_type=interrupt_data.get("type", "assessment"),
-        step=interrupt_data.get("step", 1),
-        total_steps=interrupt_data.get("total_steps", 3),
     )

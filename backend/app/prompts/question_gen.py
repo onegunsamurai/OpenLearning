@@ -5,7 +5,7 @@ Generate ONE focused assessment question for the candidate.
 Current assessment context:
 - Topic: {topic}
 - Target Bloom level: {bloom_level}
-- Candidate's current estimated level: {calibrated_level}
+- Candidate's target level: {target_level}
 - Questions already asked on this topic: {questions_on_topic}
 - Question types already used: {used_types}
 

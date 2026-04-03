@@ -1,6 +1,6 @@
 GAP_ENRICHMENT_PROMPT_HEADER = """You are a learning engineer analyzing a candidate's skill assessment gaps.
 
-The candidate was assessed at level "{calibrated_level}" targeting "{target_level}".
+The candidate is targeting "{target_level}" level.
 
 Here are the identified knowledge gaps (concepts where the candidate falls below the target):
 """

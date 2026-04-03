@@ -113,9 +113,7 @@ function authFetch(url: string, init?: RequestInit): Promise<Response> {
 export interface AssessmentStartResponse {
   sessionId: string;
   question: string;
-  questionType: string;
-  step: number;
-  totalSteps: number;
+  estimatedQuestions?: number;
 }
 
 export interface AssessmentReportResponse {

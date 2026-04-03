@@ -38,6 +38,13 @@ THOROUGHNESS_CAPS: dict[Thoroughness, int] = {
 
 BLOOM_ORDER: list[BloomLevel] = list(BloomLevel)
 
+LEVEL_BLOOM_MAP: dict[str, BloomLevel] = {
+    "junior": BloomLevel.understand,
+    "mid": BloomLevel.apply,
+    "senior": BloomLevel.analyze,
+    "staff": BloomLevel.evaluate,
+}
+
 
 def bloom_index(level: BloomLevel) -> int:
     return BLOOM_ORDER.index(level)
@@ -140,11 +147,6 @@ class AssessmentState(TypedDict, total=False):
     skill_domain: str
     target_level: str
 
-    # Calibration
-    calibration_questions: list[Question]
-    calibration_responses: list[Response]
-    calibrated_level: str
-
     # Assessment loop
     question_history: list[Question]
     response_history: list[Response]
@@ -186,9 +188,6 @@ def make_initial_state(
         skill_ids=skill_ids,
         skill_domain=skill_domain,
         target_level=target_level,
-        calibration_questions=[],
-        calibration_responses=[],
-        calibrated_level="",
         question_history=[],
         response_history=[],
         current_topic="",

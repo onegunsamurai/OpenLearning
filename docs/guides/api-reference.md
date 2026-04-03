@@ -401,7 +401,7 @@ Return concepts for a role up to a given level, topologically sorted by prerequi
 >
 > **Requires API key.** Returns 400 if the user has not configured an Anthropic API key.
 
-Start a new assessment session. Returns the first calibration question.
+Start a new assessment session. Returns the first assessment question.
 
 **Request body**:
 
@@ -427,9 +427,6 @@ Start a new assessment session. Returns the first calibration question.
 {
   "sessionId": "550e8400-e29b-41d4-a716-446655440000",
   "question": "Can you explain what HTTP status codes are and give some examples?",
-  "questionType": "calibration",
-  "step": 1,
-  "totalSteps": 3,
   "estimatedQuestions": 20
 }
 ```
@@ -463,7 +460,7 @@ Submit an answer and receive the next question (or completion).
 | Signal | Payload | Description |
 |--------|---------|-------------|
 | _(plain text)_ | The question text | Next question streamed as plain text |
-| `[META]` + JSON | `{"type":"assessment","step":null,"total_steps":null,"topics_evaluated":3,"total_questions":12,"max_questions":25}` | Assessment progress metadata |
+| `[META]` + JSON | `{"type":"assessment","topics_evaluated":3,"total_questions":12,"max_questions":25}` | Assessment progress metadata |
 | `[ASSESSMENT_COMPLETE]` | — | Pipeline finished; scores follow |
 | _(fenced JSON)_ | `{"scores": ProficiencyScoreOut[]}` JSON object | Proficiency scores wrapped in a `scores` key, inside markdown code fences (sent after `[ASSESSMENT_COMPLETE]`) |
 | `[DONE]` | — | Stream complete |
@@ -582,10 +579,7 @@ Resume an active assessment session that was interrupted or left incomplete. Loa
 ```json
 {
   "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-  "question": "Can you explain how React hooks work?",
-  "questionType": "assessment",
-  "step": 4,
-  "totalSteps": 5
+  "question": "Can you explain how React hooks work?"
 }
 ```
 
@@ -875,19 +869,12 @@ sequenceDiagram
 
     Client->>API: POST /assessment/start
     API->>LangGraph: Initialize pipeline
-    LangGraph-->>API: Calibration Q1 (interrupt)
+    LangGraph-->>API: First assessment question (interrupt)
     API-->>Client: JSON: AssessmentStartResponse
 
     Client->>API: POST /assessment/{id}/respond
     API->>LangGraph: Resume with answer
-    LangGraph-->>API: Calibration Q2 (interrupt)
-    API-->>Client: SSE: calibration question
-
-    Note over Client,LangGraph: ...repeat for Q3 and evaluation...
-
-    Client->>API: POST /assessment/{id}/respond
-    API->>LangGraph: Resume with answer
-    LangGraph-->>API: Assessment question (interrupt)
+    LangGraph-->>API: Next assessment question (interrupt)
     API-->>Client: SSE: assessment question
 
     Note over Client,LangGraph: ...assessment loop continues...

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.graph.state import (
+    LEVEL_BLOOM_MAP,
     AssessmentState,
     BloomLevel,
     TopicStatus,
@@ -128,19 +129,12 @@ def get_next_topic(state: AssessmentState) -> dict:
             "questions_on_current_topic": 0,
         }
 
-    # Determine starting bloom level based on calibrated level
-    calibrated_level = state.get("calibrated_level", "mid")
-    bloom_map = {
-        "junior": BloomLevel.understand,
-        "mid": BloomLevel.apply,
-        "senior": BloomLevel.analyze,
-        "staff": BloomLevel.evaluate,
-    }
+    target_level = state.get("target_level", "mid")
 
     return {
         "topic_agenda": agenda,
         "current_topic": next_topic,
-        "current_bloom_level": bloom_map.get(calibrated_level, BloomLevel.apply),
+        "current_bloom_level": LEVEL_BLOOM_MAP.get(target_level, BloomLevel.apply),
         "questions_on_current_topic": 0,
     }
 

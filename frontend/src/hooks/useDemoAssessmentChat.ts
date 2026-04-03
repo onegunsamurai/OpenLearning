@@ -37,7 +37,7 @@ export function useDemoAssessmentChat({
         content: DEMO_ASSESSMENT_START.question,
       },
     ]);
-    setProgress({ type: "calibration", step: 1, totalSteps: 3 });
+    setProgress({ type: "assessment", totalQuestions: 0, maxQuestions: DEMO_QUESTIONS.length });
     setStatus("ready");
     setError(null);
   }, []);
@@ -90,9 +90,7 @@ export function useDemoAssessmentChat({
                 try {
                   const meta = JSON.parse(data.slice(6));
                   setProgress({
-                    type: meta.type ?? "assessment",
-                    step: meta.step,
-                    totalSteps: meta.total_steps,
+                    type: "assessment",
                     topicsEvaluated: meta.topics_evaluated,
                     totalQuestions: meta.total_questions,
                     maxQuestions: meta.max_questions,

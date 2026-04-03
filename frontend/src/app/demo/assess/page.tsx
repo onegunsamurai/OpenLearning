@@ -93,22 +93,14 @@ export default function DemoAssessPage() {
           <div className="border-b border-border px-4 py-2 sm:px-6">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
               <span>
-                {progress.type === "calibration"
-                  ? `Calibration: Step ${progress.step ?? 1} of ${progress.totalSteps ?? 3}`
-                  : `Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
+                {`Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
               </span>
               <span>
-                {progress.type === "calibration"
-                  ? `${Math.round(((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100)}%`
-                  : `${Math.round((((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100)}%`}
+                {`${Math.round((((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100)}%`}
               </span>
             </div>
             <Progress
-              value={
-                progress.type === "calibration"
-                  ? ((progress.step ?? 1) / (progress.totalSteps ?? 3)) * 100
-                  : (((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100
-              }
+              value={(((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100}
               className="h-1.5"
             />
           </div>

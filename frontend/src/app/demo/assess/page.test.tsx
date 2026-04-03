@@ -111,7 +111,7 @@ describe("DemoAssessPage", () => {
       ).toBeInTheDocument();
     });
 
-    // Progress bar should show calibration state
-    expect(screen.getByText(/Calibration/)).toBeInTheDocument();
+    // Progress bar should show assessment state
+    expect(screen.getByText(/Question/)).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@
 
 **AI-powered learning engineering platform. Identify skill gaps and generate personalized learning plans.**
 
-Most learning platforms treat assessment as a static quiz. OpenLearning uses a [LangGraph](https://langchain-ai.github.io/langgraph/)-powered adaptive interview that calibrates to your level, targets specific Bloom taxonomy depths, and builds a knowledge graph in real time — then generates a personalized learning plan from the gaps it finds.
+Most learning platforms treat assessment as a static quiz. OpenLearning uses a [LangGraph](https://langchain-ai.github.io/langgraph/)-powered adaptive interview that targets specific Bloom taxonomy depths and builds a knowledge graph in real time — then generates a personalized learning plan from the gaps it finds.
 
 ---
 
@@ -12,7 +12,7 @@ Most learning platforms treat assessment as a static quiz. OpenLearning uses a [
 Select a role to get started quickly or browse and select manually from a curated taxonomy.
 
 ### Skill Assessment
-Adaptive AI interview powered by Claude. The system calibrates difficulty with initial questions, then uses Bloom taxonomy levels to probe understanding depth across multiple topics.
+Adaptive AI interview powered by Claude. The system uses Bloom taxonomy levels to probe understanding depth across multiple topics, starting from your declared target level.
 
 ### Gap Analysis
 Radar chart visualization comparing your current proficiency against target levels, with priority-ranked gaps and actionable recommendations.

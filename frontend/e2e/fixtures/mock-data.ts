@@ -13,10 +13,7 @@ export const MOCK_AUTH_ME = {
 export const MOCK_START_RESPONSE = {
   sessionId: MOCK_SESSION_ID,
   question:
-    "Let's start with a calibration question. Can you describe your experience with REST API design?",
-  questionType: "calibration",
-  step: 1,
-  totalSteps: 3,
+    "Let's start the assessment. Can you describe your experience with REST API design?",
 };
 
 export const MOCK_REPORT: AssessmentReportResponse = {

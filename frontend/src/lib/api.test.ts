@@ -166,9 +166,6 @@ describe("api.assessmentStart", () => {
     const body = {
       sessionId: "abc",
       question: "What is React?",
-      questionType: "open",
-      step: 1,
-      totalSteps: 3,
     };
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -186,7 +183,7 @@ describe("api.assessmentStart", () => {
   it("sends skillIds and targetLevel in body", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ sessionId: "x", question: "Q", questionType: "o", step: 1, totalSteps: 1 }),
+      json: () => Promise.resolve({ sessionId: "x", question: "Q" }),
     });
 
     await api.assessmentStart(["s1", "s2"], "senior");
@@ -198,7 +195,7 @@ describe("api.assessmentStart", () => {
   it("sends undefined targetLevel when omitted", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ sessionId: "x", question: "Q", questionType: "o", step: 1, totalSteps: 1 }),
+      json: () => Promise.resolve({ sessionId: "x", question: "Q" }),
     });
 
     await api.assessmentStart(["s1"]);
@@ -411,9 +408,6 @@ describe("api.assessmentResume", () => {
     const body = {
       sessionId: "sess-42",
       question: "Where were we?",
-      questionType: "open",
-      step: 2,
-      totalSteps: 3,
     };
     mockFetch.mockResolvedValueOnce({
       ok: true,

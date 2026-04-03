@@ -85,11 +85,8 @@ export const DEMO_ROLE_DETAIL: RoleDetail = {
 
 export interface DemoQuestion {
   question: string;
-  questionType: string;
   meta: {
-    type: "calibration" | "assessment";
-    step: number;
-    total_steps: number;
+    type: "assessment";
     topics_evaluated?: number;
     total_questions?: number;
     max_questions?: number;
@@ -97,88 +94,53 @@ export interface DemoQuestion {
 }
 
 export const DEMO_QUESTIONS: DemoQuestion[] = [
-  // Calibration (3 questions)
   {
     question:
-      "Let's start with a warm-up question. Can you explain the difference between `let`, `const`, and `var` in JavaScript? When would you choose one over the other?",
-    questionType: "open",
-    meta: { type: "calibration", step: 1, total_steps: 3 },
-  },
-  {
-    question:
-      "Good answer! Now, how would you implement a custom React hook for form validation? Walk me through the key design decisions you'd make.",
-    questionType: "open",
-    meta: { type: "calibration", step: 2, total_steps: 3 },
-  },
-  {
-    question:
-      "Nice. For the last calibration question: Can you describe React's reconciliation algorithm? How does React decide what to re-render, and what techniques can you use to optimize rendering performance?",
-    questionType: "open",
-    meta: { type: "calibration", step: 3, total_steps: 3 },
-  },
-  // Assessment (5 questions)
-  {
-    question:
-      "Let's move into the assessment. Explain how TypeScript generics work with constraints. Can you give an example of a generic function that accepts only objects with a specific property?",
-    questionType: "open",
+      "Let's start with the assessment. Explain how TypeScript generics work with constraints. Can you give an example of a generic function that accepts only objects with a specific property?",
     meta: {
       type: "assessment",
-      step: 1,
-      total_steps: 5,
       topics_evaluated: 1,
-      total_questions: 4,
+      total_questions: 1,
       max_questions: 8,
     },
   },
   {
     question:
       "Tell me about the CSS Box Model. What's the difference between `content-box` and `border-box` for `box-sizing`? How does this affect layout calculations?",
-    questionType: "open",
     meta: {
       type: "assessment",
-      step: 2,
-      total_steps: 5,
       topics_evaluated: 2,
-      total_questions: 5,
+      total_questions: 2,
       max_questions: 8,
     },
   },
   {
     question:
       "In Next.js App Router, what's the difference between Server Components and Client Components? When would you use `\"use client\"` and what are the tradeoffs?",
-    questionType: "open",
     meta: {
       type: "assessment",
-      step: 3,
-      total_steps: 5,
       topics_evaluated: 3,
-      total_questions: 6,
+      total_questions: 3,
       max_questions: 8,
     },
   },
   {
     question:
       "How do you approach testing a React component that fetches data and renders a list? Walk me through the tools, patterns, and assertions you'd use.",
-    questionType: "open",
     meta: {
       type: "assessment",
-      step: 4,
-      total_steps: 5,
       topics_evaluated: 4,
-      total_questions: 7,
+      total_questions: 4,
       max_questions: 8,
     },
   },
   {
     question:
       "Final question: You notice a React component rendering a list of 1,000+ items is causing jank. How would you debug and fix the performance issue? What tools and techniques would you reach for?",
-    questionType: "open",
     meta: {
       type: "assessment",
-      step: 5,
-      total_steps: 5,
       topics_evaluated: 5,
-      total_questions: 8,
+      total_questions: 5,
       max_questions: 8,
     },
   },
@@ -187,9 +149,6 @@ export const DEMO_QUESTIONS: DemoQuestion[] = [
 // ── Demo Responses (what the "AI" says after each user answer) ──────
 
 export const DEMO_RESPONSES: string[] = [
-  "Great explanation of variable scoping! You clearly understand the temporal dead zone and block scoping differences. Let me move on to something a bit more involved.",
-  "Solid approach to the custom hook design. I like that you considered validation schemas and debouncing. Let's see how you handle a trickier topic.",
-  "Excellent breakdown of the reconciliation algorithm. You touched on the fiber architecture and key-based diffing, which shows strong fundamentals. Let's move into the full assessment now.",
   "Good grasp of generics with constraints. Your example with `extends` was clear and practical. The `keyof` usage shows you understand the type system well.",
   "Nice explanation of the box model. Understanding `border-box` vs `content-box` is fundamental, and you explained it clearly with practical implications.",
   "Good comparison of Server and Client Components. You identified the key tradeoffs around bundle size, interactivity, and data fetching patterns.",
@@ -202,9 +161,6 @@ export const DEMO_RESPONSES: string[] = [
 export const DEMO_ASSESSMENT_START: AssessmentStartResponse = {
   sessionId: "demo-session-001",
   question: DEMO_QUESTIONS[0].question,
-  questionType: DEMO_QUESTIONS[0].questionType,
-  step: 1,
-  totalSteps: 3,
 };
 
 // ── Proficiency Scores ──────────────────────────────────────────────

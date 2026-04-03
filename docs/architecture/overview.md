@@ -52,19 +52,17 @@ The platform follows a linear pipeline from onboarding to learning plan:
 
 ```mermaid
 graph LR
-    A[Onboarding] --> B[Calibration]
-    B --> C[Assessment Loop]
-    C --> D[Gap Analysis]
-    D --> E[Learning Plan]
-    E --> F[Content Generation]
+    A[Onboarding] --> B[Assessment Loop]
+    B --> C[Gap Analysis]
+    C --> D[Learning Plan]
+    D --> E[Content Generation]
 ```
 
 1. **Onboarding** — User selects a role (primary path) or browses and selects skills manually. Skills are mapped to a knowledge base domain.
-2. **Calibration** — 3 questions at easy/medium/hard determine the starting level and initial knowledge graph.
-3. **Assessment Loop** — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels.
-4. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
-5. **Learning Plan** — Claude generates a phased plan from the identified gaps with concrete resources.
-6. **Content Generation** — A background LangGraph pipeline generates Bloom-validated learning material for each knowledge gap, with quality gating and retry loops.
+2. **Assessment Loop** — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels. The starting Bloom level is determined by the user's declared target level.
+3. **Gap Analysis** — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.
+4. **Learning Plan** — Claude generates a phased plan from the identified gaps with concrete resources.
+5. **Content Generation** — A background LangGraph pipeline generates Bloom-validated learning material for each knowledge gap, with quality gating and retry loops.
 
 ### Session Management
 
@@ -135,11 +133,11 @@ OpenLearning/
 │   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── repositories/        # Data access layer (session_repo, result_repo, user_repo, material_repo)
 │   │   ├── services/            # Service layer (assessment orchestration, AI/LLM integration, SSE adapter, session cleanup)
-│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
+│   │   ├── agents/              # LLM agents and output schemas (evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
 │   │   ├── data/                # Skills taxonomy (skills_taxonomy.py)
-│   │   └── prompts/             # System prompts for Claude (calibration, eval, etc.)
+│   │   └── prompts/             # System prompts for Claude (eval, question gen, etc.)
 │   ├── tests/                   # pytest test suite
 │   ├── Dockerfile               # Backend container image
 │   ├── .dockerignore            # Docker build exclusions
