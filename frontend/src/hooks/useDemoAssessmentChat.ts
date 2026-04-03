@@ -37,7 +37,7 @@ export function useDemoAssessmentChat({
         content: DEMO_ASSESSMENT_START.question,
       },
     ]);
-    setProgress({ type: "assessment", totalQuestions: 0, maxQuestions: DEMO_QUESTIONS.length });
+    setProgress({ type: "assessment", totalQuestions: 1, maxQuestions: DEMO_QUESTIONS.length });
     setStatus("ready");
     setError(null);
   }, []);

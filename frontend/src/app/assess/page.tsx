@@ -191,17 +191,16 @@ function AssessPageContent() {
         {progress &&
           !assessmentDone &&
           (() => {
-            const assessmentPercent =
-              (((progress.totalQuestions ?? 0) + 1) /
-                (progress.maxQuestions ?? 25)) *
-              100;
+            const currentQuestion = progress.totalQuestions ?? 1;
+            const maxQ = progress.maxQuestions ?? 25;
+            const assessmentPercent = (currentQuestion / maxQ) * 100;
             const isOverflowing = assessmentPercent >= 95;
 
             return (
               <div className="border-b border-border px-4 py-2 sm:px-6">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
                   <span>
-                    {`Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
+                    {`Question ${currentQuestion} of ~${maxQ}`}
                   </span>
                   <span>
                     {isOverflowing

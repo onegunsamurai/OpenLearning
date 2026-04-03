@@ -49,7 +49,7 @@ export function useAssessmentChat({
     try {
       const result = await api.assessmentStart(skillIds, targetLevel, roleId);
       sessionIdRef.current = result.sessionId;
-      setProgress({ type: "assessment", totalQuestions: 0, maxQuestions: result.estimatedQuestions ?? 25 });
+      setProgress({ type: "assessment", totalQuestions: 1, maxQuestions: result.estimatedQuestions ?? 25 });
 
       const assistantId = nextId();
       setMessages([

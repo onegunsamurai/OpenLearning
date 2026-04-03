@@ -113,7 +113,7 @@ function authFetch(url: string, init?: RequestInit): Promise<Response> {
 export interface AssessmentStartResponse {
   sessionId: string;
   question: string;
-  estimatedQuestions?: number;
+  estimatedQuestions?: number | null;
 }
 
 export interface AssessmentReportResponse {

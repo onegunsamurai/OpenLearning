@@ -89,22 +89,27 @@ export default function DemoAssessPage() {
         </div>
 
         {/* Progress Bar */}
-        {progress && !assessmentDone && (
-          <div className="border-b border-border px-4 py-2 sm:px-6">
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-              <span>
-                {`Question ${(progress.totalQuestions ?? 0) + 1} of ~${progress.maxQuestions ?? 25}`}
-              </span>
-              <span>
-                {`${Math.round((((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100)}%`}
-              </span>
+        {progress && !assessmentDone && (() => {
+          const currentQuestion = progress.totalQuestions ?? 1;
+          const maxQ = progress.maxQuestions ?? 25;
+          const assessmentPercent = (currentQuestion / maxQ) * 100;
+          return (
+            <div className="border-b border-border px-4 py-2 sm:px-6">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                <span>
+                  {`Question ${currentQuestion} of ~${maxQ}`}
+                </span>
+                <span>
+                  {`${Math.round(assessmentPercent)}%`}
+                </span>
+              </div>
+              <Progress
+                value={assessmentPercent}
+                className="h-1.5"
+              />
             </div>
-            <Progress
-              value={(((progress.totalQuestions ?? 0) + 1) / (progress.maxQuestions ?? 25)) * 100}
-              className="h-1.5"
-            />
-          </div>
-        )}
+          );
+        })()}
 
         {assessmentDone ? (
           <div className="flex-1 overflow-y-auto">

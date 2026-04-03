@@ -43,7 +43,7 @@ describe("useDemoAssessmentChat", () => {
 
       expect(result.current.progress).toEqual({
         type: "assessment",
-        totalQuestions: 0,
+        totalQuestions: 1,
         maxQuestions: DEMO_QUESTIONS.length,
       });
     });
