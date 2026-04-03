@@ -14,7 +14,6 @@ from starlette.requests import Request
 
 from app.config import configure_langsmith_tracing, get_settings
 from app.db import init_db
-from app.graph.content_pipeline import compile_content_graph
 from app.graph.pipeline import compile_graph
 from app.routes import (
     api_keys,
@@ -23,7 +22,6 @@ from app.routes import (
     gap_analysis,
     health,
     learning_plan,
-    materials,
     roles,
     skills,
     user,
@@ -47,7 +45,6 @@ async def lifespan(app: FastAPI):
     async with AsyncPostgresSaver.from_conn_string(checkpoint_url) as checkpointer:
         await checkpointer.setup()
         app.state.graph = compile_graph(checkpointer)
-        app.state.content_graph = compile_content_graph(checkpointer)
         yield
     cleanup_task.cancel()
     with contextlib.suppress(asyncio.CancelledError):
@@ -76,7 +73,6 @@ app.include_router(assessment.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(gap_analysis.router, prefix="/api")
 app.include_router(learning_plan.router, prefix="/api")
-app.include_router(materials.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
 app.include_router(api_keys.router, prefix="/api/auth")
 app.include_router(user.router, prefix="/api/user")
