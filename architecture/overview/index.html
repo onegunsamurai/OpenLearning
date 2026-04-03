@@ -1199,15 +1199,13 @@
 <h2 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">&para;</a></h2>
 <p>The platform follows a linear pipeline from onboarding to learning plan:</p>
 <pre class="mermaid"><code>graph LR
-    A[Onboarding] --&gt; B[Calibration]
-    B --&gt; C[Assessment Loop]
-    C --&gt; D[Gap Analysis]
-    D --&gt; E[Learning Plan]
-    E --&gt; F[Content Generation]</code></pre>
+    A[Onboarding] --&gt; B[Assessment Loop]
+    B --&gt; C[Gap Analysis]
+    C --&gt; D[Learning Plan]
+    D --&gt; E[Content Generation]</code></pre>
 <ol>
 <li><strong>Onboarding</strong> — User selects a role (primary path) or browses and selects skills manually. Skills are mapped to a knowledge base domain.</li>
-<li><strong>Calibration</strong> — 3 questions at easy/medium/hard determine the starting level and initial knowledge graph.</li>
-<li><strong>Assessment Loop</strong> — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels.</li>
+<li><strong>Assessment Loop</strong> — Adaptive question-answer cycle builds a detailed knowledge graph through Bloom taxonomy levels. The starting Bloom level is determined by the user's declared target level.</li>
 <li><strong>Gap Analysis</strong> — Current knowledge graph is diffed against the target graph. Gaps are topologically sorted by prerequisites.</li>
 <li><strong>Learning Plan</strong> — Claude generates a phased plan from the identified gaps with concrete resources.</li>
 <li><strong>Content Generation</strong> — A background LangGraph pipeline generates Bloom-validated learning material for each knowledge gap, with quality gating and retry loops.</li>
@@ -1360,11 +1358,11 @@
 │   │   ├── crypto.py            # Fernet encryption/decryption for API keys
 │   │   ├── repositories/        # Data access layer (session_repo, result_repo, user_repo, material_repo)
 │   │   ├── services/            # Service layer (assessment orchestration, AI/LLM integration, SSE adapter, session cleanup)
-│   │   ├── agents/              # LLM agents and output schemas (calibrator, evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
+│   │   ├── agents/              # LLM agents and output schemas (evaluator, question gen, knowledge mapper, gap analyzer, plan gen, schemas)
 │   │   ├── graph/               # LangGraph pipeline, state TypedDict, router logic
 │   │   ├── knowledge_base/      # Domain YAML files + loader
 │   │   ├── data/                # Skills taxonomy (skills_taxonomy.py)
-│   │   └── prompts/             # System prompts for Claude (calibration, eval, etc.)
+│   │   └── prompts/             # System prompts for Claude (eval, question gen, etc.)
 │   ├── tests/                   # pytest test suite
 │   ├── Dockerfile               # Backend container image
 │   ├── .dockerignore            # Docker build exclusions

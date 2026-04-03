@@ -869,17 +869,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#calibration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#question-generation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1644,17 +1633,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#calibration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Calibration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#question-generation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1961,9 +1939,6 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">AssessmentStartResponse</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">question</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;calibration&quot;</span>
-    <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">total_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">estimated_questions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="c1"># Response for /assessment/{id}/graph</span>
@@ -2084,11 +2059,6 @@
     <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">skill_domain</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">target_level</span><span class="p">:</span> <span class="nb">str</span>
-
-    <span class="c1"># Calibration</span>
-    <span class="n">calibration_questions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
-    <span class="n">calibration_responses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Response</span><span class="p">]</span>
-    <span class="n">calibrated_level</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># &quot;junior&quot;, &quot;mid&quot;, &quot;senior&quot;, &quot;staff&quot;</span>
 
     <span class="c1"># Assessment loop</span>
     <span class="n">question_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Question</span><span class="p">]</span>
@@ -2226,23 +2196,6 @@
 <h2 id="llm-output-schemas">LLM Output Schemas<a class="headerlink" href="#llm-output-schemas" title="Permanent link">&para;</a></h2>
 <p>These Pydantic models define the contract between the LLM and the assessment agents. They use plain <code>BaseModel</code> (not <code>CamelModel</code>) because they are internal to the LLM integration — the LLM returns data in this shape, and agents map it to the <code>CamelModel</code> state types.</p>
 <p><strong>Source</strong>: <code>backend/app/agents/schemas.py</code></p>
-<h3 id="calibration">Calibration<a class="headerlink" href="#calibration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CalibrationQuestionOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Technical concept being tested</span>
-    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># The question text</span>
-    <span class="n">question_type</span><span class="p">:</span> <span class="nb">str</span>   <span class="c1"># &quot;conceptual&quot;, &quot;scenario&quot;, &quot;debugging&quot;, &quot;design&quot;</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">CalibrationEvalConcept</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">concept</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Concept name</span>
-    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># 0.0–1.0</span>
-    <span class="n">bloom_level</span><span class="p">:</span> <span class="nb">str</span>     <span class="c1"># Bloom taxonomy level</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">CalibrationEvalOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">calibrated_level</span><span class="p">:</span> <span class="nb">str</span>                        <span class="c1"># &quot;junior&quot;, &quot;mid&quot;, &quot;senior&quot;, &quot;staff&quot;</span>
-    <span class="n">initial_concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CalibrationEvalConcept</span><span class="p">]</span>
-    <span class="n">first_topic</span><span class="p">:</span> <span class="nb">str</span>                             <span class="c1"># Best first topic for in-depth assessment</span>
-    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>                               <span class="c1"># Explanation of level determination</span>
-</code></pre></div>
 <h3 id="question-generation">Question Generation<a class="headerlink" href="#question-generation" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">QuestionOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Technical concept being tested</span>

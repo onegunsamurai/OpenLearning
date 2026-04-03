@@ -1960,7 +1960,7 @@
 <p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
 <p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
 </blockquote>
-<p>Start a new assessment session. Returns the first calibration question.</p>
+<p>Start a new assessment session. Returns the first assessment question.</p>
 <p><strong>Request body</strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;skillIds&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;nodejs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;rest-api&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;sql&quot;</span><span class="p">],</span>
@@ -2009,9 +2009,6 @@
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you explain what HTTP status codes are and give some examples?&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;questionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calibration&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;totalSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;estimatedQuestions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -2047,7 +2044,7 @@
 </tr>
 <tr>
 <td><code>[META]</code> + JSON</td>
-<td><code>{"type":"assessment","step":null,"total_steps":null,"topics_evaluated":3,"total_questions":12,"max_questions":25}</code></td>
+<td><code>{"type":"assessment","topics_evaluated":3,"total_questions":12,"max_questions":25}</code></td>
 <td>Assessment progress metadata</td>
 </tr>
 <tr>
@@ -2156,10 +2153,7 @@
 <p><strong>Response</strong> (200):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you explain how React hooks work?&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;questionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assessment&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;totalSteps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you explain how React hooks work?&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 <p><strong>Response</strong> (403 — not your session):</p>
@@ -2434,19 +2428,12 @@
 
     Client-&gt;&gt;API: POST /assessment/start
     API-&gt;&gt;LangGraph: Initialize pipeline
-    LangGraph--&gt;&gt;API: Calibration Q1 (interrupt)
+    LangGraph--&gt;&gt;API: First assessment question (interrupt)
     API--&gt;&gt;Client: JSON: AssessmentStartResponse
 
     Client-&gt;&gt;API: POST /assessment/{id}/respond
     API-&gt;&gt;LangGraph: Resume with answer
-    LangGraph--&gt;&gt;API: Calibration Q2 (interrupt)
-    API--&gt;&gt;Client: SSE: calibration question
-
-    Note over Client,LangGraph: ...repeat for Q3 and evaluation...
-
-    Client-&gt;&gt;API: POST /assessment/{id}/respond
-    API-&gt;&gt;LangGraph: Resume with answer
-    LangGraph--&gt;&gt;API: Assessment question (interrupt)
+    LangGraph--&gt;&gt;API: Next assessment question (interrupt)
     API--&gt;&gt;Client: SSE: assessment question
 
     Note over Client,LangGraph: ...assessment loop continues...

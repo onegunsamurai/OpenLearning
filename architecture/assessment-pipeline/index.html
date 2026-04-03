@@ -557,15 +557,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-1-calibration" class="md-nav__link">
+  <a href="#phase-1-agenda-building" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: Calibration
+        Phase 1: Agenda Building
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 1: Calibration">
+    <nav class="md-nav" aria-label="Phase 1: Agenda Building">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -580,21 +580,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-evaluation" class="md-nav__link">
+  <a href="#target-level-starting-bloom-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibration Evaluation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#level-starting-bloom-mapping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level → Starting Bloom Mapping
+        Target Level → Starting Bloom Mapping
       
     </span>
   </a>
@@ -740,15 +729,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-4-conclusion" class="md-nav__link">
+  <a href="#conclusion" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 4: Conclusion
+        Conclusion
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 4: Conclusion">
+    <nav class="md-nav" aria-label="Conclusion">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1261,15 +1250,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-1-calibration" class="md-nav__link">
+  <a href="#phase-1-agenda-building" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: Calibration
+        Phase 1: Agenda Building
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 1: Calibration">
+    <nav class="md-nav" aria-label="Phase 1: Agenda Building">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1284,21 +1273,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-evaluation" class="md-nav__link">
+  <a href="#target-level-starting-bloom-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Calibration Evaluation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#level-starting-bloom-mapping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level → Starting Bloom Mapping
+        Target Level → Starting Bloom Mapping
       
     </span>
   </a>
@@ -1444,15 +1422,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-4-conclusion" class="md-nav__link">
+  <a href="#conclusion" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 4: Conclusion
+        Conclusion
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 4: Conclusion">
+    <nav class="md-nav" aria-label="Conclusion">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1589,14 +1567,9 @@
 <p>The assessment pipeline is a LangGraph state machine that adaptively evaluates a candidate's knowledge across multiple topics and Bloom taxonomy levels. This page covers every node, routing decision, and data structure in the pipeline.</p>
 <p><strong>Source</strong>: <code>backend/app/graph/pipeline.py</code>, <code>backend/app/graph/router.py</code>, <code>backend/app/graph/state.py</code></p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
-<p>The pipeline has <strong>16 nodes</strong> organized into four phases:</p>
+<p>The pipeline has <strong>12 nodes</strong> organized into three phases:</p>
 <pre class="mermaid"><code>graph TD
-    START([Start]) --&gt; CE[calibrate_easy]
-    CE --&gt; CM[calibrate_medium]
-    CM --&gt; CH[calibrate_hard]
-    CH --&gt; CV[calibrate_evaluate]
-
-    CV --&gt; BA[build_agenda]
+    START([Start]) --&gt; BA[build_agenda]
     BA --&gt; GQ[generate_question]
     GQ --&gt; AR[await_response]
     AR --&gt; ER[evaluate_response]
@@ -1615,8 +1588,8 @@
     AG --&gt; EG[enrich_gaps]
     EG --&gt; GP[generate_plan]
     GP --&gt; END([End])</code></pre>
-<h2 id="phase-1-calibration">Phase 1: Calibration<a class="headerlink" href="#phase-1-calibration" title="Permanent link">&para;</a></h2>
-<p>Three calibration questions at increasing difficulty determine the candidate's starting level.</p>
+<h2 id="phase-1-agenda-building">Phase 1: Agenda Building<a class="headerlink" href="#phase-1-agenda-building" title="Permanent link">&para;</a></h2>
+<p>The pipeline begins by building the topic agenda and generating the first assessment question directly.</p>
 <h3 id="nodes">Nodes<a class="headerlink" href="#nodes" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1628,46 +1601,18 @@
 </thead>
 <tbody>
 <tr>
-<td><code>calibrate_easy</code></td>
-<td><code>calibrator.generate_calibration_question</code></td>
-<td>Generates an easy question, interrupts for response</td>
-</tr>
-<tr>
-<td><code>calibrate_medium</code></td>
-<td><code>calibrator.generate_calibration_question</code></td>
-<td>Generates a medium question, interrupts for response</td>
-</tr>
-<tr>
-<td><code>calibrate_hard</code></td>
-<td><code>calibrator.generate_calibration_question</code></td>
-<td>Generates a hard question, interrupts for response</td>
-</tr>
-<tr>
-<td><code>calibrate_evaluate</code></td>
-<td><code>calibrator.evaluate_calibration</code></td>
-<td>Evaluates all 3 responses to determine starting level</td>
-</tr>
-<tr>
 <td><code>build_agenda</code></td>
 <td><code>pipeline.build_agenda_node</code></td>
-<td>Builds the topic agenda from the knowledge base and selects the first topic</td>
+<td>Builds the topic agenda from the knowledge base using the <code>target_level</code> and selects the first topic</td>
 </tr>
 </tbody>
 </table>
-<h3 id="calibration-evaluation">Calibration Evaluation<a class="headerlink" href="#calibration-evaluation" title="Permanent link">&para;</a></h3>
-<p>The evaluator receives all three Q&amp;A pairs and returns:</p>
-<ul>
-<li><strong><code>calibrated_level</code></strong> — One of <code>junior</code>, <code>mid</code>, <code>senior</code>, <code>staff</code></li>
-<li><strong><code>knowledge_graph</code></strong> — Seed knowledge graph with initial concept nodes (concept, confidence, bloom_level)</li>
-<li><strong><code>current_topic</code></strong> — The first topic to assess in the main loop</li>
-<li><strong><code>current_bloom_level</code></strong> — The starting Bloom level for the main assessment loop, determined by the calibrated level (see Level → Starting Bloom Mapping below)</li>
-</ul>
-<p>Each calibration node uses LangGraph's <code>interrupt()</code> to pause execution and wait for the user's answer. When the user responds via the API, the graph resumes from the checkpoint.</p>
-<h3 id="level-starting-bloom-mapping">Level → Starting Bloom Mapping<a class="headerlink" href="#level-starting-bloom-mapping" title="Permanent link">&para;</a></h3>
+<h3 id="target-level-starting-bloom-mapping">Target Level → Starting Bloom Mapping<a class="headerlink" href="#target-level-starting-bloom-mapping" title="Permanent link">&para;</a></h3>
+<p>The <code>target_level</code> provided by the user determines the starting Bloom level for the assessment:</p>
 <table>
 <thead>
 <tr>
-<th>Calibrated Level</th>
+<th>Target Level</th>
 <th>Starting Bloom Level</th>
 </tr>
 </thead>
@@ -1731,7 +1676,7 @@
 <p>The question generator receives:</p>
 <ul>
 <li>Current topic and Bloom level</li>
-<li>Calibrated level (for difficulty calibration)</li>
+<li>Target level (for difficulty targeting)</li>
 <li>Number of questions already asked on this topic</li>
 <li>Previously used question types (to avoid repetition)</li>
 <li>Last 5 questions (for context)</li>
@@ -1898,8 +1843,8 @@
 <li>Filtering out already-evaluated topics</li>
 <li>Picking the first unevaluated topic (preserving prerequisite order from the YAML)</li>
 </ol>
-<p>The starting Bloom level for the new topic is determined by the calibrated level (same mapping as Phase 1).</p>
-<h2 id="phase-4-conclusion">Phase 4: Conclusion<a class="headerlink" href="#phase-4-conclusion" title="Permanent link">&para;</a></h2>
+<p>The starting Bloom level for the new topic is determined by the target level (same mapping as Phase 1).</p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
 <h3 id="gap-analysis">Gap Analysis<a class="headerlink" href="#gap-analysis" title="Permanent link">&para;</a></h3>
 <p><strong>Source</strong>: <code>backend/app/agents/gap_analyzer.py</code> → <code>analyze_gaps()</code></p>
 <p>Pure Python (no LLM call). Compares the current knowledge graph against the target graph:</p>
@@ -1940,19 +1885,10 @@
 <h2 id="human-in-the-loop">Human-in-the-Loop<a class="headerlink" href="#human-in-the-loop" title="Permanent link">&para;</a></h2>
 <p>The pipeline uses LangGraph's <code>interrupt()</code> at every point where user input is needed:</p>
 <ul>
-<li>3 calibration question nodes</li>
 <li><code>await_response</code> node (main assessment)</li>
 <li><code>await_probe_response</code> node (follow-up questions)</li>
 </ul>
-<p>Each interrupt sends metadata to the frontend. There are two shapes depending on the phase:</p>
-<p><strong>Calibration interrupt</strong> (<code>type: "calibration"</code>):
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calibration&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;question&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;topic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;bloomLevel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;questionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;total_steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>Each interrupt sends metadata to the frontend:</p>
 <p><strong>Assessment interrupt</strong> (<code>type: "assessment"</code>, used by both <code>await_response</code> and <code>await_probe_response</code>):
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assessment&quot;</span><span class="p">,</span>
@@ -1977,16 +1913,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>CalibrationQuestionOutput</code></td>
-<td>Calibrator</td>
-<td>Single calibration question</td>
-</tr>
-<tr>
-<td><code>CalibrationEvalOutput</code></td>
-<td>Calibrator</td>
-<td>Calibration evaluation (level + initial concepts)</td>
-</tr>
 <tr>
 <td><code>QuestionOutput</code></td>
 <td>Question Generator</td>
