@@ -1,16 +1,10 @@
 """Tests for the branch router (deterministic routing logic)."""
 
 from app.graph.router import MAX_TOPICS, decide_branch, get_deeper_bloom, get_next_topic
-from app.graph.state import (
-    AgendaItem,
-    BloomLevel,
-    EvaluationResult,
-    KnowledgeGraph,
-    KnowledgeNode,
-    Question,
-    TopicStatus,
-    make_initial_state,
-)
+from app.graph.state import make_initial_state
+from app.models.assessment_pipeline import AgendaItem, EvaluationResult, Question, TopicStatus
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 
 def _make_state(**overrides):

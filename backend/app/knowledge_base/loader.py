@@ -5,8 +5,10 @@ from pathlib import Path
 
 import yaml
 
-from app.graph.state import AgendaItem, BloomLevel, KnowledgeGraph, KnowledgeNode, TopicStatus
 from app.knowledge_base.schema import LEVEL_ORDER, KnowledgeBaseSchema
+from app.models.assessment_pipeline import AgendaItem, TopicStatus
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 _KB_DIR = Path(__file__).parent
 _cache: dict[str, KnowledgeBaseSchema] = {}

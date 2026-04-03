@@ -10,7 +10,6 @@ from __future__ import annotations
 from app.agents.gap_analyzer import analyze_gaps
 from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
 from app.db import AssessmentResult, AssessmentSession
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
 from app.knowledge_base.loader import (
     get_target_graph,
     get_target_graph_for_concepts,
@@ -25,7 +24,9 @@ from app.models.assessment_api import (
     LearningPlanOut,
     ResourceOut,
 )
+from app.models.bloom import BloomLevel
 from app.models.gap_analysis import GapAnalysis, GapItem
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 # ---------------------------------------------------------------------------
 # DTO builders

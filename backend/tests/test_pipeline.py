@@ -3,7 +3,8 @@
 import pytest
 
 from app.graph.pipeline import build_graph, compile_graph
-from app.graph.state import LEVEL_BLOOM_MAP, BloomLevel, make_initial_state
+from app.graph.state import make_initial_state
+from app.models.bloom import LEVEL_BLOOM_MAP, BloomLevel
 
 
 class TestGraphStructure:
@@ -98,7 +99,7 @@ class TestBuildAgendaBloomMapping:
         from app.graph import pipeline as pipeline_mod
 
         # Stub agenda builder to return a single item
-        from app.graph.state import AgendaItem
+        from app.models.assessment_pipeline import AgendaItem
 
         def fake_agenda(domain, level, skill_ids=None):
             return [AgendaItem(concept="test_topic", level=level)]
@@ -120,7 +121,7 @@ class TestBuildAgendaBloomMapping:
 
     def test_unknown_level_defaults_to_apply(self, monkeypatch):
         from app.graph import pipeline as pipeline_mod
-        from app.graph.state import AgendaItem
+        from app.models.assessment_pipeline import AgendaItem
 
         def fake_agenda(domain, level, skill_ids=None):
             return [AgendaItem(concept="test_topic", level=level)]

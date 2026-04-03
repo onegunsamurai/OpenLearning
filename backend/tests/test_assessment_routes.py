@@ -10,15 +10,10 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
 from app.db import AssessmentResult, AssessmentSession, User
-from app.graph.state import (
-    BloomLevel,
-    EnrichedGapAnalysis,
-    KnowledgeGraph,
-    KnowledgeNode,
-    LearningPhase,
-    LearningPlan,
-    Resource,
-)
+from app.models.bloom import BloomLevel
+from app.models.enriched_gap import EnrichedGapAnalysis
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
+from app.models.pipeline_plan import LearningPhase, LearningPlan, Resource
 from tests.conftest import (
     FULL_LEARNING_PLAN,
     _mock_graph,

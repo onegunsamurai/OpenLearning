@@ -4,13 +4,9 @@ from typing import Literal
 
 from app.agents.gap_analyzer import get_effective_confidence
 from app.agents.schemas import GapEnrichmentOutput
-from app.graph.state import (
-    AssessmentState,
-    EnrichedGapAnalysis,
-    EnrichedGapItem,
-    KnowledgeGraph,
-    KnowledgeNode,
-)
+from app.graph.state import AssessmentState
+from app.models.enriched_gap import EnrichedGapAnalysis, EnrichedGapItem
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 from app.prompts.gap_enricher import GAP_ENRICHMENT_PROMPT_FOOTER, GAP_ENRICHMENT_PROMPT_HEADER
 from app.services.ai import ainvoke_structured
 

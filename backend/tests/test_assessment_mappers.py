@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
 from app.models.assessment_api import KnowledgeGraphOut, LearningPlanOut
+from app.models.bloom import BloomLevel
 from app.models.gap_analysis import GapAnalysis
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 from app.services.assessment_mappers import (
     build_gap_analysis_out,
     build_kg_out,

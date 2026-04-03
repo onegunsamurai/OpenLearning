@@ -30,11 +30,7 @@ from app.exceptions import (
     SessionTimedOutError,
 )
 from app.graph.router import MAX_TOPICS
-from app.graph.state import (
-    THOROUGHNESS_CAPS,
-    Thoroughness,
-    make_initial_state,
-)
+from app.graph.state import make_initial_state
 from app.knowledge_base.loader import (
     get_all_topics,
     get_target_graph,
@@ -47,6 +43,7 @@ from app.models.assessment_api import (
     AssessmentStartResponse,
     KnowledgeGraphOut,
 )
+from app.models.assessment_pipeline import THOROUGHNESS_CAPS, Thoroughness
 from app.models.events import AssessmentEvent, CompleteEvent, ErrorEvent, QuestionEvent
 from app.repositories import result_repo, session_repo
 from app.routes.export_utils import build_assessment_markdown

@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from app.graph.state import (
-    LEVEL_BLOOM_MAP,
-    AssessmentState,
-    BloomLevel,
-    TopicStatus,
-    bloom_index,
-)
+from app.graph.state import AssessmentState
+from app.models.assessment_pipeline import TopicStatus
+from app.models.bloom import LEVEL_BLOOM_MAP, BloomLevel, bloom_index
 
 # Thresholds
 MAX_TOPICS = 10
@@ -143,7 +139,7 @@ def get_deeper_bloom(state: AssessmentState) -> dict:
     """Advance to the next Bloom level for the current topic."""
     current_bloom = state.get("current_bloom_level", BloomLevel.understand)
     idx = bloom_index(current_bloom)
-    from app.graph.state import BLOOM_ORDER
+    from app.models.bloom import BLOOM_ORDER
 
     next_bloom = BLOOM_ORDER[min(idx + 1, len(BLOOM_ORDER) - 1)]
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from app.agents.schemas import EvaluationOutput
-from app.graph.state import AssessmentState, BloomLevel, EvaluationResult
+from app.graph.state import AssessmentState
+from app.models.assessment_pipeline import EvaluationResult
+from app.models.bloom import BloomLevel
 from app.prompts.evaluator import EVALUATOR_PROMPT
 from app.services.ai import ainvoke_structured
 

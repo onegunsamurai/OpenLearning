@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from app.graph.state import AssessmentState, KnowledgeGraph, KnowledgeNode
+from app.graph.state import AssessmentState
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 # Discount applied when inferring confidence from assessed prerequisites.
 # E.g. if a prerequisite was assessed at 0.82, the dependent concept gets 0.82 * 0.5 = 0.41.

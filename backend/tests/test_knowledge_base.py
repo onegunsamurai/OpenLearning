@@ -8,7 +8,6 @@ from app.agents.gap_analyzer import (
     analyze_gaps,
     get_effective_confidence,
 )
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode, TopicStatus
 from app.knowledge_base.loader import (
     build_topic_agenda,
     clear_cache,
@@ -18,6 +17,9 @@ from app.knowledge_base.loader import (
     load_knowledge_base,
     map_skills_to_domain,
 )
+from app.models.assessment_pipeline import TopicStatus
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 
 @pytest.fixture(autouse=True)

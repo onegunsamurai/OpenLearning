@@ -3,7 +3,9 @@ from __future__ import annotations
 import uuid
 
 from app.agents.schemas import QuestionOutput
-from app.graph.state import AssessmentState, BloomLevel, Question
+from app.graph.state import AssessmentState
+from app.models.assessment_pipeline import Question
+from app.models.bloom import BloomLevel
 from app.prompts.question_gen import QUESTION_GEN_PROMPT
 from app.services.ai import ainvoke_structured
 

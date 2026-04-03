@@ -1,15 +1,10 @@
 from __future__ import annotations
 
 from app.agents.gap_analyzer import PREREQ_DISCOUNT
-from app.graph.state import (
-    AgendaItem,
-    AssessmentState,
-    BloomLevel,
-    KnowledgeGraph,
-    KnowledgeNode,
-    TopicStatus,
-    bloom_index,
-)
+from app.graph.state import AssessmentState
+from app.models.assessment_pipeline import AgendaItem, TopicStatus
+from app.models.bloom import BloomLevel, bloom_index
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 
 def update_knowledge_graph(state: AssessmentState) -> dict:

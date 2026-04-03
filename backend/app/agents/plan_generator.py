@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 from app.agents.schemas import PlanOutput
-from app.graph.state import (
-    AssessmentState,
-    LearningPhase,
-    LearningPlan,
-    Resource,
-)
+from app.graph.state import AssessmentState
+from app.models.pipeline_plan import LearningPhase, LearningPlan, Resource
 from app.prompts.plan_generator import PLAN_GEN_PROMPT
 from app.services.ai import ainvoke_structured
 

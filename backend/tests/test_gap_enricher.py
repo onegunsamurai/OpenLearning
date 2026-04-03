@@ -6,7 +6,8 @@ import pytest
 
 from app.agents.gap_analyzer import PREREQ_DISCOUNT
 from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 
 def _node(concept: str, confidence: float) -> KnowledgeNode:

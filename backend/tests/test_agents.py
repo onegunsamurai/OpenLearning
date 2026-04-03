@@ -10,15 +10,10 @@ from app.agents.knowledge_mapper import update_knowledge_graph
 from app.agents.question_generator import generate_question
 from app.agents.response_evaluator import evaluate_response
 from app.agents.schemas import EvaluationOutput, QuestionOutput
-from app.graph.state import (
-    BloomLevel,
-    EvaluationResult,
-    KnowledgeGraph,
-    KnowledgeNode,
-    Question,
-    Response,
-    make_initial_state,
-)
+from app.graph.state import make_initial_state
+from app.models.assessment_pipeline import EvaluationResult, Question, Response
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 
 
 class TestKnowledgeMapper:

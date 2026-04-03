@@ -13,16 +13,11 @@ from app.exceptions import (
     SessionAlreadyCompletedError,
     SessionTimedOutError,
 )
-from app.graph.state import (
-    BloomLevel,
-    EnrichedGapAnalysis,
-    KnowledgeGraph,
-    KnowledgeNode,
-    LearningPhase,
-    LearningPlan,
-    Resource,
-)
+from app.models.bloom import BloomLevel
+from app.models.enriched_gap import EnrichedGapAnalysis
 from app.models.events import CompleteEvent, ErrorEvent, QuestionEvent
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
+from app.models.pipeline_plan import LearningPhase, LearningPlan, Resource
 from app.services.assessment_service import (
     extract_interrupt,
     get_assessment_report,

@@ -10,14 +10,9 @@ from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import generate_question
 from app.agents.response_evaluator import evaluate_response
 from app.graph.router import MAX_TOPICS, decide_branch, get_deeper_bloom, get_next_topic
-from app.graph.state import (
-    LEVEL_BLOOM_MAP,
-    AssessmentState,
-    BloomLevel,
-    Question,
-    Response,
-    TopicStatus,
-)
+from app.graph.state import AssessmentState
+from app.models.assessment_pipeline import Question, Response, TopicStatus
+from app.models.bloom import LEVEL_BLOOM_MAP, BloomLevel
 
 # --- Agenda node ---
 

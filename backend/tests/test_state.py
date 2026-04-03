@@ -1,18 +1,10 @@
 """Tests for state schema validation and instantiation."""
 
-from app.graph.state import (
-    BLOOM_ORDER,
-    BloomLevel,
-    EvaluationResult,
-    KnowledgeGraph,
-    KnowledgeNode,
-    LearningPhase,
-    LearningPlan,
-    Question,
-    Resource,
-    bloom_index,
-    make_initial_state,
-)
+from app.graph.state import make_initial_state
+from app.models.assessment_pipeline import EvaluationResult, Question
+from app.models.bloom import BLOOM_ORDER, BloomLevel, bloom_index
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
+from app.models.pipeline_plan import LearningPhase, LearningPlan, Resource
 
 
 class TestBloomLevel:

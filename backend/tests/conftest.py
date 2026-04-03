@@ -11,17 +11,11 @@ from sqlalchemy.pool import NullPool
 
 from app.db import AssessmentResult, AssessmentSession, AuthMethod, Base, get_db
 from app.deps import AuthUser, get_current_user, get_user_api_key
-from app.graph.state import (
-    AssessmentState,
-    BloomLevel,
-    EvaluationResult,
-    KnowledgeGraph,
-    KnowledgeNode,
-    Question,
-    Response,
-    make_initial_state,
-)
+from app.graph.state import AssessmentState, make_initial_state
 from app.main import register_anthropic_error_handlers, register_assessment_error_handlers
+from app.models.assessment_pipeline import EvaluationResult, Question, Response
+from app.models.bloom import BloomLevel
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
 from app.routes.api_keys import router as api_keys_router
 from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router

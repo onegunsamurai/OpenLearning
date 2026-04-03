@@ -1,144 +1,44 @@
 from __future__ import annotations
 
-from enum import StrEnum
-from typing import Literal, TypedDict
+from typing import TypedDict
 
-from app.models.base import CamelModel
+from app.models.assessment_pipeline import (
+    THOROUGHNESS_CAPS,
+    AgendaItem,
+    EvaluationResult,
+    Question,
+    Response,
+    Thoroughness,
+    TopicStatus,
+)
+from app.models.bloom import BLOOM_ORDER, LEVEL_BLOOM_MAP, BloomLevel, bloom_index
+from app.models.enriched_gap import EnrichedGapAnalysis, EnrichedGapItem
+from app.models.knowledge import KnowledgeGraph, KnowledgeNode
+from app.models.pipeline_plan import LearningPhase, LearningPlan, Resource
 
-
-class BloomLevel(StrEnum):
-    remember = "remember"
-    understand = "understand"
-    apply = "apply"
-    analyze = "analyze"
-    evaluate = "evaluate"
-    create = "create"
-
-
-class TopicStatus(StrEnum):
-    pending = "pending"
-    active = "active"
-    assessed = "assessed"
-    inferred = "inferred"
-    skipped = "skipped"
-
-
-class Thoroughness(StrEnum):
-    quick = "quick"
-    standard = "standard"
-    thorough = "thorough"
-
-
-THOROUGHNESS_CAPS: dict[Thoroughness, int] = {
-    Thoroughness.quick: 2,
-    Thoroughness.standard: 4,
-    Thoroughness.thorough: 6,
-}
-
-
-BLOOM_ORDER: list[BloomLevel] = list(BloomLevel)
-
-LEVEL_BLOOM_MAP: dict[str, BloomLevel] = {
-    "junior": BloomLevel.understand,
-    "mid": BloomLevel.apply,
-    "senior": BloomLevel.analyze,
-    "staff": BloomLevel.evaluate,
-}
-
-
-def bloom_index(level: BloomLevel) -> int:
-    return BLOOM_ORDER.index(level)
-
-
-class AgendaItem(CamelModel):
-    concept: str
-    level: str  # "junior", "mid", "senior", "staff"
-    status: TopicStatus = TopicStatus.pending
-    confidence: float = 0.0
-    prerequisites: list[str] = []
-
-
-class Question(CamelModel):
-    id: str
-    topic: str
-    bloom_level: BloomLevel
-    text: str
-    question_type: str  # conceptual, scenario, debugging, design
-
-
-class Response(CamelModel):
-    question_id: str
-    text: str
-
-
-class EvaluationResult(CamelModel):
-    question_id: str
-    confidence: float  # 0.0-1.0
-    bloom_level: BloomLevel
-    evidence: list[str]
-
-
-class KnowledgeNode(CamelModel):
-    concept: str
-    confidence: float  # 0.0-1.0
-    bloom_level: BloomLevel
-    prerequisites: list[str] = []
-    evidence: list[str] = []
-
-
-class KnowledgeGraph(CamelModel):
-    nodes: list[KnowledgeNode] = []
-    edges: list[tuple[str, str]] = []  # (prerequisite, dependent)
-
-    def get_node(self, concept: str) -> KnowledgeNode | None:
-        for node in self.nodes:
-            if node.concept == concept:
-                return node
-        return None
-
-    def upsert_node(self, node: KnowledgeNode) -> None:
-        for i, existing in enumerate(self.nodes):
-            if existing.concept == node.concept:
-                self.nodes[i] = node
-                return
-        self.nodes.append(node)
-
-
-class Resource(CamelModel):
-    type: str  # video, article, project, exercise
-    title: str
-    url: str | None = None
-
-
-class LearningPhase(CamelModel):
-    phase_number: int
-    title: str
-    concepts: list[str]
-    rationale: str
-    resources: list[Resource]
-    estimated_hours: float
-
-
-class LearningPlan(CamelModel):
-    phases: list[LearningPhase]
-    total_hours: float
-    summary: str
-
-
-class EnrichedGapItem(CamelModel):
-    skill_id: str
-    skill_name: str
-    current_level: int  # 0-100
-    target_level: int  # 0-100
-    gap: int  # target - current
-    priority: Literal["critical", "high", "medium", "low"]
-    recommendation: str
-
-
-class EnrichedGapAnalysis(CamelModel):
-    overall_readiness: int  # 0-100
-    summary: str
-    gaps: list[EnrichedGapItem]
+# Re-export all symbols so existing `from app.graph.state import X` still works.
+__all__ = [
+    "BLOOM_ORDER",
+    "LEVEL_BLOOM_MAP",
+    "THOROUGHNESS_CAPS",
+    "AgendaItem",
+    "AssessmentState",
+    "BloomLevel",
+    "EnrichedGapAnalysis",
+    "EnrichedGapItem",
+    "EvaluationResult",
+    "KnowledgeGraph",
+    "KnowledgeNode",
+    "LearningPhase",
+    "LearningPlan",
+    "Question",
+    "Resource",
+    "Response",
+    "Thoroughness",
+    "TopicStatus",
+    "bloom_index",
+    "make_initial_state",
+]
 
 
 class AssessmentState(TypedDict, total=False):
