@@ -27,8 +27,8 @@ _EVIDENCE_ITEM_CAP = 80
 _EVIDENCE_COUNT_CAP = 2  # SR-01 / SR-04 count cap
 _SIGNAL_WORD_CAP = 60  # ADR §(d) 60-word cap
 
-# Strip ASCII control chars (0x00-0x1f except \t \n \r which the whitespace
-# regex will swallow next) plus DEL (0x7f). We then collapse all whitespace.
+# Strip all ASCII control chars (0x00-0x1f, including \t \n \r) plus DEL
+# (0x7f). We then collapse any remaining whitespace runs.
 _CONTROL_CHAR_TABLE = {c: None for c in range(0x00, 0x20)}
 _CONTROL_CHAR_TABLE[0x7F] = None
 _WHITESPACE_RE = re.compile(r"\s+")
@@ -58,7 +58,9 @@ def _sanitize_evidence(items: list[str]) -> list[str]:
         if not collapsed:
             continue
         if len(collapsed) > _EVIDENCE_ITEM_CAP:
-            collapsed = collapsed[:_EVIDENCE_ITEM_CAP] + "…"
+            # Reserve 1 char for the ellipsis so the final cleaned item
+            # length (including "…") is exactly _EVIDENCE_ITEM_CAP.
+            collapsed = collapsed[: _EVIDENCE_ITEM_CAP - 1] + "…"
         escaped = collapsed.replace('"', '\\"')
         cleaned.append(f'"{escaped}"')
     return cleaned
@@ -178,17 +180,22 @@ def build_performance_signal(state: AssessmentState) -> str:
         questions_on_topic = int(state.get("questions_on_current_topic") or 0)
         latest: EvaluationResult | None = state.get("latest_evaluation")
 
-        # R4 branch: first question OR no real evaluation yet.
-        if questions_on_topic == 0 or not _has_meaningful_evaluation(latest):
-            # Try KG fallback before giving up (only when we already asked
-            # questions on this topic; otherwise "first question" is correct).
-            if questions_on_topic > 0 and topic:
+        # R4: distinguish the true first-question case from the
+        # later-question / no-evaluation case so the LLM isn't misled into
+        # treating a mid-topic question like an opener.
+        if questions_on_topic == 0:
+            return "none (first question in assessment)"
+
+        if not _has_meaningful_evaluation(latest):
+            # Try KG fallback before giving up — we already asked questions
+            # on this topic, so prior knowledge may exist.
+            if topic:
                 kg_signal = _signal_from_knowledge_graph(
                     state.get("knowledge_graph") or KnowledgeGraph(), topic
                 )
                 if kg_signal:
                     return _cap_signal(kg_signal)
-            return "none (first question in assessment)"
+            return "none (no evaluation yet)"
 
         return _cap_signal(_signal_from_evaluation(latest, target_bloom))
     except Exception:

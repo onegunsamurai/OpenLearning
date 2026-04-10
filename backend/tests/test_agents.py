@@ -641,6 +641,37 @@ class TestBuildPerformanceSignal:
         assert "fourth evidence item" not in signal
         assert "fifth evidence item" not in signal
 
+    def test_no_evaluation_yet_returns_distinct_sentinel(self):
+        # Later question (questions_on_current_topic > 0) but no meaningful
+        # evaluation and no KG node — must return the dedicated sentinel so the
+        # generator does not mistake this for the true first-question case.
+        state = _state_with_topic(questions_on_topic=2)
+        # Leave latest_evaluation as the make_initial_state stub.
+        # Empty knowledge_graph: no fallback node available.
+        state["knowledge_graph"] = KnowledgeGraph(nodes=[])
+
+        signal = build_performance_signal(state)
+
+        assert "no evaluation yet" in signal.lower()
+        assert "first question" not in signal.lower()
+
+    def test_truncated_evidence_item_length_does_not_exceed_cap(self, monkeypatch):
+        # Regression for the off-by-one in _sanitize_evidence: ellipsis must
+        # fit within _EVIDENCE_ITEM_CAP, not push the cleaned item one char
+        # over. Inspect the helper directly so the assertion isn't muddied by
+        # surrounding signal scaffolding.
+        from app.agents import question_generator as qg
+
+        long_input = "a" * (qg._EVIDENCE_ITEM_CAP + 50)
+        cleaned = qg._sanitize_evidence([long_input])
+
+        assert len(cleaned) == 1
+        # Strip the surrounding quotes the helper adds; the inner string must
+        # be exactly _EVIDENCE_ITEM_CAP chars including the trailing ellipsis.
+        inner = cleaned[0].strip('"')
+        assert len(inner) == qg._EVIDENCE_ITEM_CAP
+        assert inner.endswith("…")
+
 
 class TestQuestionGenPrompt:
     """Tests that assert the rendered prompt contains the signal, fence, and guide."""
