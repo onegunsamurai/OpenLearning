@@ -19,6 +19,14 @@
 # `npm install` only if package-lock.json is absent.
 set -e
 
+# Fail fast if the caller forgot to pass a CMD. `exec ""` would otherwise
+# silently exit 127 in some shells, and we'd waste a full `npm ci` before
+# hitting that failure — so gate on argv up front.
+if [ "$#" -eq 0 ]; then
+  echo "[entrypoint] error: no command provided to docker-entrypoint.sh" >&2
+  exit 1
+fi
+
 MARKER="node_modules/.package-lock.json"
 LOCKFILE="package-lock.json"
 
@@ -49,13 +57,10 @@ if needs_install; then
     echo "[entrypoint] node_modules missing and no package-lock.json — running npm install..."
     npm install --no-audit --no-fund
   fi
-else
+elif [ -f "$LOCKFILE" ]; then
   echo "[entrypoint] node_modules is up to date with package-lock.json — skipping install."
-fi
-
-if [ "$#" -eq 0 ]; then
-  echo "[entrypoint] error: no command provided to docker-entrypoint.sh" >&2
-  exit 1
+else
+  echo "[entrypoint] node_modules present and no package-lock.json — skipping install."
 fi
 
 exec "$@"

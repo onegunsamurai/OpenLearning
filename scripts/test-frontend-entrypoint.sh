@@ -4,12 +4,13 @@
 # Regression coverage for issue #159: the dev-mode anonymous volume at
 # /app/node_modules persisted across rebuilds, so new dependencies added to
 # package.json never made it into the running container. The entrypoint fixes
-# that by running `npm install` whenever package-lock.json is newer than the
-# install marker (or the marker is missing entirely).
+# that by running `npm ci` whenever package-lock.json is newer than the
+# install marker (or the marker is missing entirely). It falls back to
+# `npm install` only when the lockfile itself is absent.
 #
 # These tests run the entrypoint in a tmpdir with a fake `npm` on PATH so we
-# can assert whether `npm install` was invoked without touching the real
-# package manager.
+# can assert whether `npm ci`/`npm install` was invoked without touching the
+# real package manager.
 #
 # Usage: bash scripts/test-frontend-entrypoint.sh
 set -euo pipefail
@@ -93,15 +94,19 @@ run_entrypoint() {
   set -e
 }
 
-assert_npm_called() {
-  if grep -qE "^npm (install|ci)" "$SANDBOX/npm-calls.log"; then
-    pass
-  else
-    fail "expected npm install/ci to be called; log was: $(cat "$SANDBOX/npm-calls.log")"
+# Every success-path assertion must also verify the entrypoint exited 0.
+# Otherwise a scenario could silently pass even if the entrypoint crashed
+# *after* the npm step (e.g. a bug in the final `exec "$@"` guard).
+_assert_exit_success() {
+  if [ "${ENTRYPOINT_STATUS:-unset}" != "0" ]; then
+    fail "expected exit status 0, got '${ENTRYPOINT_STATUS:-unset}'; log was: $(cat "$SANDBOX/entrypoint.log")"
+    return 1
   fi
+  return 0
 }
 
 assert_npm_not_called() {
+  _assert_exit_success || return
   if [ -s "$SANDBOX/npm-calls.log" ]; then
     fail "expected npm to NOT be called; log was: $(cat "$SANDBOX/npm-calls.log")"
   else
@@ -110,6 +115,7 @@ assert_npm_not_called() {
 }
 
 assert_npm_ci_called() {
+  _assert_exit_success || return
   if grep -q "^npm ci" "$SANDBOX/npm-calls.log"; then
     pass
   else
@@ -118,6 +124,7 @@ assert_npm_ci_called() {
 }
 
 assert_npm_install_called() {
+  _assert_exit_success || return
   if grep -q "^npm install" "$SANDBOX/npm-calls.log" && \
      ! grep -q "^npm ci" "$SANDBOX/npm-calls.log"; then
     pass
@@ -202,24 +209,27 @@ else
 fi
 cleanup_sandbox
 
-# Scenario 7: fail loudly when no command is supplied.
+# Scenario 7: fail loudly when no command is supplied, BEFORE running npm.
 # Without this guard, `exec ""` would silently exit 127 in shells that allow
-# it; the entrypoint should print a clear diagnostic and exit non-zero.
-begin_test "errors out when no CMD is provided"
+# it; the entrypoint should print a clear diagnostic, exit non-zero, and
+# crucially NOT waste a full `npm ci` before discovering the missing CMD.
+# We deliberately stage a state that WOULD trigger npm ci (missing marker)
+# so that a regression moving the guard back below the install step would
+# be caught by the "npm log is empty" assertion.
+begin_test "errors out when no CMD is provided without running npm"
 make_sandbox
-touch "$SANDBOX/package.json"
-mkdir -p "$SANDBOX/node_modules"
-touch "$SANDBOX/node_modules/.package-lock.json"
-touch -t 202001010000 "$SANDBOX/package-lock.json"
-touch -t 202601010000 "$SANDBOX/node_modules/.package-lock.json"
+touch "$SANDBOX/package.json" "$SANDBOX/package-lock.json"
+# No node_modules → needs_install would return true if reached.
 set +e
 ( cd "$SANDBOX" && "$ENTRYPOINT" ) > "$SANDBOX/entrypoint.log" 2>&1
 no_cmd_status=$?
 set -e
-if [ "$no_cmd_status" -ne 0 ] && grep -q "no command provided" "$SANDBOX/entrypoint.log"; then
+if [ "$no_cmd_status" -ne 0 ] \
+   && grep -q "no command provided" "$SANDBOX/entrypoint.log" \
+   && [ ! -s "$SANDBOX/npm-calls.log" ]; then
   pass
 else
-  fail "expected non-zero exit + diagnostic; status=$no_cmd_status log=$(cat "$SANDBOX/entrypoint.log")"
+  fail "expected non-zero exit + diagnostic + no npm calls; status=$no_cmd_status log=$(cat "$SANDBOX/entrypoint.log") npm=$(cat "$SANDBOX/npm-calls.log")"
 fi
 cleanup_sandbox
 
