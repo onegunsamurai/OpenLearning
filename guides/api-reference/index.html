@@ -1012,17 +1012,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#post-apilearning-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /api/learning-plan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#get-apimaterialssession_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1584,17 +1573,6 @@
     <span class="md-ellipsis">
       
         POST /api/gap-analysis
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#post-apilearning-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /api/learning-plan
       
     </span>
   </a>
@@ -2283,52 +2261,6 @@
 <span class="p">}</span>
 </code></pre></div>
 <p>Priority levels: <code>critical</code> (gap &gt; 40), <code>high</code> (gap &gt; 25), <code>medium</code> (gap &gt; 10), <code>low</code> (gap &lt;= 10).</p>
-<p><strong>Response</strong> (400 — no API key configured):</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
-</code></pre></div>
-<hr />
-<h3 id="post-apilearning-plan">POST <code>/api/learning-plan</code><a class="headerlink" href="#post-apilearning-plan" title="Permanent link">&para;</a></h3>
-<blockquote>
-<p><strong>Requires authentication.</strong> Returns 401 without a valid JWT cookie.</p>
-<p><strong>Requires API key.</strong> Returns 400 if the user has not configured an Anthropic API key.</p>
-</blockquote>
-<p>Generate a personalized learning plan from gap analysis.</p>
-<p><strong>Request</strong>: <code>LearningPlanRequest</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;gapAnalysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;overallReadiness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">72</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;gaps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p><strong>Response</strong>: <code>LearningPlan</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A 6-week plan targeting distributed systems and security gaps.&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;totalHours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">48</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;phases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;phaseNumber&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Foundations&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;microservices&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;http_fundamentals&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;rationale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Build foundational understanding before tackling distributed systems.&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;article&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Microservices Fundamentals&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://microservices.io/patterns&quot;</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;video&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTTP Deep Dive&quot;</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;estimatedHours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
 <p><strong>Response</strong> (400 — no API key configured):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No API key configured. Please add your Anthropic API key in Settings.&quot;</span><span class="p">}</span>
 </code></pre></div>

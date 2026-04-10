@@ -658,17 +658,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#learning-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Learning Plan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#roles" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -891,7 +880,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#learning-plan_1" class="md-nav__link">
+  <a href="#learning-plan" class="md-nav__link">
     <span class="md-ellipsis">
       
         Learning Plan
@@ -1422,17 +1411,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#learning-plan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Learning Plan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#roles" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1655,7 +1633,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#learning-plan_1" class="md-nav__link">
+  <a href="#learning-plan" class="md-nav__link">
     <span class="md-ellipsis">
       
         Learning Plan
@@ -1874,34 +1852,6 @@
 
 <span class="k">class</span><span class="w"> </span><span class="nc">GapAnalysisRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
     <span class="n">proficiency_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ProficiencyScore</span><span class="p">]</span>
-</code></pre></div>
-<h3 id="learning-plan">Learning Plan<a class="headerlink" href="#learning-plan" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LearningModule</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;theory&quot;</span><span class="p">,</span> <span class="s2">&quot;quiz&quot;</span><span class="p">,</span> <span class="s2">&quot;lab&quot;</span><span class="p">]</span>
-    <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">skill_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">duration_hours</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">objectives</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">resources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Phase</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">modules</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LearningModule</span><span class="p">]</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">LearningPlan</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">total_hours</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">total_weeks</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Phase</span><span class="p">]</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">LearningPlanRequest</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
-    <span class="n">gap_analysis</span><span class="p">:</span> <span class="n">GapAnalysis</span>
 </code></pre></div>
 <h3 id="roles">Roles<a class="headerlink" href="#roles" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RoleLevelSummary</span><span class="p">(</span><span class="n">CamelModel</span><span class="p">):</span>
@@ -2210,7 +2160,7 @@
     <span class="n">evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Specific observations</span>
     <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Brief overall assessment</span>
 </code></pre></div>
-<h3 id="learning-plan_1">Learning Plan<a class="headerlink" href="#learning-plan_1" title="Permanent link">&para;</a></h3>
+<h3 id="learning-plan">Learning Plan<a class="headerlink" href="#learning-plan" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PlanResourceOutput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># &quot;video&quot;, &quot;article&quot;, &quot;project&quot;, &quot;exercise&quot;</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
