@@ -45,6 +45,18 @@ LEVEL_BLOOM_MAP: dict[str, BloomLevel] = {
     "staff": BloomLevel.evaluate,
 }
 
+# Verb guide for each Bloom level. Injected into QUESTION_GEN_PROMPT so the LLM
+# anchors its cognitive demand to concrete verbs instead of drifting between
+# levels. Kept here alongside the other Bloom constants to colocate taxonomy
+# knowledge (see ADR for story 164).
+BLOOM_LEVEL_GUIDE: str = """\
+remember   - define, list, name
+understand - explain, summarize, describe
+apply      - write code, implement, use X to solve Y
+analyze    - diagnose, trace, compare, explain why X breaks
+evaluate   - justify trade-offs, critique design, when NOT to use
+create     - architect, design from scratch, propose a system"""
+
 
 def bloom_index(level: BloomLevel) -> int:
     return BLOOM_ORDER.index(level)
@@ -63,7 +75,7 @@ class Question(CamelModel):
     topic: str
     bloom_level: BloomLevel
     text: str
-    question_type: str  # conceptual, scenario, debugging, design
+    question_type: str  # conceptual, code, debugging, design, trade-off
 
 
 class Response(CamelModel):

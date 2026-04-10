@@ -369,7 +369,7 @@ class Question(CamelModel):
     topic: str
     bloom_level: BloomLevel
     text: str
-    question_type: str  # "conceptual", "scenario", "debugging", "design"
+    question_type: str  # "conceptual", "code", "debugging", "design", "trade-off"
 ```
 
 #### Response
@@ -450,7 +450,7 @@ class QuestionOutput(BaseModel):
     topic: str           # Technical concept being tested
     bloom_level: str     # Target Bloom taxonomy level
     text: str            # The question text
-    question_type: str   # "conceptual", "scenario", "debugging", "design"
+    question_type: str   # "conceptual", "code", "debugging", "design", "trade-off"
 ```
 
 ### Response Evaluation

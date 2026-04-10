@@ -23,7 +23,7 @@ class QuestionOutput(BaseModel):
     )
     text: str = Field(description="The question text")
     question_type: str = Field(
-        description="Type of question: conceptual, scenario, debugging, design"
+        description="Type of question: conceptual, code, debugging, design, trade-off"
     )
 
 

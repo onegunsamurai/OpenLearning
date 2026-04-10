@@ -77,14 +77,15 @@ The question generator receives:
 - Previously used question types (to avoid repetition)
 - Last 5 questions (for context)
 
-It returns a question with one of four types:
+It returns a question with one of five types:
 
 | Type | Description |
 |------|-------------|
 | `conceptual` | Explain a concept, definition, or relationship |
-| `scenario` | Apply knowledge to a real-world situation |
+| `code` | Read, write, or reason about code |
 | `debugging` | Identify and fix issues in a described system |
 | `design` | Design a solution or architecture |
+| `trade-off` | Compare approaches and justify a choice |
 
 ### Response Evaluation
 

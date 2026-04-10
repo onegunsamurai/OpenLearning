@@ -48,7 +48,7 @@ class TestQuestion:
             topic="test",
             bloom_level=BloomLevel.apply,
             text="Test?",
-            question_type="scenario",
+            question_type="code",
         )
         dumped = q.model_dump(by_alias=True)
         assert "bloomLevel" in dumped
