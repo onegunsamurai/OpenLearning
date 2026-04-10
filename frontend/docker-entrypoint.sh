@@ -6,13 +6,17 @@
 # Linux-native install. However, the anonymous volume persists across rebuilds,
 # so when package.json gains a new dependency the volume reattaches stale
 # node_modules on top of the freshly-installed image. This script detects that
-# mismatch at container start and runs `npm install` to resync.
+# mismatch at container start and runs `npm ci` to resync.
 #
 # Decision logic:
-#   1. If node_modules is missing entirely → run npm install.
+#   1. If node_modules is missing or the install marker is absent → install.
 #   2. If package-lock.json is newer than node_modules/.package-lock.json
-#      (the marker npm writes after every successful install) → run npm install.
+#      (the marker npm writes after every successful install) → install.
 #   3. Otherwise → skip; deps are already in sync.
+#
+# Install command: `npm ci` when a lockfile exists (deterministic, never
+# rewrites the host lockfile via the bind mount), falling back to
+# `npm install` only if package-lock.json is absent.
 set -e
 
 MARKER="node_modules/.package-lock.json"
@@ -32,10 +36,26 @@ needs_install() {
 }
 
 if needs_install; then
-  echo "[entrypoint] package-lock.json changed or node_modules missing — running npm install..."
-  npm install --no-audit --no-fund
+  if [ -f "$LOCKFILE" ]; then
+    # Prefer `npm ci` for determinism: it refuses to run when package.json
+    # and package-lock.json disagree, and it never rewrites the lockfile
+    # (which matters because /app is a host bind mount — `npm install`
+    # would silently edit the developer's checked-in lockfile on startup).
+    echo "[entrypoint] package-lock.json changed or node_modules missing — running npm ci..."
+    npm ci --no-audit --no-fund
+  else
+    # No lockfile: fall back to `npm install` so a bare `package.json`
+    # still produces a working tree instead of failing hard.
+    echo "[entrypoint] node_modules missing and no package-lock.json — running npm install..."
+    npm install --no-audit --no-fund
+  fi
 else
   echo "[entrypoint] node_modules is up to date with package-lock.json — skipping install."
+fi
+
+if [ "$#" -eq 0 ]; then
+  echo "[entrypoint] error: no command provided to docker-entrypoint.sh" >&2
+  exit 1
 fi
 
 exec "$@"

@@ -23,6 +23,10 @@ if [ ! -x "$ENTRYPOINT" ]; then
   exit 1
 fi
 
+# Snapshot PATH once so each sandbox starts from a clean slate instead of
+# accumulating dead tmpdir prefixes across tests.
+ORIGINAL_PATH="$PATH"
+
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
@@ -45,14 +49,14 @@ fail() {
 
 # make_sandbox — set up a tmpdir with a fake `npm` on PATH.
 # The fake npm records every invocation to $SANDBOX/npm-calls.log and
-# creates the install marker when called with `install`.
+# creates the install marker when called with `install` or `ci`.
 make_sandbox() {
   SANDBOX=$(mktemp -d)
   mkdir -p "$SANDBOX/bin"
   cat > "$SANDBOX/bin/npm" <<'EOF'
 #!/bin/sh
 echo "npm $*" >> "$SANDBOX/npm-calls.log"
-if [ "$1" = "install" ]; then
+if [ "$1" = "install" ] || [ "$1" = "ci" ]; then
   mkdir -p node_modules
   touch node_modules/.package-lock.json
 fi
@@ -60,28 +64,40 @@ EOF
   chmod +x "$SANDBOX/bin/npm"
   : > "$SANDBOX/npm-calls.log"
   export SANDBOX
-  export PATH="$SANDBOX/bin:$PATH"
+  # Reset PATH from the original snapshot so each sandbox adds exactly one
+  # prefix instead of stacking on previous runs.
+  export PATH="$SANDBOX/bin:$ORIGINAL_PATH"
 }
 
 cleanup_sandbox() {
   [ -n "${SANDBOX:-}" ] && rm -rf "$SANDBOX"
   SANDBOX=""
+  export PATH="$ORIGINAL_PATH"
 }
 
+# Remove any dangling sandbox even if a test aborts under `set -e`.
+trap cleanup_sandbox EXIT
+
 # run_entrypoint — run the entrypoint from inside the sandbox with `true` as CMD.
-# Returns the exit code. Captures stdout/stderr into $SANDBOX/entrypoint.log.
+# Captures the exit status without aborting the test script when the
+# entrypoint itself exits non-zero (`set -e` would otherwise kill us).
+# Stores the status in $ENTRYPOINT_STATUS and logs stdout/stderr to
+# $SANDBOX/entrypoint.log.
 run_entrypoint() {
+  set +e
   (
     cd "$SANDBOX"
     "$ENTRYPOINT" true
   ) > "$SANDBOX/entrypoint.log" 2>&1
+  ENTRYPOINT_STATUS=$?
+  set -e
 }
 
 assert_npm_called() {
-  if grep -q "^npm install" "$SANDBOX/npm-calls.log"; then
+  if grep -qE "^npm (install|ci)" "$SANDBOX/npm-calls.log"; then
     pass
   else
-    fail "expected npm install to be called; log was: $(cat "$SANDBOX/npm-calls.log")"
+    fail "expected npm install/ci to be called; log was: $(cat "$SANDBOX/npm-calls.log")"
   fi
 }
 
@@ -93,30 +109,47 @@ assert_npm_not_called() {
   fi
 }
 
+assert_npm_ci_called() {
+  if grep -q "^npm ci" "$SANDBOX/npm-calls.log"; then
+    pass
+  else
+    fail "expected npm ci; log was: $(cat "$SANDBOX/npm-calls.log")"
+  fi
+}
+
+assert_npm_install_called() {
+  if grep -q "^npm install" "$SANDBOX/npm-calls.log" && \
+     ! grep -q "^npm ci" "$SANDBOX/npm-calls.log"; then
+    pass
+  else
+    fail "expected npm install (and not npm ci); log was: $(cat "$SANDBOX/npm-calls.log")"
+  fi
+}
+
 # ── Tests ───────────────────────────────────────────────────────────────────
 
 echo "Running frontend entrypoint tests..."
 echo ""
 
-# Scenario 1: fresh container — no node_modules at all.
-begin_test "runs npm install when node_modules is missing"
+# Scenario 1: fresh container — no node_modules at all, lockfile present.
+begin_test "runs npm ci when node_modules is missing and lockfile exists"
 make_sandbox
 touch "$SANDBOX/package.json" "$SANDBOX/package-lock.json"
 run_entrypoint
-assert_npm_called
+assert_npm_ci_called
 cleanup_sandbox
 
 # Scenario 2: stale anonymous volume — node_modules exists but no marker.
-begin_test "runs npm install when install marker is missing"
+begin_test "runs npm ci when install marker is missing"
 make_sandbox
 touch "$SANDBOX/package.json" "$SANDBOX/package-lock.json"
 mkdir -p "$SANDBOX/node_modules"
 run_entrypoint
-assert_npm_called
+assert_npm_ci_called
 cleanup_sandbox
 
 # Scenario 3: regression for #159 — lockfile updated after last install.
-begin_test "runs npm install when package-lock.json is newer than marker"
+begin_test "runs npm ci when package-lock.json is newer than marker"
 make_sandbox
 touch "$SANDBOX/package.json"
 mkdir -p "$SANDBOX/node_modules"
@@ -124,11 +157,11 @@ mkdir -p "$SANDBOX/node_modules"
 touch -t 202001010000 "$SANDBOX/node_modules/.package-lock.json"
 touch -t 202601010000 "$SANDBOX/package-lock.json"
 run_entrypoint
-assert_npm_called
+assert_npm_ci_called
 cleanup_sandbox
 
 # Scenario 4: happy path — deps are already in sync, nothing to do.
-begin_test "skips npm install when marker is newer than lockfile"
+begin_test "skips install when marker is newer than lockfile"
 make_sandbox
 touch "$SANDBOX/package.json"
 mkdir -p "$SANDBOX/node_modules"
@@ -138,7 +171,17 @@ run_entrypoint
 assert_npm_not_called
 cleanup_sandbox
 
-# Scenario 5: entrypoint must exec the CMD passed as argv.
+# Scenario 5: fallback to `npm install` when the lockfile is missing entirely.
+# Covers the "bare package.json" edge case rather than crashing with `npm ci`.
+begin_test "falls back to npm install when package-lock.json is missing"
+make_sandbox
+touch "$SANDBOX/package.json"
+# Deliberately no package-lock.json, no node_modules.
+run_entrypoint
+assert_npm_install_called
+cleanup_sandbox
+
+# Scenario 6: entrypoint must exec the CMD passed as argv.
 begin_test "execs the CMD arguments after the install check"
 make_sandbox
 touch "$SANDBOX/package.json"
@@ -147,12 +190,36 @@ touch "$SANDBOX/node_modules/.package-lock.json"
 touch -t 202001010000 "$SANDBOX/package-lock.json"
 touch -t 202601010000 "$SANDBOX/node_modules/.package-lock.json"
 # Use `sh -c 'echo SENTINEL'` as CMD and verify SENTINEL is printed.
+set +e
 ( cd "$SANDBOX" && "$ENTRYPOINT" sh -c 'echo SENTINEL_ENTRYPOINT_EXEC' ) \
   > "$SANDBOX/entrypoint.log" 2>&1
-if grep -q "SENTINEL_ENTRYPOINT_EXEC" "$SANDBOX/entrypoint.log"; then
+exec_status=$?
+set -e
+if [ "$exec_status" -eq 0 ] && grep -q "SENTINEL_ENTRYPOINT_EXEC" "$SANDBOX/entrypoint.log"; then
   pass
 else
-  fail "CMD was not exec'd; log was: $(cat "$SANDBOX/entrypoint.log")"
+  fail "CMD was not exec'd (status=$exec_status); log was: $(cat "$SANDBOX/entrypoint.log")"
+fi
+cleanup_sandbox
+
+# Scenario 7: fail loudly when no command is supplied.
+# Without this guard, `exec ""` would silently exit 127 in shells that allow
+# it; the entrypoint should print a clear diagnostic and exit non-zero.
+begin_test "errors out when no CMD is provided"
+make_sandbox
+touch "$SANDBOX/package.json"
+mkdir -p "$SANDBOX/node_modules"
+touch "$SANDBOX/node_modules/.package-lock.json"
+touch -t 202001010000 "$SANDBOX/package-lock.json"
+touch -t 202601010000 "$SANDBOX/node_modules/.package-lock.json"
+set +e
+( cd "$SANDBOX" && "$ENTRYPOINT" ) > "$SANDBOX/entrypoint.log" 2>&1
+no_cmd_status=$?
+set -e
+if [ "$no_cmd_status" -ne 0 ] && grep -q "no command provided" "$SANDBOX/entrypoint.log"; then
+  pass
+else
+  fail "expected non-zero exit + diagnostic; status=$no_cmd_status log=$(cat "$SANDBOX/entrypoint.log")"
 fi
 cleanup_sandbox
 
