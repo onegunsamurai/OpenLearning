@@ -6,6 +6,13 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+# Entrypoint keeps node_modules in sync with package-lock.json when the
+# dev-mode anonymous volume outlives dependency changes. Only used by the
+# dev stack (docker-compose.dev.yml); production inherits a different stage.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
 # -- Stage: build --
 FROM deps AS build
 
