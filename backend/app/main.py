@@ -21,7 +21,6 @@ from app.routes import (
     auth,
     gap_analysis,
     health,
-    learning_plan,
     roles,
     skills,
     user,
@@ -72,7 +71,6 @@ app.include_router(skills.router, prefix="/api")
 app.include_router(assessment.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(gap_analysis.router, prefix="/api")
-app.include_router(learning_plan.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
 app.include_router(api_keys.router, prefix="/api/auth")
 app.include_router(user.router, prefix="/api/user")

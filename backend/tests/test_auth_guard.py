@@ -15,7 +15,6 @@ from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
 from app.routes.health import router as health_router
-from app.routes.learning_plan import router as learning_plan_router
 from app.routes.roles import router as roles_router
 from app.routes.skills import router as skills_router
 from tests.conftest import _test_db_url
@@ -49,7 +48,6 @@ def _mock_settings_empty_secret():
 _guard_app = FastAPI()
 _guard_app.include_router(assessment_router, prefix="/api")
 _guard_app.include_router(gap_analysis_router, prefix="/api")
-_guard_app.include_router(learning_plan_router, prefix="/api")
 _guard_app.include_router(auth_router, prefix="/api/auth")
 _guard_app.include_router(api_keys_router, prefix="/api/auth")
 _guard_app.include_router(health_router, prefix="/api")
@@ -106,13 +104,6 @@ class TestProtectedRoutesReturn401:
                     {"skillId": "react", "skillName": "React", "score": 70, "confidence": 0.8}
                 ]
             },
-        )
-        assert resp.status_code == 401
-
-    async def test_learning_plan_requires_auth(self, client: AsyncClient) -> None:
-        resp = await client.post(
-            "/api/learning-plan",
-            json={"gapAnalysis": {"overallReadiness": 50, "gaps": [], "summary": "test"}},
         )
         assert resp.status_code == 401
 

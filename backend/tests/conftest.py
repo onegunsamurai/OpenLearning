@@ -26,7 +26,6 @@ from app.routes.api_keys import router as api_keys_router
 from app.routes.assessment import router as assessment_router
 from app.routes.auth import router as auth_router
 from app.routes.gap_analysis import router as gap_analysis_router
-from app.routes.learning_plan import router as learning_plan_router
 from app.routes.user import router as user_router
 
 # ── PostgreSQL test database ──────────────────────────────────────────────
@@ -61,7 +60,6 @@ async def _override_get_user_api_key() -> str:
 _test_app = FastAPI()
 _test_app.include_router(assessment_router, prefix="/api")
 _test_app.include_router(gap_analysis_router, prefix="/api")
-_test_app.include_router(learning_plan_router, prefix="/api")
 _test_app.include_router(auth_router, prefix="/api/auth")
 _test_app.include_router(api_keys_router, prefix="/api/auth")
 _test_app.include_router(user_router, prefix="/api/user")

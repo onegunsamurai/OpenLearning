@@ -557,62 +557,6 @@
         }
       }
     },
-    "/api/learning-plan": {
-      "post": {
-        "summary": "Learning Plan",
-        "operationId": "learning_plan_api_learning_plan_post",
-        "parameters": [
-          {
-            "name": "access_token",
-            "in": "cookie",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Access Token"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LearningPlanRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LearningPlan"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/github": {
       "get": {
         "summary": "Github Login",
@@ -1535,73 +1479,6 @@
         ],
         "title": "KnowledgeNodeOut"
       },
-      "LearningModule": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "theory",
-              "quiz",
-              "lab"
-            ],
-            "title": "Type"
-          },
-          "phase": {
-            "type": "integer",
-            "title": "Phase"
-          },
-          "skillIds": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Skillids"
-          },
-          "durationHours": {
-            "type": "integer",
-            "title": "Durationhours"
-          },
-          "objectives": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Objectives"
-          },
-          "resources": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Resources"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "title",
-          "description",
-          "type",
-          "phase",
-          "skillIds",
-          "durationHours",
-          "objectives",
-          "resources"
-        ],
-        "title": "LearningModule"
-      },
       "LearningPhaseOut": {
         "properties": {
           "phaseNumber": {
@@ -1646,42 +1523,6 @@
         ],
         "title": "LearningPhaseOut"
       },
-      "LearningPlan": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          },
-          "totalHours": {
-            "type": "integer",
-            "title": "Totalhours"
-          },
-          "totalWeeks": {
-            "type": "integer",
-            "title": "Totalweeks"
-          },
-          "phases": {
-            "items": {
-              "$ref": "#/components/schemas/Phase"
-            },
-            "type": "array",
-            "title": "Phases"
-          }
-        },
-        "type": "object",
-        "required": [
-          "title",
-          "summary",
-          "totalHours",
-          "totalWeeks",
-          "phases"
-        ],
-        "title": "LearningPlan"
-      },
       "LearningPlanOut": {
         "properties": {
           "summary": {
@@ -1707,18 +1548,6 @@
           "phases"
         ],
         "title": "LearningPlanOut"
-      },
-      "LearningPlanRequest": {
-        "properties": {
-          "gapAnalysis": {
-            "$ref": "#/components/schemas/GapAnalysis"
-          }
-        },
-        "type": "object",
-        "required": [
-          "gapAnalysis"
-        ],
-        "title": "LearningPlanRequest"
       },
       "LoginRequest": {
         "properties": {
@@ -1751,37 +1580,6 @@
           "ok"
         ],
         "title": "OkResponse"
-      },
-      "Phase": {
-        "properties": {
-          "phase": {
-            "type": "integer",
-            "title": "Phase"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description"
-          },
-          "modules": {
-            "items": {
-              "$ref": "#/components/schemas/LearningModule"
-            },
-            "type": "array",
-            "title": "Modules"
-          }
-        },
-        "type": "object",
-        "required": [
-          "phase",
-          "name",
-          "description",
-          "modules"
-        ],
-        "title": "Phase"
       },
       "ProficiencyScore": {
         "properties": {

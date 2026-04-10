@@ -254,48 +254,6 @@ export type KnowledgeNodeOut = {
 };
 
 /**
- * LearningModule
- */
-export type LearningModule = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Title
-     */
-    title: string;
-    /**
-     * Description
-     */
-    description: string;
-    /**
-     * Type
-     */
-    type: 'theory' | 'quiz' | 'lab';
-    /**
-     * Phase
-     */
-    phase: number;
-    /**
-     * Skillids
-     */
-    skillIds: Array<string>;
-    /**
-     * Durationhours
-     */
-    durationHours: number;
-    /**
-     * Objectives
-     */
-    objectives: Array<string>;
-    /**
-     * Resources
-     */
-    resources: Array<string>;
-};
-
-/**
  * LearningPhaseOut
  */
 export type LearningPhaseOut = {
@@ -326,32 +284,6 @@ export type LearningPhaseOut = {
 };
 
 /**
- * LearningPlan
- */
-export type LearningPlan = {
-    /**
-     * Title
-     */
-    title: string;
-    /**
-     * Summary
-     */
-    summary: string;
-    /**
-     * Totalhours
-     */
-    totalHours: number;
-    /**
-     * Totalweeks
-     */
-    totalWeeks: number;
-    /**
-     * Phases
-     */
-    phases: Array<Phase>;
-};
-
-/**
  * LearningPlanOut
  */
 export type LearningPlanOut = {
@@ -367,13 +299,6 @@ export type LearningPlanOut = {
      * Phases
      */
     phases: Array<LearningPhaseOut>;
-};
-
-/**
- * LearningPlanRequest
- */
-export type LearningPlanRequest = {
-    gapAnalysis: GapAnalysis;
 };
 
 /**
@@ -398,28 +323,6 @@ export type OkResponse = {
      * Ok
      */
     ok: boolean;
-};
-
-/**
- * Phase
- */
-export type Phase = {
-    /**
-     * Phase
-     */
-    phase: number;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description: string;
-    /**
-     * Modules
-     */
-    modules: Array<LearningModule>;
 };
 
 /**
@@ -1007,31 +910,6 @@ export type GapAnalysisApiGapAnalysisPostResponses = {
 };
 
 export type GapAnalysisApiGapAnalysisPostResponse = GapAnalysisApiGapAnalysisPostResponses[keyof GapAnalysisApiGapAnalysisPostResponses];
-
-export type LearningPlanApiLearningPlanPostData = {
-    body: LearningPlanRequest;
-    path?: never;
-    query?: never;
-    url: '/api/learning-plan';
-};
-
-export type LearningPlanApiLearningPlanPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type LearningPlanApiLearningPlanPostError = LearningPlanApiLearningPlanPostErrors[keyof LearningPlanApiLearningPlanPostErrors];
-
-export type LearningPlanApiLearningPlanPostResponses = {
-    /**
-     * Successful Response
-     */
-    200: LearningPlan;
-};
-
-export type LearningPlanApiLearningPlanPostResponse = LearningPlanApiLearningPlanPostResponses[keyof LearningPlanApiLearningPlanPostResponses];
 
 export type GithubLoginApiAuthGithubGetData = {
     body?: never;
