@@ -47,11 +47,24 @@ class EvaluationOutput(BaseModel):
 
 
 class PlanResourceOutput(BaseModel):
-    """A single learning resource in a plan phase."""
+    """A single learning resource attached to a concept."""
 
     type: str = Field(description="Resource type: video, article, project, exercise")
     title: str = Field(description="Resource title")
     url: str | None = Field(default=None, description="Resource URL if available")
+
+
+class PlanConceptOutput(BaseModel):
+    """A single concept within a learning phase with its own resources."""
+
+    name: str = Field(description="Human-readable concept name")
+    description: str = Field(
+        default="",
+        description="1-2 sentence explanation of why this concept matters for the phase goal",
+    )
+    resources: list[PlanResourceOutput] = Field(
+        description="2-4 learning resources specific to this concept"
+    )
 
 
 class PlanPhaseOutput(BaseModel):
@@ -59,11 +72,12 @@ class PlanPhaseOutput(BaseModel):
 
     phase_number: int = Field(description="Phase order number starting from 1")
     title: str = Field(description="Phase title")
-    concepts: list[str] = Field(description="Concepts covered in this phase")
+    concepts: list[PlanConceptOutput] = Field(
+        description="Concepts covered in this phase, each with its own resources"
+    )
     rationale: str = Field(
         default="", description="Why these concepts are grouped and ordered this way"
     )
-    resources: list[PlanResourceOutput] = Field(description="Learning resources for this phase")
     estimated_hours: float = Field(description="Estimated hours to complete this phase")
 
 

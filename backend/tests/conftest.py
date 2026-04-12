@@ -112,14 +112,47 @@ FULL_LEARNING_PLAN = {
             "title": "Next.js Deep Dive",
             "estimated_hours": 16,
             "rationale": "Biggest gap relative to target level",
-            "concepts": ["App Router", "Server Actions"],
-            "resources": [
+            "concepts": [
                 {
-                    "title": "Next.js Docs",
-                    "url": "https://nextjs.org/docs",
-                    "type": "documentation",
+                    "key": "app-router",
+                    "name": "App Router",
+                    "description": "Master server components and route groups.",
+                    "resources": [
+                        {
+                            "title": "Next.js Docs",
+                            "url": "https://nextjs.org/docs",
+                            "type": "documentation",
+                        },
+                    ],
                 },
-                {"title": "Internal Guide", "url": None, "type": "guide"},
+                {
+                    "key": "server-actions",
+                    "name": "Server Actions",
+                    "description": "",
+                    "resources": [
+                        {"title": "Internal Guide", "url": None, "type": "guide"},
+                    ],
+                },
+            ],
+        }
+    ],
+}
+
+# Legacy-shape fixture for back-compat regression tests. Simulates an
+# AssessmentResult.learning_plan JSONB row written before issue #168 reshaped
+# the schema (concepts stored as list[str], resources at the phase level).
+LEGACY_LEARNING_PLAN_DICT = {
+    "summary": "Legacy plan",
+    "total_hours": 10,
+    "phases": [
+        {
+            "phase_number": 1,
+            "title": "Legacy Phase",
+            "estimated_hours": 10,
+            "rationale": "Pre-reshape row",
+            "concepts": ["Legacy Concept A", "Legacy Concept B"],
+            "resources": [
+                {"type": "article", "title": "Old Resource", "url": None},
             ],
         }
     ],

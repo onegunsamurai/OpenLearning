@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api, AssessmentReportResponse } from "@/lib/api";
+import { api } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 
 interface UseSessionReportResult {
   report: AssessmentReportResponse | null;

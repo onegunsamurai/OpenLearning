@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from enum import StrEnum
 from typing import Literal, TypedDict
 
@@ -122,12 +123,30 @@ class Resource(CamelModel):
     url: str | None = None
 
 
+def slugify_concept(name: str) -> str:
+    """Slugify a concept name for use as a stable ConceptItem.key.
+
+    Used both when building ConceptItem from the LLM output (agents.plan_generator)
+    and when reading legacy JSONB rows back into ConceptOut (services.assessment_mappers).
+    Colocated with ConceptItem so the key derivation lives next to the field it feeds.
+    """
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+class ConceptItem(CamelModel):
+    """A concept in a learning phase with its own learning resources."""
+
+    key: str  # slug(name), stable within the phase
+    name: str
+    description: str = ""
+    resources: list[Resource] = []
+
+
 class LearningPhase(CamelModel):
     phase_number: int
     title: str
-    concepts: list[str]
+    concepts: list[ConceptItem]
     rationale: str
-    resources: list[Resource]
     estimated_hours: float
 
 

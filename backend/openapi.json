@@ -1273,6 +1273,38 @@
         ],
         "title": "AuthMeResponse"
       },
+      "ConceptOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceOut"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "ConceptOut",
+        "description": "A concept card rendered on the assessment report page.\n\nEach concept owns its own learning resources so the frontend can display\nresources per-concept without needing a separate lookup. See issue #168."
+      },
       "ConceptSummary": {
         "properties": {
           "id": {
@@ -1491,7 +1523,7 @@
           },
           "concepts": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ConceptOut"
             },
             "type": "array",
             "title": "Concepts"
@@ -1499,13 +1531,6 @@
           "rationale": {
             "type": "string",
             "title": "Rationale"
-          },
-          "resources": {
-            "items": {
-              "$ref": "#/components/schemas/ResourceOut"
-            },
-            "type": "array",
-            "title": "Resources"
           },
           "estimatedHours": {
             "type": "number",
@@ -1518,7 +1543,6 @@
           "title",
           "concepts",
           "rationale",
-          "resources",
           "estimatedHours"
         ],
         "title": "LearningPhaseOut"

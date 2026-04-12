@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { ApiError } from "@/lib/api";
-import type { AssessmentReportResponse } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 
 // All mocks used inside vi.mock factories must live in vi.hoisted
 const {

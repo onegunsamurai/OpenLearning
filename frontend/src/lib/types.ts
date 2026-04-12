@@ -18,5 +18,6 @@ export type {
   AssessmentReportResponse,
   LearningPlanOut,
   LearningPhaseOut,
+  ConceptOut,
   ResourceOut,
 } from "@/lib/generated/api-client";

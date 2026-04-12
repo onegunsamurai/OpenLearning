@@ -9,12 +9,13 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.db import AssessmentResult
-from app.routes.export_utils import build_assessment_markdown
+from app.routes.export_utils import _escape_md, _safe_url, build_assessment_markdown
 from tests.conftest import (
     FULL_GAP_NODES,
     FULL_KNOWLEDGE_GRAPH,
     FULL_LEARNING_PLAN,
     FULL_PROFICIENCY_SCORES,
+    LEGACY_LEARNING_PLAN_DICT,
     _mock_graph,
     _test_app,
     _TestSessionFactory,
@@ -159,6 +160,201 @@ class TestBuildAssessmentMarkdown:
             proficiency_scores=None,
         )
         assert "**Date:** N/A" in md
+
+    def test_build_assessment_markdown_new_plan_shape(self):
+        """New nested concept shape renders one section per concept with its
+        own resources."""
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=FULL_LEARNING_PLAN,
+            proficiency_scores=None,
+        )
+        # Each concept is rendered as its own h4 section.
+        assert "#### App Router" in md
+        assert "#### Server Actions" in md
+        # Descriptions render when non-empty.
+        assert "Master server components" in md
+        # Each concept's resources render under its own section.
+        assert "[Next.js Docs](https://nextjs.org/docs)" in md
+        assert "Internal Guide — guide" in md
+        # The old phase-level "**Concepts:** ..." join line is gone.
+        assert "**Concepts:** App Router, Server Actions" not in md
+
+    def test_build_assessment_markdown_legacy_shape_still_renders(self):
+        """Legacy JSONB rows (list[str] concepts + phase-level resources) must
+        still render without crashing. Phase-level resources are dropped; each
+        legacy concept becomes an empty section."""
+        md = build_assessment_markdown(
+            session_id="abc-123",
+            target_level="mid",
+            completed_at=None,
+            knowledge_graph=None,
+            gap_nodes=None,
+            learning_plan=LEGACY_LEARNING_PLAN_DICT,
+            proficiency_scores=None,
+        )
+        assert "## Learning Plan" in md
+        assert "#### Legacy Concept A" in md
+        assert "#### Legacy Concept B" in md
+        # Dropped phase-level resource must not appear.
+        assert "Old Resource" not in md
+
+
+# ── Markdown escape helpers ────────────────────────────────────────────────
+
+
+class TestEscapeMd:
+    def test_none_and_empty_return_empty(self):
+        assert _escape_md(None) == ""
+        assert _escape_md("") == ""
+
+    def test_escapes_link_metacharacters(self):
+        assert _escape_md("[evil](javascript:alert(1))") == (
+            "\\[evil\\]\\(javascript:alert\\(1\\)\\)"
+        )
+
+    def test_escapes_html_angle_brackets(self):
+        assert _escape_md("<script>alert(1)</script>") == ("\\<script\\>alert\\(1\\)\\</script\\>")
+
+    def test_escapes_pipe_for_table_injection(self):
+        assert _escape_md("cell|break") == "cell\\|break"
+
+    def test_collapses_newlines_to_spaces(self):
+        assert _escape_md("line1\nline2\r\nline3") == "line1 line2 line3"
+
+    def test_preserves_safe_punctuation(self):
+        """Dots, hyphens, plusses are safe and should not be escaped."""
+        assert _escape_md("Next.js App-Router v2+") == "Next.js App-Router v2+"
+
+
+class TestSafeUrl:
+    def test_none_and_empty(self):
+        assert _safe_url(None) is None
+        assert _safe_url("") is None
+
+    def test_http_and_https_pass(self):
+        assert _safe_url("https://example.com") == "https://example.com"
+        assert _safe_url("http://example.com") == "http://example.com"
+
+    def test_javascript_scheme_rejected(self):
+        assert _safe_url("javascript:alert(1)") is None
+
+    def test_data_scheme_rejected(self):
+        assert _safe_url("data:text/html,<script>alert(1)</script>") is None
+
+    def test_case_insensitive_scheme_check(self):
+        assert _safe_url("HTTPS://EXAMPLE.COM") == "HTTPS://EXAMPLE.COM"
+        assert _safe_url("JavaScript:alert(1)") is None
+
+    def test_parentheses_url_encoded(self):
+        url = "https://en.wikipedia.org/wiki/Foo_(bar)"
+        result = _safe_url(url)
+        assert result is not None
+        assert ")" not in result
+        assert "%29" in result
+
+    def test_whitespace_in_url_rejected(self):
+        """URLs with embedded whitespace can break markdown link syntax."""
+        assert _safe_url("https://example.com/foo bar") is None
+        assert _safe_url("https://example.com/foo\tbar") is None
+
+    def test_newline_in_url_rejected(self):
+        """URLs with newlines can escape the link destination in markdown."""
+        assert _safe_url("https://example.com\n[evil](javascript:alert(1))") is None
+
+    def test_control_chars_in_url_rejected(self):
+        assert _safe_url("https://example.com/\x00path") is None
+
+
+class TestMarkdownXssRegression:
+    """End-to-end regression: LLM output with injection payloads must not
+    produce exploitable markdown when rendered."""
+
+    def test_xss_in_concept_name_escaped(self):
+        plan = {
+            "summary": "Safe",
+            "total_hours": 1,
+            "phases": [
+                {
+                    "phase_number": 1,
+                    "title": "Phase",
+                    "estimated_hours": 1,
+                    "rationale": "",
+                    "concepts": [
+                        {
+                            "key": "xss",
+                            "name": "[Click me](javascript:alert(1))",
+                            "description": "",
+                            "resources": [],
+                        }
+                    ],
+                }
+            ],
+        }
+        md = build_assessment_markdown("s1", "mid", None, None, None, plan, None)
+        # The brackets and parens must be escaped so the markdown renderer
+        # does not create a clickable link.
+        assert "\\[Click me\\]\\(javascript" in md
+        # Unescaped link syntax must not appear.
+        assert "[Click me](javascript:" not in md
+
+    def test_xss_in_resource_url_dropped(self):
+        plan = {
+            "summary": "Safe",
+            "total_hours": 1,
+            "phases": [
+                {
+                    "phase_number": 1,
+                    "title": "Phase",
+                    "estimated_hours": 1,
+                    "rationale": "",
+                    "concepts": [
+                        {
+                            "key": "xss",
+                            "name": "Normal",
+                            "description": "",
+                            "resources": [
+                                {
+                                    "type": "article",
+                                    "title": "Evil Link",
+                                    "url": "javascript:alert(document.cookie)",
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        md = build_assessment_markdown("s1", "mid", None, None, None, plan, None)
+        # The unsafe URL must be dropped — rendered as plain text, not a link.
+        assert "javascript:" not in md
+        assert "Evil Link" in md  # title still rendered as plain text
+
+    def test_html_in_knowledge_graph_escaped(self):
+        import re
+
+        kg = {
+            "nodes": [
+                {
+                    "concept": "<img src=x onerror=alert(1)>",
+                    "confidence": 0.5,
+                    "bloom_level": "apply",
+                    "prerequisites": [],
+                    "evidence": [],
+                }
+            ]
+        }
+        md = build_assessment_markdown("s1", "mid", None, kg, None, None, None)
+        # The angle brackets must be escaped so the markdown renderer does
+        # not treat them as raw HTML.
+        assert "\\<img" in md
+        assert "\\>" in md
+        # No unescaped `<` before `img` — every `<` must be preceded by `\`.
+        assert not re.search(r"(?<!\\)<img", md)
 
 
 # ── TestAssessmentExportRoute ────────────────────────────────────────────────
