@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from app.agents.schemas import (
     EvaluationOutput,
+    PlanConceptOutput,
     PlanOutput,
     PlanPhaseOutput,
     PlanResourceOutput,
@@ -55,24 +56,42 @@ class TestPlanOutput:
                 PlanPhaseOutput(
                     phase_number=1,
                     title="HTTP Fundamentals",
-                    concepts=["http", "rest"],
-                    rationale="Foundation first",
-                    resources=[
-                        PlanResourceOutput(
-                            type="article", title="MDN HTTP Guide", url="https://mdn.dev"
+                    concepts=[
+                        PlanConceptOutput(
+                            name="HTTP methods",
+                            description="Understand GET/POST/PUT/DELETE semantics.",
+                            resources=[
+                                PlanResourceOutput(
+                                    type="article",
+                                    title="MDN HTTP Guide",
+                                    url="https://mdn.dev",
+                                ),
+                            ],
                         ),
-                        PlanResourceOutput(type="project", title="Build a REST API"),
+                        PlanConceptOutput(
+                            name="REST design",
+                            description="Apply REST conventions to a small API.",
+                            resources=[
+                                PlanResourceOutput(type="project", title="Build a REST API"),
+                            ],
+                        ),
                     ],
+                    rationale="Foundation first",
                     estimated_hours=10.0,
                 ),
                 PlanPhaseOutput(
                     phase_number=2,
                     title="Database Design",
-                    concepts=["sql", "indexing"],
-                    rationale="Build on HTTP knowledge",
-                    resources=[
-                        PlanResourceOutput(type="video", title="SQL Tutorial", url=None),
+                    concepts=[
+                        PlanConceptOutput(
+                            name="SQL basics",
+                            description="Read-heavy queries and indexes.",
+                            resources=[
+                                PlanResourceOutput(type="video", title="SQL Tutorial", url=None),
+                            ],
+                        ),
                     ],
+                    rationale="Build on HTTP knowledge",
                     estimated_hours=15.0,
                 ),
             ],
@@ -80,8 +99,10 @@ class TestPlanOutput:
         assert output.total_hours == 40.0
         assert len(output.phases) == 2
         assert output.phases[0].title == "HTTP Fundamentals"
-        assert len(output.phases[0].resources) == 2
-        assert output.phases[0].resources[1].url is None
+        assert len(output.phases[0].concepts) == 2
+        assert output.phases[0].concepts[0].name == "HTTP methods"
+        assert len(output.phases[0].concepts[0].resources) == 1
+        assert output.phases[0].concepts[1].resources[0].url is None
 
     def test_resource_optional_url(self):
         resource = PlanResourceOutput(type="exercise", title="Practice")
@@ -91,8 +112,11 @@ class TestPlanOutput:
         phase = PlanPhaseOutput(
             phase_number=1,
             title="Basics",
-            concepts=["a"],
-            resources=[],
+            concepts=[PlanConceptOutput(name="a", resources=[])],
             estimated_hours=5.0,
         )
         assert phase.rationale == ""
+
+    def test_concept_default_description(self):
+        concept = PlanConceptOutput(name="foo", resources=[])
+        assert concept.description == ""

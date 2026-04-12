@@ -114,6 +114,33 @@ export type AuthMeResponse = {
 };
 
 /**
+ * ConceptOut
+ *
+ * A concept card rendered on the assessment report page.
+ *
+ * Each concept owns its own learning resources so the frontend can display
+ * resources per-concept without needing a separate lookup. See issue #168.
+ */
+export type ConceptOut = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Resources
+     */
+    resources?: Array<ResourceOut>;
+};
+
+/**
  * ConceptSummary
  */
 export type ConceptSummary = {
@@ -268,15 +295,11 @@ export type LearningPhaseOut = {
     /**
      * Concepts
      */
-    concepts: Array<string>;
+    concepts: Array<ConceptOut>;
     /**
      * Rationale
      */
     rationale: string;
-    /**
-     * Resources
-     */
-    resources: Array<ResourceOut>;
     /**
      * Estimatedhours
      */

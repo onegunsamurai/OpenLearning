@@ -3,9 +3,11 @@ from __future__ import annotations
 from app.agents.schemas import PlanOutput
 from app.graph.state import (
     AssessmentState,
+    ConceptItem,
     LearningPhase,
     LearningPlan,
     Resource,
+    slugify_concept,
 )
 from app.prompts.plan_generator import PLAN_GEN_PROMPT
 from app.services.ai import ainvoke_structured
@@ -44,14 +46,21 @@ async def generate_plan(state: AssessmentState) -> dict:
 
     phases = []
     for p in result.phases:
-        resources = [Resource(type=r.type, title=r.title, url=r.url) for r in p.resources]
+        concepts = [
+            ConceptItem(
+                key=slugify_concept(c.name),
+                name=c.name,
+                description=c.description,
+                resources=[Resource(type=r.type, title=r.title, url=r.url) for r in c.resources],
+            )
+            for c in p.concepts
+        ]
         phases.append(
             LearningPhase(
                 phase_number=p.phase_number,
                 title=p.title,
-                concepts=p.concepts,
+                concepts=concepts,
                 rationale=p.rationale,
-                resources=resources,
                 estimated_hours=p.estimated_hours,
             )
         )

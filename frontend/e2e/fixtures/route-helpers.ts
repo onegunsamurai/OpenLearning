@@ -5,7 +5,7 @@ import {
   MOCK_REPORT,
   MOCK_STORE_STATE,
 } from "./mock-data";
-import type { AssessmentReportResponse } from "../../src/lib/api";
+import type { AssessmentReportResponse } from "../../src/lib/types";
 
 const LOADING_DELAY_MS = 500;
 

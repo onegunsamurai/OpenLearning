@@ -7,10 +7,12 @@ depends on the knowledge base.
 
 from __future__ import annotations
 
+import logging
+
 from app.agents.gap_analyzer import analyze_gaps
 from app.agents.gap_enricher import _compute_overall_readiness, _compute_priority
 from app.db import AssessmentResult, AssessmentSession
-from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode
+from app.graph.state import BloomLevel, KnowledgeGraph, KnowledgeNode, slugify_concept
 from app.knowledge_base.loader import (
     get_target_graph,
     get_target_graph_for_concepts,
@@ -19,6 +21,7 @@ from app.knowledge_base.loader import (
 from app.models.assessment import ProficiencyScore
 from app.models.assessment_api import (
     AssessmentReportResponse,
+    ConceptOut,
     KnowledgeGraphOut,
     KnowledgeNodeOut,
     LearningPhaseOut,
@@ -26,6 +29,8 @@ from app.models.assessment_api import (
     ResourceOut,
 )
 from app.models.gap_analysis import GapAnalysis, GapItem
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # DTO builders
@@ -82,12 +87,94 @@ def build_gap_analysis_out(enriched) -> GapAnalysis:
     )
 
 
+def normalize_phase_concepts(phase_dict: dict) -> list[dict]:
+    """Return a list of concept dicts in the new (nested) shape.
+
+    Handles the JSONB back-compat case for ``AssessmentResult.learning_plan``
+    rows written before issue #168 reshaped the schema. Legacy rows store
+    ``concepts: list[str]`` and phase-level ``resources``; new rows store
+    ``concepts: list[dict]`` where each concept carries its own ``resources``.
+
+    Legacy rows lose their phase-level resources on read — those resources
+    were the exact bug that #168 fixes (duplicated across every concept in
+    the frontend), so dropping them is not a regression.
+
+    Shared between ``build_learning_plan_out`` and the markdown exporter so
+    both call sites agree on shape detection.
+    """
+    concepts = phase_dict.get("concepts", [])
+
+    if not concepts:
+        return []
+
+    # New shape: every element is a dict (nested concept with own resources).
+    if all(isinstance(c, dict) for c in concepts):
+        return [
+            {
+                "key": c.get("key") or slugify_concept(c.get("name", "")),
+                "name": c.get("name", ""),
+                "description": c.get("description", ""),
+                "resources": c.get("resources", []),
+            }
+            for c in concepts
+        ]
+
+    # Legacy shape: every element is a str (phase-level resources are
+    # dropped — they were the exact #168 bug, so dropping them is safe).
+    if all(isinstance(c, str) for c in concepts):
+        logger.info(
+            "learning_plan.legacy_shape_promoted phase=%s concepts=%d",
+            phase_dict.get("phase_number", "?"),
+            len(concepts),
+        )
+        return [
+            {
+                "key": slugify_concept(name),
+                "name": name,
+                "description": "",
+                "resources": [],
+            }
+            for name in concepts
+        ]
+
+    # Mixed or unexpected types — corrupt row. Log and drop this phase's
+    # concepts rather than tearing down the whole report response.
+    logger.warning(
+        "learning_plan.concepts_mixed_or_unknown phase=%s types=%s",
+        phase_dict.get("phase_number", "?"),
+        sorted({type(c).__name__ for c in concepts}),
+    )
+    return []
+
+
+def _concept_out_from_dict(concept_dict: dict) -> ConceptOut:
+    return ConceptOut(
+        key=concept_dict.get("key", ""),
+        name=concept_dict.get("name", ""),
+        description=concept_dict.get("description", ""),
+        resources=[
+            ResourceOut(type=r.get("type", ""), title=r.get("title", ""), url=r.get("url"))
+            for r in concept_dict.get("resources", [])
+        ],
+    )
+
+
+def _concept_out_from_model(concept) -> ConceptOut:
+    """Build a ``ConceptOut`` from a ``ConceptItem`` pydantic model."""
+    return ConceptOut(
+        key=concept.key,
+        name=concept.name,
+        description=concept.description,
+        resources=[ResourceOut(type=r.type, title=r.title, url=r.url) for r in concept.resources],
+    )
+
+
 def build_learning_plan_out(learning_plan) -> LearningPlanOut:
     """Build ``LearningPlanOut`` from state or DB data."""
     if not learning_plan:
         return LearningPlanOut(summary="", total_hours=0, phases=[])
 
-    # Handle dict (from DB JSONB)
+    # Handle dict (from DB JSONB) — may be legacy or new shape.
     if isinstance(learning_plan, dict):
         return LearningPlanOut(
             summary=learning_plan.get("summary", ""),
@@ -96,14 +183,8 @@ def build_learning_plan_out(learning_plan) -> LearningPlanOut:
                 LearningPhaseOut(
                     phase_number=p.get("phase_number", 0),
                     title=p.get("title", ""),
-                    concepts=p.get("concepts", []),
+                    concepts=[_concept_out_from_dict(c) for c in normalize_phase_concepts(p)],
                     rationale=p.get("rationale", ""),
-                    resources=[
-                        ResourceOut(
-                            type=r.get("type", ""), title=r.get("title", ""), url=r.get("url")
-                        )
-                        for r in p.get("resources", [])
-                    ],
                     estimated_hours=p.get("estimated_hours", 0),
                 )
                 for p in learning_plan.get("phases", [])
@@ -117,9 +198,8 @@ def build_learning_plan_out(learning_plan) -> LearningPlanOut:
             LearningPhaseOut(
                 phase_number=p.phase_number,
                 title=p.title,
-                concepts=p.concepts,
+                concepts=[_concept_out_from_model(c) for c in p.concepts],
                 rationale=p.rationale,
-                resources=[ResourceOut(type=r.type, title=r.title, url=r.url) for r in p.resources],
                 estimated_hours=p.estimated_hours,
             )
             for p in learning_plan.phases

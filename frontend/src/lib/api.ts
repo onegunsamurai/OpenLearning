@@ -24,6 +24,7 @@ import type {
   ApiKeyResponse,
   ValidateKeyResponse,
   UserAssessmentSummary,
+  AssessmentReportResponse,
 } from "@/lib/generated/api-client";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -114,49 +115,6 @@ export interface AssessmentStartResponse {
   sessionId: string;
   question: string;
   estimatedQuestions?: number | null;
-}
-
-export interface AssessmentReportResponse {
-  knowledgeGraph: {
-    nodes: {
-      concept: string;
-      confidence: number;
-      bloomLevel: string;
-      prerequisites: string[];
-    }[];
-  };
-  gapAnalysis: {
-    overallReadiness: number;
-    summary: string;
-    gaps: {
-      skillId: string;
-      skillName: string;
-      currentLevel: number;
-      targetLevel: number;
-      gap: number;
-      priority: "critical" | "high" | "medium" | "low";
-      recommendation: string;
-    }[];
-  };
-  learningPlan: {
-    summary: string;
-    totalHours: number;
-    phases: {
-      phaseNumber: number;
-      title: string;
-      concepts: string[];
-      rationale: string;
-      resources: { type: string; title: string; url: string | null }[];
-      estimatedHours: number;
-    }[];
-  };
-  proficiencyScores: {
-    skillId: string;
-    skillName: string;
-    score: number;
-    confidence: number;
-    reasoning: string;
-  }[];
 }
 
 const realApi = {

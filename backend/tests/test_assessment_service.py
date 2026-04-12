@@ -15,6 +15,7 @@ from app.exceptions import (
 )
 from app.graph.state import (
     BloomLevel,
+    ConceptItem,
     EnrichedGapAnalysis,
     KnowledgeGraph,
     KnowledgeNode,
@@ -335,9 +336,15 @@ class TestGetAssessmentReport:
                 LearningPhase(
                     phase_number=1,
                     title="Foundation",
-                    concepts=["React"],
+                    concepts=[
+                        ConceptItem(
+                            key="react",
+                            name="React",
+                            description="",
+                            resources=[Resource(type="doc", title="Docs")],
+                        )
+                    ],
                     rationale="Core",
-                    resources=[Resource(type="doc", title="Docs")],
                     estimated_hours=5,
                 )
             ],

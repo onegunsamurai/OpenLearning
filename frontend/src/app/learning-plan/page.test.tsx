@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
-import type { AssessmentReportResponse } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 
 const {
   mockRouter,
@@ -114,17 +114,29 @@ const sampleReport: AssessmentReportResponse = {
       {
         phaseNumber: 1,
         title: "Foundations",
-        concepts: ["Core types"],
+        concepts: [
+          {
+            key: "core-types",
+            name: "Core types",
+            description: "",
+            resources: [],
+          },
+        ],
         rationale: "Core skills",
-        resources: [],
         estimatedHours: 8,
       },
       {
         phaseNumber: 2,
         title: "Advanced",
-        concepts: ["Generics"],
+        concepts: [
+          {
+            key: "generics",
+            name: "Generics",
+            description: "",
+            resources: [],
+          },
+        ],
         rationale: "Advanced patterns",
-        resources: [],
         estimatedHours: 10,
       },
     ],

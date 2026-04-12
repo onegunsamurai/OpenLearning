@@ -1,6 +1,6 @@
 "use client";
 
-import type { AssessmentReportResponse } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 import { ConceptCard } from "./ConceptCard";
 import { motion } from "motion/react";
 
@@ -34,12 +34,7 @@ export function PlanTimeline({ plan, activePhase }: PlanTimelineProps) {
       </div>
       <div className="space-y-3">
         {phase.concepts.map((concept, i) => (
-          <ConceptCard
-            key={concept}
-            concept={concept}
-            resources={phase.resources}
-            index={i}
-          />
+          <ConceptCard key={concept.key} concept={concept} index={i} />
         ))}
       </div>
     </motion.div>
