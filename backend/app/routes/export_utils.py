@@ -38,13 +38,19 @@ def _safe_url(url: str | None) -> str | None:
     being embedded in ``[text](url)`` link syntax. Unsafe URLs are dropped
     and the caller should render the resource as plain text instead.
     Parentheses inside the URL are URL-encoded so they cannot terminate the
-    markdown link early.
+    markdown link early.  Whitespace and control characters are rejected
+    because they can break out of the URL destination in markdown link
+    syntax and reintroduce injection vectors.
     """
     if not url:
         return None
     url = url.strip()
     lowered = url.lower()
     if not (lowered.startswith("http://") or lowered.startswith("https://")):
+        return None
+    # Reject URLs containing whitespace or control characters — they can
+    # break the markdown link destination and allow injection.
+    if any(ch.isspace() or ord(ch) < 0x20 for ch in url):
         return None
     # Escape characters that break markdown link syntax.
     return url.replace("(", "%28").replace(")", "%29")

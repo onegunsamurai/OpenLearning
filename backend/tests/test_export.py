@@ -257,6 +257,18 @@ class TestSafeUrl:
         assert ")" not in result
         assert "%29" in result
 
+    def test_whitespace_in_url_rejected(self):
+        """URLs with embedded whitespace can break markdown link syntax."""
+        assert _safe_url("https://example.com/foo bar") is None
+        assert _safe_url("https://example.com/foo\tbar") is None
+
+    def test_newline_in_url_rejected(self):
+        """URLs with newlines can escape the link destination in markdown."""
+        assert _safe_url("https://example.com\n[evil](javascript:alert(1))") is None
+
+    def test_control_chars_in_url_rejected(self):
+        assert _safe_url("https://example.com/\x00path") is None
+
 
 class TestMarkdownXssRegression:
     """End-to-end regression: LLM output with injection payloads must not

@@ -370,6 +370,42 @@ class TestNormalizePhaseConcepts:
         assert len(result[0]["resources"]) == 1
         assert result[0]["resources"][0]["title"] == "Good"
 
+    def test_concepts_not_a_list_returns_empty_and_logs(self, caplog):
+        """If concepts is a bare string or dict (corruption), must not iterate
+        characters/keys into concept entries."""
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = normalize_phase_concepts({"phase_number": 1, "concepts": "corrupted string"})
+        assert result == []
+        assert any(
+            "learning_plan.concepts_invalid_container" in rec.message for rec in caplog.records
+        )
+
+    def test_null_name_coerced_to_empty_string(self):
+        """If name is None, it must not crash slugify_concept."""
+        result = normalize_phase_concepts(
+            {
+                "phase_number": 1,
+                "concepts": [
+                    {"key": "explicit-key", "name": None, "description": "", "resources": []},
+                ],
+            }
+        )
+        assert result[0]["key"] == "explicit-key"
+        assert result[0]["name"] == ""
+
+    def test_missing_name_and_key_does_not_crash(self):
+        """A concept dict with neither name nor key must not raise."""
+        result = normalize_phase_concepts(
+            {
+                "phase_number": 1,
+                "concepts": [{"description": "Orphan", "resources": []}],
+            }
+        )
+        assert result[0]["name"] == ""
+        assert result[0]["key"] == ""
+
     def test_mixed_type_list_drops_phase_concepts_and_logs_warning(self, caplog):
         """A corrupted row with mixed dict/str concepts must not silently render
         partial cards. The helper drops the phase's concepts and logs a warning

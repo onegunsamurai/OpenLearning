@@ -107,6 +107,17 @@ def normalize_phase_concepts(phase_dict: dict) -> list[dict]:
     if not concepts:
         return []
 
+    # Guard against corrupted JSONB where concepts is not a list at all
+    # (e.g. a bare string or dict).  Iterating a string would promote each
+    # character into a concept entry — clearly wrong.
+    if not isinstance(concepts, list):
+        logger.warning(
+            "learning_plan.concepts_invalid_container phase=%s type=%s",
+            phase_dict.get("phase_number", "?"),
+            type(concepts).__name__,
+        )
+        return []
+
     def _normalize_concept_dict(c: dict) -> dict:
         description = c.get("description")
         if not isinstance(description, str):
@@ -118,7 +129,9 @@ def normalize_phase_concepts(phase_dict: dict) -> list[dict]:
         else:
             resources = [r for r in resources if isinstance(r, dict)]
 
-        name = c.get("name", "")
+        name = c.get("name")
+        if not isinstance(name, str):
+            name = ""
         return {
             "key": c.get("key") or slugify_concept(name),
             "name": name,
