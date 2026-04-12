@@ -57,12 +57,12 @@ export function ConceptCard({ concept, index }: ConceptCardProps) {
             Resources
           </span>
           <ul className="space-y-1.5 list-none p-0 m-0">
-            {resources.map((res) => {
+            {resources.map((res, i) => {
               const Icon = typeIcons[res.type] ?? FileText;
               const color = typeColors[res.type] ?? typeColors.article;
               return (
                 <li
-                  key={`${res.type}-${res.title}`}
+                  key={`${res.type}-${res.title}-${res.url ?? i}`}
                   className="flex items-center gap-2"
                 >
                   <Badge

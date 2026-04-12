@@ -107,17 +107,28 @@ def normalize_phase_concepts(phase_dict: dict) -> list[dict]:
     if not concepts:
         return []
 
+    def _normalize_concept_dict(c: dict) -> dict:
+        description = c.get("description")
+        if not isinstance(description, str):
+            description = ""
+
+        resources = c.get("resources")
+        if not isinstance(resources, list):
+            resources = []
+        else:
+            resources = [r for r in resources if isinstance(r, dict)]
+
+        name = c.get("name", "")
+        return {
+            "key": c.get("key") or slugify_concept(name),
+            "name": name,
+            "description": description,
+            "resources": resources,
+        }
+
     # New shape: every element is a dict (nested concept with own resources).
     if all(isinstance(c, dict) for c in concepts):
-        return [
-            {
-                "key": c.get("key") or slugify_concept(c.get("name", "")),
-                "name": c.get("name", ""),
-                "description": c.get("description", ""),
-                "resources": c.get("resources", []),
-            }
-            for c in concepts
-        ]
+        return [_normalize_concept_dict(c) for c in concepts]
 
     # Legacy shape: every element is a str (phase-level resources are
     # dropped — they were the exact #168 bug, so dropping them is safe).

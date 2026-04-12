@@ -322,6 +322,54 @@ class TestNormalizePhaseConcepts:
         }
         assert result[1]["key"] == "server-actions"
 
+    def test_null_description_coerced_to_empty_string(self):
+        """JSONB row with ``description: null`` must not propagate None into
+        ConceptOut (which expects a string)."""
+        result = normalize_phase_concepts(
+            {
+                "phase_number": 1,
+                "concepts": [
+                    {"key": "hooks", "name": "Hooks", "description": None, "resources": []},
+                ],
+            }
+        )
+        assert result[0]["description"] == ""
+
+    def test_null_resources_coerced_to_empty_list(self):
+        """JSONB row with ``resources: null`` must not cause a TypeError."""
+        result = normalize_phase_concepts(
+            {
+                "phase_number": 1,
+                "concepts": [
+                    {"key": "hooks", "name": "Hooks", "description": "Desc", "resources": None},
+                ],
+            }
+        )
+        assert result[0]["resources"] == []
+
+    def test_non_dict_resource_entries_filtered_out(self):
+        """If a resources list contains non-dict entries (corruption), they
+        should be silently dropped rather than causing a downstream error."""
+        result = normalize_phase_concepts(
+            {
+                "phase_number": 1,
+                "concepts": [
+                    {
+                        "key": "hooks",
+                        "name": "Hooks",
+                        "description": "",
+                        "resources": [
+                            {"type": "article", "title": "Good", "url": None},
+                            "bad-entry",
+                            42,
+                        ],
+                    },
+                ],
+            }
+        )
+        assert len(result[0]["resources"]) == 1
+        assert result[0]["resources"][0]["title"] == "Good"
+
     def test_mixed_type_list_drops_phase_concepts_and_logs_warning(self, caplog):
         """A corrupted row with mixed dict/str concepts must not silently render
         partial cards. The helper drops the phase's concepts and logs a warning
