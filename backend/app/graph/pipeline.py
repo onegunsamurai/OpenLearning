@@ -8,6 +8,7 @@ from app.agents.gap_enricher import enrich_gaps
 from app.agents.knowledge_mapper import update_knowledge_graph
 from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import generate_question
+from app.agents.resource_validator import validate_resources
 from app.agents.response_evaluator import evaluate_response
 from app.graph.router import MAX_TOPICS, decide_branch, get_deeper_bloom, get_next_topic
 from app.graph.state import (
@@ -142,6 +143,11 @@ async def generate_plan_node(state: AssessmentState) -> dict:
     return await generate_plan(state)
 
 
+async def validate_resources_node(state: AssessmentState) -> dict:
+    """Validate resource URLs; null out unreachable ones."""
+    return await validate_resources(state)
+
+
 def handle_deeper(state: AssessmentState) -> dict:
     """Advance Bloom level before generating next question."""
     return get_deeper_bloom(state)
@@ -183,6 +189,7 @@ def build_graph() -> StateGraph:
     graph.add_node("analyze_gaps", analyze_gaps_node)
     graph.add_node("enrich_gaps", enrich_gaps_node)
     graph.add_node("generate_plan", generate_plan_node)
+    graph.add_node("validate_resources", validate_resources_node)
 
     # Edges: start → agenda → assessment
     graph.add_edge(START, "build_agenda")
@@ -214,7 +221,8 @@ def build_graph() -> StateGraph:
     # Conclusion
     graph.add_edge("analyze_gaps", "enrich_gaps")
     graph.add_edge("enrich_gaps", "generate_plan")
-    graph.add_edge("generate_plan", END)
+    graph.add_edge("generate_plan", "validate_resources")
+    graph.add_edge("validate_resources", END)
 
     return graph
 
