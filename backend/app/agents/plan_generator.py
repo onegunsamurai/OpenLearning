@@ -9,6 +9,7 @@ from app.graph.state import (
     Resource,
     slugify_concept,
 )
+from app.knowledge_base.loader import get_domain_display_name
 from app.prompts.plan_generator import PLAN_GEN_PROMPT
 from app.services.ai import ainvoke_structured
 
@@ -34,6 +35,7 @@ async def generate_plan(state: AssessmentState) -> dict:
     )
 
     prompt = PLAN_GEN_PROMPT.format(
+        domain=get_domain_display_name(state),
         target_level=state.get("target_level", "mid"),
         gap_summary=gap_summary,
     )

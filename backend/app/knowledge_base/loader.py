@@ -40,6 +40,12 @@ def list_domains() -> list[str]:
     return sorted(_get_domain_paths().keys())
 
 
+def get_domain_display_name(state: dict) -> str:
+    """Resolve the human-readable display name for the domain in an assessment state."""
+    domain = state.get("skill_domain", "backend_engineering")
+    return load_knowledge_base(domain).display_name
+
+
 def clear_cache() -> None:
     """Clear all caches. Useful for tests."""
     global _domain_path_cache

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.agents.schemas import EvaluationOutput
 from app.graph.state import AssessmentState, BloomLevel, EvaluationResult
+from app.knowledge_base.loader import get_domain_display_name
 from app.prompts.evaluator import EVALUATOR_PROMPT
 from app.services.ai import ainvoke_structured
 
@@ -15,6 +16,7 @@ async def evaluate_response(state: AssessmentState) -> dict:
     bloom_str = bloom.value if isinstance(bloom, BloomLevel) else str(bloom)
 
     prompt = EVALUATOR_PROMPT.format(
+        domain=get_domain_display_name(state),
         topic=question.topic,
         bloom_level=bloom_str,
         question_text=question.text,

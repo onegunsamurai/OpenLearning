@@ -13,6 +13,7 @@ from app.graph.state import (
     Question,
     bloom_index,
 )
+from app.knowledge_base.loader import get_domain_display_name
 from app.prompts.question_gen import QUESTION_GEN_PROMPT
 from app.services.ai import ainvoke_structured
 
@@ -232,6 +233,7 @@ async def generate_question(state: AssessmentState) -> dict:
     performance_signal = build_performance_signal(state)
 
     prompt = QUESTION_GEN_PROMPT.format(
+        domain=get_domain_display_name(state),
         topic=topic,
         bloom_level=bloom_str,
         used_types=", ".join(used_types) if used_types else "none",

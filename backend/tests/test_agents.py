@@ -7,12 +7,20 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.agents.knowledge_mapper import update_knowledge_graph
+from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import (
     build_performance_signal,
     generate_question,
 )
 from app.agents.response_evaluator import evaluate_response
-from app.agents.schemas import EvaluationOutput, QuestionOutput
+from app.agents.schemas import (
+    EvaluationOutput,
+    PlanConceptOutput,
+    PlanOutput,
+    PlanPhaseOutput,
+    PlanResourceOutput,
+    QuestionOutput,
+)
 from app.graph.state import (
     BloomLevel,
     EvaluationResult,
@@ -742,3 +750,108 @@ class TestQuestionGenPrompt:
         assert "conceptual" in rendered_prompt
         assert "trade-off" in rendered_prompt
         assert "scenario" not in rendered_prompt
+
+
+class TestDomainInPrompts:
+    """Regression tests: prompts must use the domain from state, not hardcode backend."""
+
+    @pytest.mark.asyncio
+    async def test_question_prompt_uses_frontend_domain(self):
+        mock_output = QuestionOutput(
+            topic="react_hooks",
+            bloom_level="apply",
+            text="Explain useEffect.",
+            question_type="conceptual",
+        )
+
+        state = make_initial_state("test", ["react"], "frontend_engineering")
+        state["current_topic"] = "react_hooks"
+        state["current_bloom_level"] = BloomLevel.apply
+
+        with patch(
+            "app.agents.question_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            await generate_question(state)
+
+        rendered = mock_invoke.await_args.args[1]
+        assert "Frontend Engineer" in rendered
+        assert "backend engineering" not in rendered.lower()
+
+    @pytest.mark.asyncio
+    async def test_evaluator_prompt_uses_devops_domain(self):
+        mock_output = EvaluationOutput(
+            confidence=0.8,
+            bloom_level="apply",
+            evidence=["Good answer"],
+            reasoning="Solid",
+        )
+
+        state = make_initial_state("test", ["docker"], "devops_engineering")
+        state["question_history"] = [
+            Question(
+                id="q-1",
+                topic="container_fundamentals",
+                bloom_level=BloomLevel.apply,
+                text="Explain containers.",
+                question_type="conceptual",
+            )
+        ]
+        state["response_history"] = [
+            Response(question_id="q-1", text="Containers isolate processes.")
+        ]
+
+        with patch(
+            "app.agents.response_evaluator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = mock_output
+            await evaluate_response(state)
+
+        rendered = mock_invoke.await_args.args[1]
+        assert "DevOps / Platform Engineer" in rendered
+        assert "backend engineering" not in rendered.lower()
+
+    @pytest.mark.asyncio
+    async def test_plan_prompt_uses_frontend_domain(self):
+        fake_output = PlanOutput(
+            summary="Learn React.",
+            total_hours=10.0,
+            phases=[
+                PlanPhaseOutput(
+                    phase_number=1,
+                    title="React Basics",
+                    rationale="Foundation",
+                    estimated_hours=10.0,
+                    concepts=[
+                        PlanConceptOutput(
+                            name="Hooks",
+                            description="React hooks basics.",
+                            resources=[
+                                PlanResourceOutput(type="article", title="Hooks guide", url=None)
+                            ],
+                        )
+                    ],
+                )
+            ],
+        )
+
+        state = make_initial_state("test", ["react"], "frontend_engineering")
+        state["gap_nodes"] = [
+            KnowledgeNode(
+                concept="react_hooks",
+                confidence=0.2,
+                bloom_level=BloomLevel.apply,
+                prerequisites=[],
+                evidence=[],
+            )
+        ]
+
+        with patch(
+            "app.agents.plan_generator.ainvoke_structured", new_callable=AsyncMock
+        ) as mock_invoke:
+            mock_invoke.return_value = fake_output
+            await generate_plan(state)
+
+        rendered = mock_invoke.await_args.args[1]
+        assert "Frontend Engineer" in rendered
+        assert "backend engineering" not in rendered.lower()
