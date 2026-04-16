@@ -1,4 +1,4 @@
-EVALUATOR_PROMPT = """You are an expert technical evaluator assessing a candidate's response to a {domain} question.
+EVALUATOR_PROMPT = """You are an expert technical evaluator assessing a {domain} candidate's response.
 
 Question asked:
 Topic: {topic}

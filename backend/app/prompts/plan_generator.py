@@ -1,7 +1,7 @@
 # Used by the assessment pipeline agents (with_structured_output handles format)
 PLAN_GEN_PROMPT = """You are a learning engineer creating a personalized learning plan.
 
-The candidate is targeting "{target_level}" level in {domain}.
+The candidate is targeting "{target_level}" level as a {domain}.
 
 Knowledge gaps (sorted by prerequisite order):
 {gap_summary}
