@@ -22,6 +22,7 @@ class TestGraphStructure:
             "await_probe_response",
             "analyze_gaps",
             "generate_plan",
+            "validate_resources",
         }
         assert expected_nodes.issubset(node_names), f"Missing nodes: {expected_nodes - node_names}"
 
@@ -76,6 +77,14 @@ class TestGraphStructure:
         edges = set(graph.edges)
         assert ("analyze_gaps", "enrich_gaps") in edges
         assert ("enrich_gaps", "generate_plan") in edges
+        assert ("generate_plan", "validate_resources") in edges
+        assert ("validate_resources", "__end__") in edges
+
+    def test_no_direct_generate_plan_to_end(self):
+        """generate_plan should NOT connect directly to END anymore."""
+        graph = build_graph()
+        edges = set(graph.edges)
+        assert ("generate_plan", "__end__") not in edges
 
     def test_enrich_gaps_node_present(self):
         graph = build_graph()
