@@ -30,17 +30,6 @@ _MAX_BODY_BYTES = 4096  # soft-404 detection snippet size
 
 # ── SSRF prevention ─────────────────────────────────────────────────────
 
-_BLOCKED_NETWORKS = [
-    ipaddress.ip_network("10.0.0.0/8"),
-    ipaddress.ip_network("172.16.0.0/12"),
-    ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("127.0.0.0/8"),
-    ipaddress.ip_network("169.254.0.0/16"),
-    ipaddress.ip_network("::1/128"),
-    ipaddress.ip_network("fc00::/7"),
-    ipaddress.ip_network("fe80::/10"),
-]
-
 
 def _is_ssrf_target(url: str) -> bool:
     """Return True if the URL targets a private/internal address."""
@@ -65,9 +54,15 @@ def _is_ssrf_target(url: str) -> bool:
 
     for _family, _type, _proto, _canonname, sockaddr in addr_infos:
         ip = ipaddress.ip_address(sockaddr[0])
-        for network in _BLOCKED_NETWORKS:
-            if ip in network:
-                return True
+
+        # Normalize IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1) to plain IPv4
+        if ip.version == 6 and ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
+
+        # Use stdlib checks to catch all non-global addresses, including
+        # ranges not explicitly listed in _BLOCKED_NETWORKS
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            return True
 
     return False
 
@@ -120,39 +115,71 @@ def clear_url_cache() -> None:
 
 # ── HTTP probing ─────────────────────────────────────────────────────────
 
+_MAX_REDIRECTS = 10
 
-async def _is_redirect_to_internal(response: httpx.Response) -> bool:
-    """Check if a redirect chain led to an internal/private IP.
 
-    Runs DNS resolution in a thread to avoid blocking the event loop.
+async def _follow_redirects(
+    client: httpx.AsyncClient,
+    method: str,
+    url: str,
+    **kwargs: object,
+) -> httpx.Response:
+    """Manually follow redirects, validating each hop against SSRF rules.
+
+    Unlike httpx's built-in ``follow_redirects=True`` this validates each
+    ``Location`` target *before* making the request, so we never connect
+    to an internal host even as an intermediate redirect.
     """
-    if response.history:
-        final_url = str(response.url)
-        # _is_ssrf_target calls socket.getaddrinfo (blocking) — offload it
-        return await asyncio.to_thread(_is_ssrf_target, final_url)
-    return False
+    current_url = url
+    for _ in range(_MAX_REDIRECTS):
+        r = await client.request(method, current_url, follow_redirects=False, **kwargs)
+        if r.is_redirect and r.has_redirect_location:
+            next_url = str(r.headers["location"])
+            # Resolve relative redirects
+            if not next_url.startswith(("http://", "https://")):
+                next_url = str(r.url.join(next_url))
+            if await asyncio.to_thread(_is_ssrf_target, next_url):
+                logger.info("resource_validator.ssrf_redirect url=%s hop=%s", url, next_url)
+                return r  # Return the redirect response; caller sees non-200
+            current_url = next_url
+        else:
+            return r
+    return r  # Max redirects reached — return last response
+
+
+async def _get_body_limited(client: httpx.AsyncClient, url: str) -> httpx.Response:
+    """GET a URL with SSRF-safe redirects for soft-404 body inspection.
+
+    Uses ``_follow_redirects`` to validate each hop.  Body truncation is
+    handled downstream by ``_is_soft_404`` (slices to ``_MAX_BODY_BYTES``).
+    """
+    return await _follow_redirects(client, "GET", url, timeout=_TIMEOUT_SECONDS)
 
 
 async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
     """Return True if *url* is reachable and not an error page."""
     try:
-        r = await client.head(url, follow_redirects=True, timeout=_TIMEOUT_SECONDS)
+        r = await _follow_redirects(
+            client,
+            "HEAD",
+            url,
+            timeout=_TIMEOUT_SECONDS,
+        )
 
-        # SSRF: check if redirects led to an internal IP
-        if await _is_redirect_to_internal(r):
-            logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
+        if r.is_redirect:
+            # Redirect chain ended at SSRF target or max redirects
             return False
 
         if r.status_code >= 400:
             # Some servers reject HEAD — fall back to GET with Range header
-            r = await client.get(
+            r = await _follow_redirects(
+                client,
+                "GET",
                 url,
-                follow_redirects=True,
                 timeout=_TIMEOUT_SECONDS,
                 headers={"Range": "bytes=0-0"},
             )
-            if await _is_redirect_to_internal(r):
-                logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
+            if r.is_redirect:
                 return False
 
         if r.status_code >= 400:
@@ -162,20 +189,10 @@ async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
         # Soft-404 detection on HTML responses
         content_type = r.headers.get("content-type", "")
         if content_type.startswith("text/html"):
-            # HEAD responses have no body — need a GET for content inspection
+            # HEAD responses have no body — need a limited GET for inspection
             if r.request.method == "HEAD" or not r.content:
-                r = await client.get(
-                    url,
-                    follow_redirects=True,
-                    timeout=_TIMEOUT_SECONDS,
-                )
-                if await _is_redirect_to_internal(r):
-                    logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
-                    return False
-                if r.status_code >= 400:
-                    logger.info(
-                        "resource_validator.http_error url=%s status=%d", url, r.status_code
-                    )
+                r = await _get_body_limited(client, url)
+                if r.is_redirect or r.status_code >= 400:
                     return False
 
             if _is_soft_404(r.text):
@@ -186,8 +203,9 @@ async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
     except (httpx.HTTPError, httpx.TimeoutException):
         return False
     except Exception:
+        # Fail-open: unexpected errors preserve the URL rather than nulling it
         logger.warning("resource_validator.probe_failed url=%s", url, exc_info=True)
-        return False
+        return True
 
 
 async def _check_with_cache(
@@ -239,7 +257,7 @@ async def validate_resources(state: AssessmentState) -> dict:
 
     sem = asyncio.Semaphore(_MAX_CONCURRENT)
     async with httpx.AsyncClient(
-        follow_redirects=True,
+        follow_redirects=False,  # Redirects followed manually with per-hop SSRF checks
         timeout=_TIMEOUT_SECONDS,
         limits=httpx.Limits(max_connections=_MAX_CONCURRENT),
         headers={"User-Agent": "OpenLearning-LinkChecker/1.0"},

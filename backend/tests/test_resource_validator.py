@@ -216,6 +216,26 @@ class TestIsSSRFTarget:
     def test_no_hostname(self):
         assert _is_ssrf_target("http://") is True
 
+    def test_ipv4_mapped_ipv6_blocked(self):
+        """::ffff:127.0.0.1 should be normalized and blocked."""
+        with patch(
+            "app.agents.resource_validator.socket.getaddrinfo",
+            return_value=[
+                (10, 1, 6, "", ("::ffff:127.0.0.1", 0, 0, 0)),
+            ],
+        ):
+            assert _is_ssrf_target("http://sneaky.example.com/") is True
+
+    def test_ipv4_mapped_ipv6_private_blocked(self):
+        """::ffff:10.0.0.1 should be normalized and blocked."""
+        with patch(
+            "app.agents.resource_validator.socket.getaddrinfo",
+            return_value=[
+                (10, 1, 6, "", ("::ffff:10.0.0.1", 0, 0, 0)),
+            ],
+        ):
+            assert _is_ssrf_target("http://sneaky.example.com/") is True
+
 
 # ── _check_url tests ────────────────────────────────────────────────────
 
@@ -355,22 +375,26 @@ class TestCheckUrl:
     @pytest.mark.asyncio
     @respx.mock
     async def test_redirect_to_internal_ip_blocked(self):
-        """URL that redirects to an internal IP should be treated as invalid."""
+        """URL that redirects to an internal IP should be blocked without
+        ever connecting to the internal host (per-hop SSRF validation)."""
         respx.head("https://example.com/redirect").mock(
             return_value=httpx.Response(
                 301,
                 headers={"location": "http://internal.example.com/"},
             ),
         )
-        respx.head("http://internal.example.com/").mock(
+        internal_route = respx.head("http://internal.example.com/").mock(
             return_value=httpx.Response(200, headers={"content-type": "text/plain"}),
         )
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient() as client:
             with patch(
                 "app.agents.resource_validator._is_ssrf_target",
                 side_effect=lambda url: "internal" in url,
             ):
                 assert await _check_url("https://example.com/redirect", client) is False
+
+        # The internal host must never be contacted — SSRF blocked before request
+        assert not internal_route.called
 
 
 # ── Cache tests ──────────────────────────────────────────────────────────
