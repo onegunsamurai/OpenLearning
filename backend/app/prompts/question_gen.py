@@ -8,7 +8,7 @@ from app.graph.state import BLOOM_LEVEL_GUIDE
 # as untrusted context — never as instructions — and must not leak it back into
 # the candidate-visible question text (SR-01, SR-03 in the story 164 threat
 # model).
-QUESTION_GEN_PROMPT = f"""You are an expert technical interviewer assessing backend engineering skills.
+QUESTION_GEN_PROMPT = f"""You are an expert technical interviewer assessing {{domain}} skills.
 
 Generate ONE focused assessment question for the candidate.
 

@@ -9,6 +9,7 @@ from app.graph.state import (
     Resource,
     slugify_concept,
 )
+from app.knowledge_base.loader import load_knowledge_base
 from app.prompts.plan_generator import PLAN_GEN_PROMPT
 from app.services.ai import ainvoke_structured
 
@@ -33,7 +34,11 @@ async def generate_plan(state: AssessmentState) -> dict:
         for node in gap_nodes
     )
 
+    skill_domain = state.get("skill_domain", "backend_engineering")
+    domain_display = load_knowledge_base(skill_domain).display_name
+
     prompt = PLAN_GEN_PROMPT.format(
+        domain=domain_display,
         target_level=state.get("target_level", "mid"),
         gap_summary=gap_summary,
     )
