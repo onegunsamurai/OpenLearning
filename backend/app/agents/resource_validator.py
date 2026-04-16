@@ -76,7 +76,7 @@ def _is_ssrf_target(url: str) -> bool:
 
 _SOFT_404_TITLE = re.compile(
     r"<title[^>]*>\s*("
-    r"404|page\s*not\s*found|not\s*found|error|"
+    r"404|page\s*not\s*found|not\s*found|error\s*\d{3}|error\s*page|server\s*error|"
     r"oops|sorry.*?doesn.?t\s*exist|no\s*longer\s*available|"
     r"this\s*page\s*(has\s*been\s*removed|doesn.?t\s*exist|is\s*unavailable)"
     r")\s*[|<\-\u2013\u2014]",
@@ -121,12 +121,15 @@ def clear_url_cache() -> None:
 # ── HTTP probing ─────────────────────────────────────────────────────────
 
 
-def _is_redirect_to_internal(response: httpx.Response) -> bool:
-    """Check if a redirect chain led to an internal/private IP."""
-    final_url = str(response.url)
+async def _is_redirect_to_internal(response: httpx.Response) -> bool:
+    """Check if a redirect chain led to an internal/private IP.
+
+    Runs DNS resolution in a thread to avoid blocking the event loop.
+    """
     if response.history:
-        # Redirects occurred — validate the final destination
-        return _is_ssrf_target(final_url)
+        final_url = str(response.url)
+        # _is_ssrf_target calls socket.getaddrinfo (blocking) — offload it
+        return await asyncio.to_thread(_is_ssrf_target, final_url)
     return False
 
 
@@ -136,7 +139,7 @@ async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
         r = await client.head(url, follow_redirects=True, timeout=_TIMEOUT_SECONDS)
 
         # SSRF: check if redirects led to an internal IP
-        if _is_redirect_to_internal(r):
+        if await _is_redirect_to_internal(r):
             logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
             return False
 
@@ -148,7 +151,7 @@ async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
                 timeout=_TIMEOUT_SECONDS,
                 headers={"Range": "bytes=0-0"},
             )
-            if _is_redirect_to_internal(r):
+            if await _is_redirect_to_internal(r):
                 logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
                 return False
 
@@ -166,7 +169,7 @@ async def _check_url(url: str, client: httpx.AsyncClient) -> bool:
                     follow_redirects=True,
                     timeout=_TIMEOUT_SECONDS,
                 )
-                if _is_redirect_to_internal(r):
+                if await _is_redirect_to_internal(r):
                     logger.info("resource_validator.ssrf_redirect url=%s final=%s", url, r.url)
                     return False
                 if r.status_code >= 400:

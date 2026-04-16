@@ -98,6 +98,23 @@ class TestIsSoft404:
         html = "<html><head><title>Handling 404 Errors in React | Blog</title></head></html>"
         assert _is_soft_404(html) is False
 
+    def test_error_handling_tutorial_not_flagged(self):
+        """Bare 'error' in a title like 'Error Handling in Python' must not trigger."""
+        html = "<html><head><title>Error Handling in Python | Tutorial</title></head></html>"
+        assert _is_soft_404(html) is False
+
+    def test_error_page_title_flagged(self):
+        html = "<html><head><title>Error Page | Site</title></head></html>"
+        assert _is_soft_404(html) is True
+
+    def test_server_error_title_flagged(self):
+        html = "<html><head><title>Server Error - Site</title></head></html>"
+        assert _is_soft_404(html) is True
+
+    def test_error_500_title_flagged(self):
+        html = "<html><head><title>Error 500 | Site</title></head></html>"
+        assert _is_soft_404(html) is True
+
     def test_empty_body_not_flagged(self):
         assert _is_soft_404("") is False
 
