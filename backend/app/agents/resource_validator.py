@@ -222,19 +222,20 @@ async def validate_resources(state: AssessmentState) -> dict:
     if not plan or not plan.phases:
         return {}
 
-    # Collect (phase_idx, resource_idx, url) for all non-null URLs
-    targets: list[tuple[int, int, str]] = []
+    # Collect unique URLs from all concepts across all phases
+    urls: list[str] = []
     seen_urls: set[str] = set()
-    for pi, phase in enumerate(plan.phases):
-        for ri, resource in enumerate(phase.resources):
-            if resource.url and resource.url not in seen_urls:
-                targets.append((pi, ri, resource.url))
-                seen_urls.add(resource.url)
+    for phase in plan.phases:
+        for concept in phase.concepts:
+            for resource in concept.resources:
+                if resource.url and resource.url not in seen_urls:
+                    urls.append(resource.url)
+                    seen_urls.add(resource.url)
 
-    if not targets:
+    if not urls:
         return {}
 
-    logger.info("resource_validator.start total=%d", len(targets))
+    logger.info("resource_validator.start total=%d", len(urls))
 
     sem = asyncio.Semaphore(_MAX_CONCURRENT)
     async with httpx.AsyncClient(
@@ -244,7 +245,7 @@ async def validate_resources(state: AssessmentState) -> dict:
         headers={"User-Agent": "OpenLearning-LinkChecker/1.0"},
     ) as client:
         results = await asyncio.gather(
-            *[_check_with_cache(url, client, sem) for _, _, url in targets],
+            *[_check_with_cache(url, client, sem) for url in urls],
             return_exceptions=True,
         )
 
@@ -256,20 +257,22 @@ async def validate_resources(state: AssessmentState) -> dict:
         url, is_valid = result
         url_validity[url] = is_valid
 
-    # Null out failed URLs across ALL phases (handles duplicates across phases)
+    # Null out failed URLs across ALL concepts (handles duplicates)
     nulled = 0
     for phase in plan.phases:
-        for resource in phase.resources:
-            if resource.url and not url_validity.get(resource.url, True):
-                logger.info(
-                    "resource_validator.nulled url=%s phase=%s",
-                    resource.url,
-                    phase.title,
-                )
-                resource.url = None
-                nulled += 1
+        for concept in phase.concepts:
+            for resource in concept.resources:
+                if resource.url and not url_validity.get(resource.url, True):
+                    logger.info(
+                        "resource_validator.nulled url=%s phase=%s concept=%s",
+                        resource.url,
+                        phase.title,
+                        concept.name,
+                    )
+                    resource.url = None
+                    nulled += 1
 
     if nulled:
-        logger.info("resource_validator.summary total=%d nulled=%d", len(targets), nulled)
+        logger.info("resource_validator.summary total=%d nulled=%d", len(urls), nulled)
 
     return {"learning_plan": plan}

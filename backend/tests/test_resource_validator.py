@@ -20,7 +20,7 @@ from app.agents.resource_validator import (
     clear_url_cache,
     validate_resources,
 )
-from app.graph.state import LearningPhase, LearningPlan, Resource
+from app.graph.state import ConceptItem, LearningPhase, LearningPlan, Resource
 
 
 @pytest.fixture(autouse=True)
@@ -32,16 +32,20 @@ def _clean_cache():
 
 
 def _make_plan(*phase_resources: list[Resource]) -> LearningPlan:
-    """Build a minimal LearningPlan with the given resources per phase."""
+    """Build a minimal LearningPlan with the given resources per phase.
+
+    Each phase gets a single ConceptItem that holds the provided resources.
+    """
     phases = []
     for i, resources in enumerate(phase_resources, start=1):
         phases.append(
             LearningPhase(
                 phase_number=i,
                 title=f"Phase {i}",
-                concepts=[f"concept-{i}"],
+                concepts=[
+                    ConceptItem(key=f"concept-{i}", name=f"Concept {i}", resources=resources),
+                ],
                 rationale="test",
-                resources=resources,
                 estimated_hours=1.0,
             )
         )
@@ -416,7 +420,8 @@ class TestCache:
             result = await validate_resources(state)
 
         assert (
-            result["learning_plan"].phases[0].resources[0].url == "https://cached.example.com/docs"
+            result["learning_plan"].phases[0].concepts[0].resources[0].url
+            == "https://cached.example.com/docs"
         )
 
 
@@ -468,7 +473,10 @@ class TestValidateResources:
         with patch("app.agents.resource_validator._is_ssrf_target", return_value=False):
             result = await validate_resources(state)
 
-        assert result["learning_plan"].phases[0].resources[0].url == "https://react.dev/learn"
+        assert (
+            result["learning_plan"].phases[0].concepts[0].resources[0].url
+            == "https://react.dev/learn"
+        )
 
     @pytest.mark.asyncio
     @respx.mock
@@ -490,7 +498,7 @@ class TestValidateResources:
         with patch("app.agents.resource_validator._is_ssrf_target", return_value=False):
             result = await validate_resources(state)
 
-        resource = result["learning_plan"].phases[0].resources[0]
+        resource = result["learning_plan"].phases[0].concepts[0].resources[0]
         assert resource.url is None
         assert resource.title == "Dead Link"
         assert resource.type == "article"
@@ -520,7 +528,7 @@ class TestValidateResources:
         with patch("app.agents.resource_validator._is_ssrf_target", return_value=False):
             result = await validate_resources(state)
 
-        resources = result["learning_plan"].phases[0].resources
+        resources = result["learning_plan"].phases[0].concepts[0].resources
         assert resources[0].url == "https://good.example.com/"
         assert resources[1].url is None
         assert resources[2].url is None  # was None, stays None
@@ -538,7 +546,7 @@ class TestValidateResources:
         # _is_ssrf_target returns True for single-label hostnames
         result = await validate_resources(state)
 
-        resource = result["learning_plan"].phases[0].resources[0]
+        resource = result["learning_plan"].phases[0].concepts[0].resources[0]
         assert resource.url is None
 
     @pytest.mark.asyncio
@@ -564,8 +572,14 @@ class TestValidateResources:
             result = await validate_resources(state)
 
         assert call_count == 1
-        assert result["learning_plan"].phases[0].resources[0].url == "https://example.com/shared"
-        assert result["learning_plan"].phases[1].resources[0].url == "https://example.com/shared"
+        assert (
+            result["learning_plan"].phases[0].concepts[0].resources[0].url
+            == "https://example.com/shared"
+        )
+        assert (
+            result["learning_plan"].phases[1].concepts[0].resources[0].url
+            == "https://example.com/shared"
+        )
 
     @pytest.mark.asyncio
     @respx.mock
@@ -587,8 +601,8 @@ class TestValidateResources:
         with patch("app.agents.resource_validator._is_ssrf_target", return_value=False):
             result = await validate_resources(state)
 
-        assert result["learning_plan"].phases[0].resources[0].url is None
-        assert result["learning_plan"].phases[1].resources[0].url is None
+        assert result["learning_plan"].phases[0].concepts[0].resources[0].url is None
+        assert result["learning_plan"].phases[1].concepts[0].resources[0].url is None
 
     @pytest.mark.asyncio
     @respx.mock
@@ -640,4 +654,7 @@ class TestValidateResources:
             result = await validate_resources(state)
 
         # gather(return_exceptions=True) catches the error; URL defaults to valid
-        assert result["learning_plan"].phases[0].resources[0].url == "https://example.com/test"
+        assert (
+            result["learning_plan"].phases[0].concepts[0].resources[0].url
+            == "https://example.com/test"
+        )
