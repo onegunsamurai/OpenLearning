@@ -1,4 +1,4 @@
-import type { AssessmentReportResponse } from "../../src/lib/api";
+import type { AssessmentReportResponse } from "../../src/lib/types";
 
 export const MOCK_SESSION_ID = "e2e-mock-session-001";
 
@@ -84,19 +84,41 @@ export const MOCK_REPORT: AssessmentReportResponse = {
       {
         phaseNumber: 1,
         title: "Foundations",
-        concepts: ["Query Optimization", "Indexing", "Connection Pooling"],
         rationale:
           "Database optimization is your biggest gap and a prerequisite for system architecture.",
-        resources: [
+        concepts: [
           {
-            type: "course",
-            title: "Database Performance Fundamentals",
-            url: null,
+            key: "query-optimization",
+            name: "Query Optimization",
+            description:
+              "Read query plans and rewrite slow queries for better performance.",
+            resources: [
+              {
+                type: "course",
+                title: "Database Performance Fundamentals",
+                url: null,
+              },
+            ],
           },
           {
-            type: "article",
-            title: "PostgreSQL Indexing Best Practices",
-            url: null,
+            key: "indexing",
+            name: "Indexing",
+            description:
+              "Choose index types that match your query patterns.",
+            resources: [
+              {
+                type: "article",
+                title: "PostgreSQL Indexing Best Practices",
+                url: null,
+              },
+            ],
+          },
+          {
+            key: "connection-pooling",
+            name: "Connection Pooling",
+            description:
+              "Reuse database connections to cut per-request latency.",
+            resources: [],
           },
         ],
         estimatedHours: 25,
@@ -104,23 +126,41 @@ export const MOCK_REPORT: AssessmentReportResponse = {
       {
         phaseNumber: 2,
         title: "Advanced Patterns",
-        concepts: [
-          "Distributed Systems",
-          "Scalability",
-          "Advanced REST Patterns",
-        ],
         rationale:
           "With database skills in place, tackle system architecture and advanced API design.",
-        resources: [
+        concepts: [
           {
-            type: "book",
-            title: "Designing Data-Intensive Applications",
-            url: null,
+            key: "distributed-systems",
+            name: "Distributed Systems",
+            description:
+              "Reason about consistency, availability, and partition tolerance.",
+            resources: [
+              {
+                type: "book",
+                title: "Designing Data-Intensive Applications",
+                url: null,
+              },
+            ],
           },
           {
-            type: "course",
-            title: "System Design Fundamentals",
-            url: null,
+            key: "scalability",
+            name: "Scalability",
+            description:
+              "Scale services horizontally with load balancing and sharding.",
+            resources: [
+              {
+                type: "course",
+                title: "System Design Fundamentals",
+                url: null,
+              },
+            ],
+          },
+          {
+            key: "advanced-rest-patterns",
+            name: "Advanced REST Patterns",
+            description:
+              "Apply HATEOAS, content negotiation, and versioning strategies.",
+            resources: [],
           },
         ],
         estimatedHours: 15,

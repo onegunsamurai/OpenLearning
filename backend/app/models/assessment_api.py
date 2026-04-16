@@ -80,12 +80,24 @@ class ResourceOut(CamelModel):
     url: str | None = None
 
 
+class ConceptOut(CamelModel):
+    """A concept card rendered on the assessment report page.
+
+    Each concept owns its own learning resources so the frontend can display
+    resources per-concept without needing a separate lookup. See issue #168.
+    """
+
+    key: str
+    name: str
+    description: str = ""
+    resources: list[ResourceOut] = []
+
+
 class LearningPhaseOut(CamelModel):
     phase_number: int
     title: str
-    concepts: list[str]
+    concepts: list[ConceptOut]
     rationale: str
-    resources: list[ResourceOut]
     estimated_hours: float
 
 

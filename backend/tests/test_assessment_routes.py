@@ -12,6 +12,7 @@ from sqlalchemy import select
 from app.db import AssessmentResult, AssessmentSession, User
 from app.graph.state import (
     BloomLevel,
+    ConceptItem,
     EnrichedGapAnalysis,
     KnowledgeGraph,
     KnowledgeNode,
@@ -540,9 +541,15 @@ class TestAssessmentReport:
                 LearningPhase(
                     phase_number=1,
                     title="Foundation",
-                    concepts=["TypeScript Generics"],
+                    concepts=[
+                        ConceptItem(
+                            key="typescript-generics",
+                            name="TypeScript Generics",
+                            description="",
+                            resources=[Resource(type="documentation", title="TS Docs")],
+                        )
+                    ],
                     rationale="Biggest gap",
-                    resources=[Resource(type="documentation", title="TS Docs")],
                     estimated_hours=10,
                 )
             ],

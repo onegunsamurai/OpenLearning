@@ -1,6 +1,6 @@
 "use client";
 
-import type { AssessmentReportResponse } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 import { BookOpen, Clock, Calendar, Target } from "lucide-react";
 import { motion } from "motion/react";
 

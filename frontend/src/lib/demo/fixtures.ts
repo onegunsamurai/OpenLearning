@@ -4,10 +4,8 @@ import type {
   RoleDetail,
   ProficiencyScore,
 } from "@/lib/types";
-import type {
-  AssessmentStartResponse,
-  AssessmentReportResponse,
-} from "@/lib/api";
+import type { AssessmentStartResponse } from "@/lib/api";
+import type { AssessmentReportResponse } from "@/lib/types";
 
 // ── Skills ──────────────────────────────────────────────────────────
 
@@ -354,50 +352,156 @@ export const DEMO_LEARNING_PLAN: AssessmentReportResponse["learningPlan"] = {
     {
       phaseNumber: 1,
       title: "Next.js Deep Dive",
-      concepts: ["App Router", "Server Actions", "Parallel Routes", "Data Fetching"],
       rationale:
         "Master the App Router, including server components, parallel routes, and server actions.",
-      resources: [
-        { type: "article", title: "Next.js Documentation — Routing", url: null },
-        { type: "article", title: "Next.js Caching Docs", url: null },
-        { type: "project", title: "Server Actions Lab", url: null },
+      concepts: [
+        {
+          key: "app-router",
+          name: "App Router",
+          description:
+            "Understand the file-system router, layouts, and nested routing.",
+          resources: [
+            { type: "article", title: "Next.js Documentation — Routing", url: null },
+          ],
+        },
+        {
+          key: "server-actions",
+          name: "Server Actions",
+          description:
+            "Use server actions to mutate data without writing API routes.",
+          resources: [
+            { type: "project", title: "Server Actions Lab", url: null },
+          ],
+        },
+        {
+          key: "parallel-routes",
+          name: "Parallel Routes",
+          description:
+            "Render independent route slots in parallel for dashboards and modals.",
+          resources: [
+            { type: "article", title: "Next.js Parallel Routes Guide", url: null },
+          ],
+        },
+        {
+          key: "data-fetching",
+          name: "Data Fetching",
+          description:
+            "Caching, streaming, and request memoization for server components.",
+          resources: [
+            { type: "article", title: "Next.js Caching Docs", url: null },
+          ],
+        },
       ],
       estimatedHours: 14,
     },
     {
       phaseNumber: 2,
       title: "Testing Mastery",
-      concepts: ["Integration Testing", "Mock Strategies", "E2E Testing", "Test Architecture"],
       rationale:
         "Build confidence in integration testing, mocking strategies, and test-driven development.",
-      resources: [
-        { type: "article", title: "Testing Library Docs", url: null },
-        { type: "article", title: "MSW Documentation", url: null },
-        { type: "article", title: "Playwright Documentation", url: null },
+      concepts: [
+        {
+          key: "integration-testing",
+          name: "Integration Testing",
+          description:
+            "Test components against realistic data and DOM behavior.",
+          resources: [
+            { type: "article", title: "Testing Library Docs", url: null },
+          ],
+        },
+        {
+          key: "mock-strategies",
+          name: "Mock Strategies",
+          description:
+            "Intercept network with MSW to test fetch/XHR without touching real APIs.",
+          resources: [
+            { type: "article", title: "MSW Documentation", url: null },
+          ],
+        },
+        {
+          key: "e2e-testing",
+          name: "E2E Testing",
+          description:
+            "Exercise full user journeys in a real browser with Playwright.",
+          resources: [
+            { type: "article", title: "Playwright Documentation", url: null },
+          ],
+        },
+        {
+          key: "test-architecture",
+          name: "Test Architecture",
+          description:
+            "Organize fixtures, factories, and helpers for a maintainable suite.",
+          resources: [],
+        },
       ],
       estimatedHours: 16,
     },
     {
       phaseNumber: 3,
       title: "Advanced TypeScript",
-      concepts: ["Conditional Types", "Template Literal Types", "Type-Level Programming"],
       rationale:
         "Level up your TypeScript skills with generics, conditional types, and type-level programming.",
-      resources: [
-        { type: "video", title: "Total TypeScript — Advanced Patterns", url: null },
-        { type: "exercise", title: "Type Challenges Repository", url: null },
+      concepts: [
+        {
+          key: "conditional-types",
+          name: "Conditional Types",
+          description:
+            "Branch types based on shape, using `extends` and `infer`.",
+          resources: [
+            { type: "video", title: "Total TypeScript — Advanced Patterns", url: null },
+          ],
+        },
+        {
+          key: "template-literal-types",
+          name: "Template Literal Types",
+          description:
+            "Derive string-literal types from other types for safer APIs.",
+          resources: [
+            { type: "exercise", title: "Type Challenges Repository", url: null },
+          ],
+        },
+        {
+          key: "type-level-programming",
+          name: "Type-Level Programming",
+          description:
+            "Recursive mapped types and tuple manipulation for library code.",
+          resources: [],
+        },
       ],
       estimatedHours: 12,
     },
     {
       phaseNumber: 4,
       title: "CSS Modern Techniques",
-      concepts: ["Container Queries", "CSS Layers", "Scroll-Driven Animations"],
       rationale:
         "Deepen your CSS skills with container queries, CSS layers, and scroll-driven animations.",
-      resources: [
-        { type: "article", title: "MDN Container Queries", url: null },
-        { type: "article", title: "MDN Scroll-Driven Animations", url: null },
+      concepts: [
+        {
+          key: "container-queries",
+          name: "Container Queries",
+          description:
+            "Style elements based on their container's size, not the viewport.",
+          resources: [
+            { type: "article", title: "MDN Container Queries", url: null },
+          ],
+        },
+        {
+          key: "css-layers",
+          name: "CSS Layers",
+          description:
+            "Use `@layer` to control cascade precedence across design tokens and overrides.",
+          resources: [],
+        },
+        {
+          key: "scroll-driven-animations",
+          name: "Scroll-Driven Animations",
+          description:
+            "Drive animations from scroll position without JavaScript.",
+          resources: [
+            { type: "article", title: "MDN Scroll-Driven Animations", url: null },
+          ],
+        },
       ],
       estimatedHours: 9,
     },

@@ -3,6 +3,7 @@
 from app.graph.state import (
     BLOOM_ORDER,
     BloomLevel,
+    ConceptItem,
     EvaluationResult,
     KnowledgeGraph,
     KnowledgeNode,
@@ -141,9 +142,15 @@ class TestLearningPlan:
                 LearningPhase(
                     phase_number=1,
                     title="Foundations",
-                    concepts=["http_fundamentals"],
+                    concepts=[
+                        ConceptItem(
+                            key="http-fundamentals",
+                            name="HTTP Fundamentals",
+                            description="",
+                            resources=[Resource(type="article", title="HTTP Guide")],
+                        )
+                    ],
                     rationale="Start with basics",
-                    resources=[Resource(type="article", title="HTTP Guide")],
                     estimated_hours=5,
                 )
             ],
@@ -151,4 +158,4 @@ class TestLearningPlan:
             summary="A basic plan",
         )
         assert len(plan.phases) == 1
-        assert plan.phases[0].resources[0].type == "article"
+        assert plan.phases[0].concepts[0].resources[0].type == "article"
