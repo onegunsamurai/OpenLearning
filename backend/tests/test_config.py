@@ -16,9 +16,15 @@ from app.config import Settings, get_settings
 
 
 class TestYoutubeSettingsDefaults:
-    def test_youtube_api_key_default_is_empty_secretstr(self):
-        """Empty key is the off-state / feature flag (AC-2, AC-15)."""
-        s = Settings()
+    def test_youtube_api_key_default_is_empty_secretstr(self, monkeypatch):
+        """Empty key is the off-state / feature flag (AC-2, AC-15).
+
+        Constructed with ``_env_file=None`` to ignore any local ``.env`` that
+        may have been populated for live testing — we only want the
+        class-level default here.
+        """
+        monkeypatch.delenv("YOUTUBE_API_KEY", raising=False)
+        s = Settings(_env_file=None)
         assert isinstance(s.youtube_api_key, SecretStr)
         assert s.youtube_api_key.get_secret_value() == ""
 

@@ -1,8 +1,9 @@
 """Tests for app.agents.video_enricher — pure helpers + the async node.
 
-ACs covered: AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-10, AC-11, AC-12, AC-13,
-AC-17, AC-18, AC-19.
-SRs covered: SR-02, SR-03, SR-04, SR-05, SR-08, SR-09, SR-11, SR-12, SR-13.
+ACs (post-gate-simplification): AC-2 (feature flag), AC-3 (graceful error),
+AC-7 (cap), AC-10 (no LLM), AC-11 (cap pre-call), AC-12 (dedupe), AC-13.
+SRs covered: SR-02 (PII), SR-03 (cap+budget), SR-04 (timeouts), SR-05 (URL
+from validated video_id), SR-08 (concept hash in logs), SR-12 (audit log).
 """
 
 from __future__ import annotations
@@ -93,39 +94,21 @@ def _status(
     )
 
 
-# ── _jaccard / _tokenize ────────────────────────────────────────────────
+# ── _hash_concept ───────────────────────────────────────────────────────
 
 
-class TestPureHelpers:
-    def test_jaccard_empty_query(self):
-        assert ve._jaccard(set(), {"a", "b"}) == 0.0
-
-    def test_jaccard_full_overlap(self):
-        s = {"a", "b", "c"}
-        assert ve._jaccard(s, s) == 1.0
-
-    def test_jaccard_partial(self):
-        score = ve._jaccard({"a", "b", "c", "d", "e"}, {"a", "b"})
-        assert score == 2 / 5
-
-    def test_tokenize_strips_stop_words_and_punctuation(self):
-        toks = ve._tokenize("How to use the Postgres index?")
-        assert "how" not in toks
-        assert "the" not in toks
-        assert "postgres" in toks
-        assert "index" in toks
-
-    def test_normalize_for_dedupe_lowercases_and_collapses_whitespace(self):
-        assert ve._normalize_for_dedupe("  Postgres  Tutorial  ") == "postgres tutorial"
-
-    def test_hash_concept_is_8_hex_chars_and_deterministic(self):
+class TestHashConcept:
+    def test_returns_8_hex_chars_and_is_deterministic(self):
         h = ve._hash_concept("Postgres indexing")
         assert len(h) == 8
         assert all(c in "0123456789abcdef" for c in h)
         assert h == ve._hash_concept("Postgres indexing")
 
-    def test_hash_concept_distinguishes_inputs(self):
+    def test_distinguishes_inputs(self):
         assert ve._hash_concept("a") != ve._hash_concept("b")
+
+
+# ── _sanitize_query ─────────────────────────────────────────────────────
 
 
 class TestSanitizeQuery:
@@ -159,6 +142,9 @@ class TestSanitizeQuery:
         assert ve._sanitize_query("a    b    c") == "a b c"
 
 
+# ── _build_query ────────────────────────────────────────────────────────
+
+
 class TestBuildQuery:
     def test_appends_skill_domain_when_concept_name_short(self):
         q = ve._build_query("Indexing", "desc", "backend_engineering")
@@ -172,113 +158,75 @@ class TestBuildQuery:
         assert "tutorial" in ve._build_query("Indexing", "", "backend_engineering")
 
 
-class TestPassesDisqualifiers:
+# ── _normalize_for_dedupe ───────────────────────────────────────────────
+
+
+class TestNormalize:
+    def test_lowercases_and_collapses_whitespace(self):
+        assert ve._normalize_for_dedupe("  Postgres  Tutorial  ") == "postgres tutorial"
+
+
+# ── _passes_filter ──────────────────────────────────────────────────────
+
+
+class TestPassesFilter:
     def _ok_pair(self):
         return _candidate("AAAAAAAAAA0"), _status("AAAAAAAAAA0")
 
     def test_happy_path(self):
         c, s = self._ok_pair()
-        assert ve._passes_disqualifiers(c, s) is True
+        assert ve._passes_filter(c, s) is True
 
     def test_short_video_rejected(self):
         c, s = self._ok_pair()
         s.duration_seconds = 60  # below MIN_DURATION_SECONDS
-        assert ve._passes_disqualifiers(c, s) is False
-
-    def test_too_long_video_rejected(self):
-        c, s = self._ok_pair()
-        s.duration_seconds = 5 * 3_600
-        assert ve._passes_disqualifiers(c, s) is False
+        assert ve._passes_filter(c, s) is False
 
     def test_live_broadcast_rejected(self):
         c, s = self._ok_pair()
         c.live_broadcast_content = "live"
-        assert ve._passes_disqualifiers(c, s) is False
+        assert ve._passes_filter(c, s) is False
 
     def test_upcoming_broadcast_rejected(self):
         c, s = self._ok_pair()
         c.live_broadcast_content = "upcoming"
-        assert ve._passes_disqualifiers(c, s) is False
-
-    def test_unembeddable_rejected(self):
-        c, s = self._ok_pair()
-        s.embeddable = False
-        assert ve._passes_disqualifiers(c, s) is False
-
-    def test_private_rejected(self):
-        c, s = self._ok_pair()
-        s.privacy_status = "private"
-        assert ve._passes_disqualifiers(c, s) is False
-
-    def test_unprocessed_rejected(self):
-        c, s = self._ok_pair()
-        s.upload_status = "uploaded"
-        assert ve._passes_disqualifiers(c, s) is False
-
-    def test_region_blocked_rejected(self):
-        c, s = self._ok_pair()
-        s.region_restriction_blocked = ["DE"]
-        assert ve._passes_disqualifiers(c, s) is False
+        assert ve._passes_filter(c, s) is False
 
     @pytest.mark.parametrize(
         "title",
         [
-            "Some music tutorial",
-            "Official Video",
+            "Some music video",
+            "Official Video — Release",
             "song lyrics",
-            "Best of the year — playlist",
+            "Track — Official Audio",
         ],
     )
     def test_blocklist_titles_rejected(self, title: str):
         c, s = self._ok_pair()
         c.title = title
-        assert ve._passes_disqualifiers(c, s) is False
+        assert ve._passes_filter(c, s) is False
+
+    def test_playlist_NOT_rejected(self):
+        """'playlist' is intentionally not in the blocklist — legit tutorials
+        often live on playlists."""
+        c, s = self._ok_pair()
+        c.title = "Kubernetes tutorial — full playlist"
+        assert ve._passes_filter(c, s) is True
+
+    def test_offtopic_title_NOT_filtered(self):
+        """The simple gate trusts YouTube's relevance ranking; it does NOT
+        do its own topic check (the previous Jaccard gate did, and rejected
+        everything in practice)."""
+        c, s = self._ok_pair()
+        c.title = "Top 10 SQL memes"
+        assert ve._passes_filter(c, s) is True
 
 
-class TestPassesRelevance:
-    def test_off_topic_candidate_rejected(self):
-        concept = _make_concept(name="Database indexing", description="B-tree")
-        resource = _make_resource(title="Indexing guide")
-        bad = _candidate("AAAAAAAAAA0", title="Top 10 SQL memes")
-        bad.channel_title = "MemeTime"
-        bag = ve._query_bag(concept, resource)
-        passed, _ = ve._passes_relevance(bag, bad)
-        assert passed is False
-
-    def test_on_topic_candidate_accepted(self):
-        concept = _make_concept(
-            name="Postgres B-tree indexing",
-            description="Understand B-tree and hash indexes on Postgres",
-        )
-        resource = _make_resource(title="Postgres B-tree indexing video")
-        good = _candidate("AAAAAAAAAA0", title="Postgres B-tree indexing tutorial")
-        bag = ve._query_bag(concept, resource)
-        passed, score = ve._passes_relevance(bag, good)
-        assert passed is True
-        assert score >= ve.MIN_JACCARD_RELEVANCE
-
-
-class TestSelectBest:
-    def test_picks_highest_jaccard(self):
-        a = _candidate("AAAAAAAAAA0")
-        b = _candidate("BBBBBBBBBB0")
-        s = _status("AAAAAAAAAA0")
-        s2 = _status("BBBBBBBBBB0")
-        pick = ve._select_best([(a, s, 0.5), (b, s2, 0.9)])
-        assert pick is not None
-        best, score = pick
-        assert best is b
-        assert score == 0.9
-
-    def test_empty_input_returns_none(self):
-        assert ve._select_best([]) is None
-
-
-# ── Async node — happy path & filtering ─────────────────────────────────
+# ── Async node ──────────────────────────────────────────────────────────
 
 
 def _patch_youtube(monkeypatch, *, search_returns, lookup_returns):
-    """Helper to replace ys.search / ys.lookup with async fakes that record calls."""
+    """Replace ys.search / ys.lookup with async fakes that record calls."""
     calls = {"search": [], "lookup": []}
 
     async def fake_search(query: str):
@@ -315,13 +263,11 @@ async def test_empty_key_short_circuits(monkeypatch):
     assert result == {}
     assert calls["search"] == []
     assert calls["lookup"] == []
-    # Resource URL untouched.
     assert plan.phases[0].concepts[0].resources[0].url is None
 
 
 @pytest.mark.asyncio
 async def test_no_video_resources_returns_empty(monkeypatch):
-    """No type=video resources → {} without an API call."""
     calls = _patch_youtube(monkeypatch, search_returns=[], lookup_returns={})
     plan = _make_plan(_make_concept(resources=[_make_resource(type_="article")]))
     assert await ve.enrich_videos({"learning_plan": plan}) == {}
@@ -329,30 +275,45 @@ async def test_no_video_resources_returns_empty(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_happy_path_attaches_url(monkeypatch, caplog):
-    cand = _candidate("AAAAAAAAAA0", title="Postgres indexing complete tutorial walkthrough")
-    cand.channel_title = "Postgres School"
+async def test_happy_path_attaches_first_candidate(monkeypatch, caplog):
+    cand = _candidate("AAAAAAAAAA0")
     stat = _status("AAAAAAAAAA0")
     _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
 
     concept = _make_concept(
-        name="Postgres indexing",
-        description="indexing",
-        resources=[_make_resource(title="Postgres indexing")],
+        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
     )
     plan = _make_plan(concept)
 
     with caplog.at_level(logging.INFO):
-        result = await ve.enrich_videos(
-            {"learning_plan": plan, "skill_domain": "backend_engineering"}
-        )
+        result = await ve.enrich_videos({"learning_plan": plan})
 
     assert "learning_plan" in result
-    url = plan.phases[0].concepts[0].resources[0].url
-    assert url == "https://www.youtube.com/watch?v=AAAAAAAAAA0"
-    # SR-12: INFO log carries concept_hash + video_id + jaccard.
-    attached = [r for r in caplog.records if "video_enricher.attached" in r.getMessage()]
-    assert attached, caplog.text
+    assert (
+        plan.phases[0].concepts[0].resources[0].url == "https://www.youtube.com/watch?v=AAAAAAAAAA0"
+    )
+    assert any("video_enricher.attached" in r.getMessage() for r in caplog.records)
+
+
+@pytest.mark.asyncio
+async def test_first_candidate_failing_filter_falls_back_to_next(monkeypatch):
+    """If candidate #1 is a Short, candidate #2 should be picked instead."""
+    short = _candidate("SHORT000000", title="Postgres tutorial")
+    long_ = _candidate("LONG0000000", title="Postgres tutorial")
+    _patch_youtube(
+        monkeypatch,
+        search_returns=[short, long_],
+        lookup_returns={
+            "SHORT000000": _status("SHORT000000", duration=45),  # Short
+            "LONG0000000": _status("LONG0000000", duration=600),
+        },
+    )
+    concept = _make_concept(name="Postgres indexing", resources=[_make_resource()])
+    plan = _make_plan(concept)
+    await ve.enrich_videos({"learning_plan": plan})
+    assert (
+        plan.phases[0].concepts[0].resources[0].url == "https://www.youtube.com/watch?v=LONG0000000"
+    )
 
 
 @pytest.mark.asyncio
@@ -364,9 +325,7 @@ async def test_url_uses_validated_video_id_only(monkeypatch):
     _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
 
     concept = _make_concept(
-        name="Postgres B-tree indexing",
-        description="B-tree indexes",
-        resources=[_make_resource(title="Postgres B-tree indexing")],
+        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
     )
     plan = _make_plan(concept)
     await ve.enrich_videos({"learning_plan": plan})
@@ -381,17 +340,10 @@ async def test_cap_enforced_pre_call(monkeypatch, caplog):
     monkeypatch.setenv("MAX_VIDEO_LOOKUPS_PER_PLAN", "3")
     get_settings.cache_clear()
 
-    def search_fn(query: str):
-        return []
-
-    calls = _patch_youtube(monkeypatch, search_returns=search_fn, lookup_returns={})
+    calls = _patch_youtube(monkeypatch, search_returns=[], lookup_returns={})
 
     concepts = [
-        _make_concept(
-            name=f"Concept number {i} extra",
-            description=f"desc {i}",
-            resources=[_make_resource(title=f"video {i}")],
-        )
+        _make_concept(name=f"Concept number {i} extra", resources=[_make_resource(title=f"v{i}")])
         for i in range(10)
     ]
     plan = _make_plan(*concepts)
@@ -406,13 +358,8 @@ async def test_cap_enforced_pre_call(monkeypatch, caplog):
 @pytest.mark.asyncio
 async def test_dedupe_within_plan(monkeypatch):
     """AC-12: identical normalized queries result in exactly one search call."""
+    calls = _patch_youtube(monkeypatch, search_returns=[], lookup_returns={})
 
-    def search_fn(query: str):
-        return []
-
-    calls = _patch_youtube(monkeypatch, search_returns=search_fn, lookup_returns={})
-
-    # Two concepts with identical name → identical normalized query.
     c1 = _make_concept(name="Indexing", resources=[_make_resource(title="v1")])
     c2 = _make_concept(name="Indexing", resources=[_make_resource(title="v2")])
     plan = _make_plan(c1, c2)
@@ -422,110 +369,44 @@ async def test_dedupe_within_plan(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_jaccard_below_threshold_rejected(monkeypatch, caplog):
-    """AC-6: relevance below 0.4 → url stays None, DEBUG no_match log."""
-    cand = _candidate("AAAAAAAAAA0", title="Top 10 SQL memes")
-    cand.channel_title = "MemeTime"
-    stat = _status("AAAAAAAAAA0")
-    _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-
-    concept = _make_concept(
-        name="Database indexing",
-        description="B-tree",
-        resources=[_make_resource(title="Indexing guide")],
-    )
-    plan = _make_plan(concept)
+async def test_no_results_leaves_url_none(monkeypatch, caplog):
+    _patch_youtube(monkeypatch, search_returns=[], lookup_returns={})
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     with caplog.at_level(logging.DEBUG):
         await ve.enrich_videos({"learning_plan": plan})
-
     assert plan.phases[0].concepts[0].resources[0].url is None
-    assert any("video_enricher.no_match" in r.getMessage() for r in caplog.records)
 
 
 @pytest.mark.asyncio
-async def test_disqualifier_short_video_rejected(monkeypatch):
+async def test_short_video_rejected_by_node(monkeypatch):
+    """Integration: a single short video result yields no URL."""
     cand = _candidate("AAAAAAAAAA0")
-    stat = _status("AAAAAAAAAA0", duration=60)  # Shorts
+    stat = _status("AAAAAAAAAA0", duration=45)  # Short
     _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-
-    concept = _make_concept(
-        name="Postgres B-tree indexing",
-        description="B-tree",
-        resources=[_make_resource(title="Postgres B-tree indexing")],
-    )
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     await ve.enrich_videos({"learning_plan": plan})
     assert plan.phases[0].concepts[0].resources[0].url is None
 
 
 @pytest.mark.asyncio
-async def test_disqualifier_private_rejected(monkeypatch):
-    cand = _candidate("AAAAAAAAAA0")
-    stat = _status("AAAAAAAAAA0", privacy="private")
-    _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-    concept = _make_concept(
-        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
-    )
-    plan = _make_plan(concept)
-    await ve.enrich_videos({"learning_plan": plan})
-    assert plan.phases[0].concepts[0].resources[0].url is None
-
-
-@pytest.mark.asyncio
-async def test_disqualifier_region_blocked_rejected(monkeypatch):
-    """AC-19: regionRestriction.blocked → reject."""
-    cand = _candidate("AAAAAAAAAA0")
-    stat = _status("AAAAAAAAAA0", blocked=["US"])
-    _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-    concept = _make_concept(
-        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
-    )
-    plan = _make_plan(concept)
-    await ve.enrich_videos({"learning_plan": plan})
-    assert plan.phases[0].concepts[0].resources[0].url is None
-
-
-@pytest.mark.asyncio
-async def test_disqualifier_unembeddable_rejected(monkeypatch):
-    cand = _candidate("AAAAAAAAAA0")
-    stat = _status("AAAAAAAAAA0", embeddable=False)
-    _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-    concept = _make_concept(
-        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
-    )
-    plan = _make_plan(concept)
-    await ve.enrich_videos({"learning_plan": plan})
-    assert plan.phases[0].concepts[0].resources[0].url is None
-
-
-@pytest.mark.asyncio
-async def test_disqualifier_live_broadcast_rejected(monkeypatch):
+async def test_live_broadcast_rejected_by_node(monkeypatch):
     cand = _candidate("AAAAAAAAAA0")
     cand.live_broadcast_content = "live"
     stat = _status("AAAAAAAAAA0")
     _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-    concept = _make_concept(
-        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
-    )
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     await ve.enrich_videos({"learning_plan": plan})
     assert plan.phases[0].concepts[0].resources[0].url is None
 
 
 @pytest.mark.asyncio
-async def test_disqualifier_title_blocklist_rejected(monkeypatch):
+async def test_blocklist_title_rejected_by_node(monkeypatch):
     cand = _candidate("AAAAAAAAAA0", title="Postgres indexing official video")
     stat = _status("AAAAAAAAAA0")
     _patch_youtube(monkeypatch, search_returns=[cand], lookup_returns={"AAAAAAAAAA0": stat})
-    concept = _make_concept(
-        name="Postgres indexing", resources=[_make_resource(title="Postgres indexing")]
-    )
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     await ve.enrich_videos({"learning_plan": plan})
     assert plan.phases[0].concepts[0].resources[0].url is None
-
-
-# ── Async node — error / failure paths ─────────────────────────────────
 
 
 @pytest.mark.asyncio
@@ -533,8 +414,7 @@ async def test_api_error_returns_empty_dict(monkeypatch, caplog):
     """AC-3 / AC-13 / SR-07: API error → {} + WARNING log."""
     err = ys.YouTubeAPIError(403, None)
     _patch_youtube(monkeypatch, search_returns=err, lookup_returns={})
-    concept = _make_concept(resources=[_make_resource()])
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     with caplog.at_level(logging.WARNING):
         result = await ve.enrich_videos({"learning_plan": plan})
     assert result == {}
@@ -557,12 +437,10 @@ async def test_node_timeout_returns_empty_dict(monkeypatch, caplog):
 
     monkeypatch.setattr(ys, "lookup", fake_lookup)
 
-    # Force a tiny per-node timeout via env override.
     monkeypatch.setenv("YOUTUBE_NODE_TIMEOUT_SECONDS", "0.05")
     get_settings.cache_clear()
 
-    concept = _make_concept(resources=[_make_resource()])
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     with caplog.at_level(logging.WARNING):
         result = await ve.enrich_videos({"learning_plan": plan})
 
@@ -584,15 +462,13 @@ async def test_unexpected_exception_swallowed(monkeypatch, caplog):
 
     monkeypatch.setattr(ys, "lookup", fake_lookup)
 
-    concept = _make_concept(resources=[_make_resource()])
-    plan = _make_plan(concept)
+    plan = _make_plan(_make_concept(resources=[_make_resource()]))
     with caplog.at_level(logging.WARNING):
         result = await ve.enrich_videos({"learning_plan": plan})
 
     assert result == {}
     msgs = [r.getMessage() for r in caplog.records]
     assert any("video_enricher.unexpected" in m for m in msgs)
-    # Should NOT carry the raw exception text in the log message itself.
     assert not any("boom" in m for m in msgs)
 
 
@@ -601,17 +477,12 @@ async def test_budget_circuit_breaker_skips_remaining_searches(monkeypatch, capl
     """SR-03: when quota_used_today() ≥ 80% of budget, no further searches."""
     monkeypatch.setenv("YOUTUBE_DAILY_QUOTA_BUDGET", "1000")
     get_settings.cache_clear()
-
-    # 80% of 1000 = 800. We pre-spend 800 to trigger the breaker on the first call.
-    ys._bump_quota(800)
+    ys._bump_quota(800)  # 80% of 1000 → trip the breaker
 
     calls = _patch_youtube(monkeypatch, search_returns=[], lookup_returns={})
 
     concepts = [
-        _make_concept(
-            name=f"Concept {i} long enough",
-            resources=[_make_resource(title=f"v{i}")],
-        )
+        _make_concept(name=f"Concept {i} long enough", resources=[_make_resource(title=f"v{i}")])
         for i in range(5)
     ]
     plan = _make_plan(*concepts)
@@ -642,9 +513,6 @@ async def test_pii_stripped_from_outbound_query(monkeypatch):
     assert "555-123-4567" not in sent
 
 
-# ── No-LLM-imports check (AC-10) ────────────────────────────────────────
-
-
 @pytest.mark.parametrize(
     "path",
     [
@@ -666,25 +534,17 @@ def test_module_contains_no_llm_imports(path: str):
         assert forbidden not in src, f"{path} contains forbidden import: {forbidden}"
 
 
-# ── Logging hygiene (SR-08) ─────────────────────────────────────────────
-
-
 @pytest.mark.asyncio
 async def test_searches_run_concurrently_via_gather(monkeypatch):
     """Searches must fan out concurrently — semaphore caps parallelism but
-    the loop is not allowed to serialize the per-concept calls (otherwise the
-    30 s node timeout would fire on >3 cold-cache concepts)."""
+    the loop must not serialize the per-concept calls."""
     in_flight = 0
     peak = 0
-    started = asyncio.Event()
 
     async def slow_search(query: str):
         nonlocal in_flight, peak
         in_flight += 1
         peak = max(peak, in_flight)
-        if not started.is_set():
-            started.set()
-        # Tiny delay so multiple coroutines actually overlap.
         await asyncio.sleep(0.02)
         in_flight -= 1
         return []
@@ -703,8 +563,6 @@ async def test_searches_run_concurrently_via_gather(monkeypatch):
     plan = _make_plan(*concepts)
     await ve.enrich_videos({"learning_plan": plan})
 
-    # With the previous serialized loop peak was always 1; concurrent fan-out
-    # under default 5-wide semaphore must let multiple searches overlap.
     assert peak >= 2, f"searches were serialized (peak in-flight = {peak})"
 
 
@@ -727,14 +585,11 @@ async def test_concurrent_dedupe_does_not_double_spend(monkeypatch):
 
     monkeypatch.setattr(ys, "lookup", fake_lookup)
 
-    # 3 concepts with identical names → identical normalized queries.
     concepts = [_make_concept(name="Indexing", resources=[_make_resource()]) for _ in range(3)]
     plan = _make_plan(*concepts)
     await ve.enrich_videos({"learning_plan": plan, "skill_domain": "backend_engineering"})
 
-    assert call_count == 1, (
-        f"deduped queries issued {call_count} HTTP calls — concurrent dedupe race"
-    )
+    assert call_count == 1
 
 
 @pytest.mark.asyncio
