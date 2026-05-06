@@ -1237,6 +1237,21 @@ CORS_ORIGINS=http://localhost:3000
 <td>Frontend URL for OAuth redirects</td>
 <td><code>http://localhost:3000</code></td>
 </tr>
+<tr>
+<td><code>YOUTUBE_API_KEY</code></td>
+<td>YouTube Data API v3 key for video URL enrichment in learning plans (empty = feature off)</td>
+<td>empty</td>
+</tr>
+<tr>
+<td><code>MAX_VIDEO_LOOKUPS_PER_PLAN</code></td>
+<td>Max YouTube searches per generated plan</td>
+<td><code>12</code></td>
+</tr>
+<tr>
+<td><code>YOUTUBE_DAILY_QUOTA_BUDGET</code></td>
+<td>Quota-budget circuit breaker (units, default = 80% of free tier)</td>
+<td><code>8000</code></td>
+</tr>
 </tbody>
 </table>
 <p>*Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.</p>
