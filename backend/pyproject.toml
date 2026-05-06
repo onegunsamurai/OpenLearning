@@ -24,6 +24,7 @@ dependencies = [
     "langgraph-checkpoint-postgres>=3.0",
     "psycopg[binary]>=3.2",
     "httpx>=0.28",
+    "cachetools>=5.3",
 ]
 
 [project.optional-dependencies]

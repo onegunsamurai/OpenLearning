@@ -18,3 +18,4 @@ cryptography
 bcrypt
 email-validator
 httpx
+cachetools>=5.3

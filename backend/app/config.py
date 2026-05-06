@@ -1,6 +1,7 @@
 import os
 from functools import lru_cache
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 
@@ -17,6 +18,15 @@ class Settings(BaseSettings):
     jwt_secret_key: str = ""
     encryption_key: str = ""
     frontend_url: str = "http://localhost:3000"
+
+    # YouTube video enrichment (issue #177)
+    # SecretStr keeps the key out of repr/logs (SR-01).
+    youtube_api_key: SecretStr = SecretStr("")
+    max_video_lookups_per_plan: int = 12
+    youtube_per_request_timeout_seconds: float = 10.0
+    youtube_node_timeout_seconds: float = 30.0
+    youtube_max_concurrent_searches: int = 5
+    youtube_daily_quota_budget: int = 8000
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

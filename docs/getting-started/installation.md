@@ -55,6 +55,9 @@ CORS_ORIGINS=http://localhost:3000
 | `JWT_SECRET_KEY` | JWT signing key (random 256-bit hex string)* | — |
 | `ENCRYPTION_KEY` | Fernet key for API key encryption* | — |
 | `FRONTEND_URL` | Frontend URL for OAuth redirects | `http://localhost:3000` |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key for video URL enrichment in learning plans (empty = feature off) | empty |
+| `MAX_VIDEO_LOOKUPS_PER_PLAN` | Max YouTube searches per generated plan | `12` |
+| `YOUTUBE_DAILY_QUOTA_BUDGET` | Quota-budget circuit breaker (units, default = 80% of free tier) | `8000` |
 
 *Required for authentication. Without these, protected endpoints return 501/401. Demo mode works without auth.
 
