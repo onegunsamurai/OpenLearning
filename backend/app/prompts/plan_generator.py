@@ -17,6 +17,9 @@ Create a phased learning plan that:
 5. Each concept also carries a 1-2 sentence `description` explaining why it
    matters for the phase goal.
 6. Mix resource types across a phase: video, article, project, exercise.
+7. For type=video resources, set url to null — the system will populate real
+   YouTube URLs after generation. For all other resource types (article,
+   project, exercise) keep emitting real URLs as before.
 
 Example concept shape:
   {{"name": "Async I/O fundamentals",

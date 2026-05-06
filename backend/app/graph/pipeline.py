@@ -10,6 +10,7 @@ from app.agents.plan_generator import generate_plan
 from app.agents.question_generator import generate_question
 from app.agents.resource_validator import validate_resources
 from app.agents.response_evaluator import evaluate_response
+from app.agents.video_enricher import enrich_videos
 from app.graph.router import MAX_TOPICS, decide_branch, get_deeper_bloom, get_next_topic
 from app.graph.state import (
     LEVEL_BLOOM_MAP,
@@ -143,6 +144,15 @@ async def generate_plan_node(state: AssessmentState) -> dict:
     return await generate_plan(state)
 
 
+async def enrich_videos_node(state: AssessmentState) -> dict:
+    """Attach free YouTube URLs to type=video resources (issue #177).
+
+    Pure pass-through when YOUTUBE_API_KEY is unset — preserves the legacy
+    behaviour of shipping videos with url=None.
+    """
+    return await enrich_videos(state)
+
+
 async def validate_resources_node(state: AssessmentState) -> dict:
     """Validate resource URLs; null out unreachable ones."""
     return await validate_resources(state)
@@ -189,6 +199,7 @@ def build_graph() -> StateGraph:
     graph.add_node("analyze_gaps", analyze_gaps_node)
     graph.add_node("enrich_gaps", enrich_gaps_node)
     graph.add_node("generate_plan", generate_plan_node)
+    graph.add_node("enrich_videos", enrich_videos_node)
     graph.add_node("validate_resources", validate_resources_node)
 
     # Edges: start → agenda → assessment
@@ -221,7 +232,8 @@ def build_graph() -> StateGraph:
     # Conclusion
     graph.add_edge("analyze_gaps", "enrich_gaps")
     graph.add_edge("enrich_gaps", "generate_plan")
-    graph.add_edge("generate_plan", "validate_resources")
+    graph.add_edge("generate_plan", "enrich_videos")
+    graph.add_edge("enrich_videos", "validate_resources")
     graph.add_edge("validate_resources", END)
 
     return graph

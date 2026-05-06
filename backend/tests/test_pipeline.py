@@ -22,6 +22,7 @@ class TestGraphStructure:
             "await_probe_response",
             "analyze_gaps",
             "generate_plan",
+            "enrich_videos",
             "validate_resources",
         }
         assert expected_nodes.issubset(node_names), f"Missing nodes: {expected_nodes - node_names}"
@@ -77,8 +78,18 @@ class TestGraphStructure:
         edges = set(graph.edges)
         assert ("analyze_gaps", "enrich_gaps") in edges
         assert ("enrich_gaps", "generate_plan") in edges
-        assert ("generate_plan", "validate_resources") in edges
+        # Issue #177: enrich_videos sits between generate_plan and validate_resources.
+        assert ("generate_plan", "enrich_videos") in edges
+        assert ("enrich_videos", "validate_resources") in edges
         assert ("validate_resources", "__end__") in edges
+        # Old direct edge must no longer exist.
+        assert ("generate_plan", "validate_resources") not in edges
+
+    def test_enrich_videos_node_present(self):
+        """Issue #177: a leaf node attaches free YouTube URLs after plan
+        generation."""
+        graph = build_graph()
+        assert "enrich_videos" in graph.nodes
 
     def test_no_direct_generate_plan_to_end(self):
         """generate_plan should NOT connect directly to END anymore."""
