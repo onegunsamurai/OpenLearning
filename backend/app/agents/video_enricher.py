@@ -24,9 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 # ── Module constants (api-contracts.md §2.3) ────────────────────────────
+#
+# Node timeout + concurrency cap are operator-tunable via Settings
+# (``youtube_node_timeout_seconds``, ``youtube_max_concurrent_searches``);
+# we deliberately do not duplicate the defaults here so the Settings field
+# stays the single source of truth (Copilot review).
 
-NODE_TIMEOUT_SECONDS: float = 30.0
-MAX_CONCURRENT_SEARCHES: int = 5
 MIN_JACCARD_RELEVANCE: float = 0.4
 MIN_DURATION_SECONDS: int = 90  # excludes Shorts
 MAX_DURATION_SECONDS: int = 4 * 3_600  # excludes stream replays

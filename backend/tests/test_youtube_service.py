@@ -143,6 +143,21 @@ async def test_search_passes_required_query_params():
     assert sent["key"] == "AIza-test-key"
 
 
+@respx.mock
+@pytest.mark.asyncio
+async def test_request_module_key_cannot_be_shadowed_by_caller_params():
+    """SR-01 defence in depth: a caller of :func:`_request` must not be able
+    to override the module-supplied API key by slipping ``key`` into *params*.
+    Regression guard for the params-spread footgun flagged in PR review."""
+    route = respx.get(ys.YOUTUBE_API_BASE + ys.SEARCH_PATH).respond(json={"items": []})
+
+    await ys._request(ys.SEARCH_PATH, {"key": "ATTACKER-SHADOW-KEY", "q": "x", "part": "snippet"})
+
+    sent = route.calls.last.request.url.params
+    assert sent["key"] == "AIza-test-key"
+    assert "ATTACKER-SHADOW-KEY" not in str(route.calls.last.request.url)
+
+
 @pytest.mark.parametrize(
     "status_code,retry_after_header,expected_retry",
     [

@@ -154,7 +154,10 @@ def _api_key() -> str:
 async def _request(path: str, params: dict[str, Any]) -> dict[str, Any]:
     """GET against YouTube Data API v3, mapping every non-2xx to
     :class:`YouTubeAPIError`.  Never logs URL/key (SR-01 / SR-07)."""
-    params = {"key": _api_key(), **params}
+    # Module-supplied key always wins so a caller cannot accidentally (or
+    # maliciously) shadow the credential by passing ``key`` in *params*
+    # (SR-01 / Copilot review).
+    params = {**params, "key": _api_key()}
     timeout = httpx.Timeout(get_settings().youtube_per_request_timeout_seconds)
     try:
         async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
